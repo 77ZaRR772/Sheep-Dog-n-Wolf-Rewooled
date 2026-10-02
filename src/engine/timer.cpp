@@ -1,5 +1,5 @@
 /*
- * Timer_ReadTSC is inline assembly in the original too (cpuid; rdtsc).
+ * The game's timers: ticks of the performance counter (ReadTSC), converted with its frequency, g_cpuHz.
  */
 #include "timer.h"
 #include "sdw_classes.h"
@@ -9,35 +9,17 @@
 
 double g_cpuHz;
 
-struct TimerCalibrationWork {
-    s64 tscBefore, tscAfter, pcAfter;
-    s64 samples[100];
-    s64 frequency, pcBefore, sum;
-};
-
-/* on first construction, measures TSC ticks per QueryPerformanceCounter interval 100 times around a busy loop
- * of 10,000 sin(pow(i, 10)) calls, and sets g_cpuHz = sum * 1e6 / 100228400.0 (constant). */
+/* g_cpuHz: the performance counter's frequency, which ReadTSC reads (below). The original measured its RDTSC against
+ * QueryPerformanceCounter over a busy loop of sin(pow(i, 10)) calls; with the counter in place of RDTSC that measured
+ * the counter against itself, and an optimising compiler drops the loop (its result is unused), leaving reads too close
+ * together: a division by zero, which ARM64 answers with 0, made g_cpuHz several times too small and the game run that
+ * much faster in Release builds. */
 Timer::Timer()
 {
-    TimerCalibrationWork work;
-    struct {
-        u16 inner, outer;
-    } loop;
     if (g_cpuHz == 0.0) {
-        work.sum = 0;
-        QueryPerformanceFrequency(&work.frequency);
-        for (loop.outer = 0; loop.outer < 100; loop.outer++) {
-            QueryPerformanceCounter(&work.pcBefore);
-            work.tscBefore = ReadTSC();
-            for (loop.inner = 0; loop.inner < 10000; loop.inner++)
-                sin(pow((double)loop.inner, 10.0));
-            QueryPerformanceCounter(&work.pcAfter);
-            work.tscAfter = ReadTSC();
-            work.samples[loop.outer] =
-                work.frequency * (work.tscAfter - work.tscBefore) / (work.pcAfter - work.pcBefore);
-            work.sum += work.samples[loop.outer];
-        }
-        g_cpuHz = (double)(work.sum * 1000000) / 100228400.0;
+        s64 frequency = 0;
+        QueryPerformanceFrequency(&frequency);
+        g_cpuHz = (double)frequency;
     }
     baseTsc = 0;
     elapsedTsc = 0;
@@ -122,8 +104,7 @@ double Timer::PeekDelta(int unit)
 }
 
 /* The performance counter (Windows', or SDL's on the other systems: src/platform/win32_sdl_compat.cpp) in place of
- * the original's RDTSC: steady under frequency scaling and on every CPU. The calibration in the constructor then
- * measures it against itself, so g_cpuHz is the counter's frequency. */
+ * the original's RDTSC: steady under frequency scaling and on every CPU. g_cpuHz is its frequency (the constructor). */
 s64 Timer::ReadTSC()
 {
     s64 ticks = 0;
