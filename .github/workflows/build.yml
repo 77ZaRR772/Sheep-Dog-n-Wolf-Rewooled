@@ -1,0 +1,112 @@
+# Builds the game and the launcher for Linux, Windows and macOS (Release) on every push and pull request, and uploads
+# a zip per platform as a build artifact. Pushing a tag v* (git tag v0.1.0 && git push origin v0.1.0) also publishes
+# the three zips as a GitHub Release.
+#
+# The zips hold SheepD3D and SheepLauncher only (on macOS the app bundle Rewooled.app, which holds both): the game's data comes from your own copy (BUILDING.md section 3).
+name: Build
+
+on:
+  push:
+    branches: ['**']
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x86_64
+            os: ubuntu-24.04
+          - name: windows-x64
+            os: windows-2022
+          - name: macos-arm64
+            os: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            clang cmake ninja-build python3 pkg-config zip \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev libxss-dev libxtst-dev \
+            libwayland-dev libxkbcommon-dev wayland-protocols libegl-dev libgl-dev \
+            libasound2-dev libpulse-dev libudev-dev libdbus-1-dev libvulkan-dev
+
+      - name: Install Ninja (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ninja
+
+      - name: Configure (Linux)
+        if: runner.os == 'Linux'
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+
+      - name: Configure (macOS)
+        if: runner.os == 'macOS'
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Configure (Windows)
+        if: runner.os == 'Windows'
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      # zipped here, on the build machine: an artifact upload drops the executable bit of the Linux and macOS binaries
+      - name: Package
+        shell: bash
+        run: |
+          mkdir -p dist
+          zipname="SheepD3D-${{ matrix.name }}.zip"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            (cd build/Release && 7z a "../../dist/$zipname" SheepD3D.exe SheepLauncher.exe)
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            # the app bundle: the launcher, with the game inside it (Contents/MacOS)
+            (cd build && zip -9 -r -y "../dist/$zipname" Rewooled.app)
+          else
+            (cd build && zip -9 "../dist/$zipname" SheepD3D SheepLauncher)
+          fi
+          ls -l dist
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Rewooled-${{ matrix.name }}
+          path: dist/*.zip
+          if-no-files-found: error
+
+  release:
+    name: Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download the zips
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -l dist
+          gh release create "$GITHUB_REF_NAME" dist/*.zip \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
