@@ -19,6 +19,10 @@ jobs:
   build:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    env:
+      # whether the macOS signing / notarization secrets are set (a step's own env is not visible to its `if`)
+      HAS_MACOS_CERT: ${{ secrets.MACOS_CERT_P12 != '' }}
+      HAS_NOTARY_KEY: ${{ secrets.NOTARY_KEY_P8 != '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -63,6 +67,53 @@ jobs:
       - name: Build
         run: cmake --build build --config Release --parallel
 
+      # macOS: sign Rewooled.app with the Developer ID certificate, then notarize it and staple the ticket, so Gatekeeper
+      # opens it without warnings. Each part runs only when its secrets are set (never on forks / pull requests):
+      #   MACOS_CERT_P12, MACOS_CERT_PASSWORD      the certificate (tools/macos_signing_secrets.sh sets them)
+      #   NOTARY_KEY_P8, NOTARY_KEY_ID, NOTARY_ISSUER_ID   an App Store Connect API key (same script, --notary)
+      - name: Sign (macOS)
+        if: runner.os == 'macOS' && env.HAS_MACOS_CERT == 'true'
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          # a throwaway keychain holding only the certificate
+          KEYCHAIN="$RUNNER_TEMP/sign.keychain-db"
+          KEYCHAIN_PW="$(uuidgen)"
+          echo "$MACOS_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security create-keychain -p "$KEYCHAIN_PW" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PW" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$MACOS_CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PW" "$KEYCHAIN" > /dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          rm "$RUNNER_TEMP/cert.p12"
+
+          # inside out: the game in the bundle, then the bundle (the launcher); the keychain holds one identity, so its
+          # name's start is enough
+          APP=build/Rewooled.app
+          for target in "$APP/Contents/MacOS/SheepD3D" "$APP"; do
+            codesign --force --options runtime --timestamp --entitlements res/macos/entitlements.plist \
+              --keychain "$KEYCHAIN" --sign "Developer ID Application" "$target"
+          done
+          codesign --verify --strict --verbose=2 "$APP"
+
+      - name: Notarize (macOS)
+        if: runner.os == 'macOS' && env.HAS_MACOS_CERT == 'true' && env.HAS_NOTARY_KEY == 'true'
+        env:
+          NOTARY_KEY_P8: ${{ secrets.NOTARY_KEY_P8 }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+        run: |
+          APP=build/Rewooled.app
+          echo "$NOTARY_KEY_P8" | base64 --decode > "$RUNNER_TEMP/notary.p8"
+          ditto -c -k --keepParent "$APP" "$RUNNER_TEMP/notarize.zip"
+          xcrun notarytool submit "$RUNNER_TEMP/notarize.zip" \
+            --key "$RUNNER_TEMP/notary.p8" --key-id "$NOTARY_KEY_ID" --issuer "$NOTARY_ISSUER_ID" --wait
+          rm "$RUNNER_TEMP/notary.p8"
+          xcrun stapler staple "$APP"
+          spctl --assess --type execute --verbose "$APP"
+
       # zipped here, on the build machine: an artifact upload drops the executable bit of the Linux and macOS binaries
       - name: Package
         shell: bash
@@ -73,7 +124,8 @@ jobs:
             (cd build/Release && 7z a "../../dist/$zipname" SheepD3D.exe SheepLauncher.exe)
           elif [ "$RUNNER_OS" = "macOS" ]; then
             # the app bundle: the launcher, with the game inside it (Contents/MacOS)
-            (cd build && zip -9 -r -y "../dist/$zipname" Rewooled.app)
+            # ditto: Apple's zip, which keeps the signature and the stapled ticket intact
+            (cd build && ditto -c -k --keepParent Rewooled.app "../dist/$zipname")
           else
             (cd build && zip -9 "../dist/$zipname" SheepD3D SheepLauncher)
           fi
