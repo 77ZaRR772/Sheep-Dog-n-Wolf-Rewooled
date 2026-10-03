@@ -42,6 +42,7 @@ inline HRESULT D3DApp::ShowFrame()
 #include "../engine/registry.h"
 #include "../engine/draw2d.h"
 #include "../engine/pause_menu.h"
+#include "../engine/net.h"
 #include "../engine/screen.h"
 #include "../engine/game_state.h"
 #include "../engine/stream_player.h"
@@ -111,6 +112,9 @@ int Game_Main(int argc, char **argv)
     Options_SetDefaults(&g_options);
     Options_LoadSaved(&g_options);
     Options_ParseArgs(&g_options, argc, argv);
+
+    if (Net_Init(g_options.net) < 0 && g_options.net[0])
+        Platform_ShowMessage("SheepD3D", "Network error: check --net-host / --net-join=host[:port]", 1);
 
     if (g_options.exeDir[0]) {
         strncpy(exeDir, g_options.exeDir, sizeof(exeDir) - 1);
@@ -205,6 +209,7 @@ int Game_Main(int argc, char **argv)
                              1);
     App_InitGameSystems();
     Main_Loop(g_pD3DAppMain);
+    Net_Shutdown();
     App_Shutdown();
     return 0;
 }
@@ -236,6 +241,7 @@ void Main_Loop(D3DApp *app)
                 g_pMenuNoiseTexture = NULL;
             }
         }
+        Net_LockstepGate(); /* ENet pump + wait for the peer's input for the next simulated frame (net.cpp) */
         Time_Update();
         if (g_pPolyBin && g_pPolyBin->renderer && g_pPolyBin->renderer->deviceReady) {
             g_pPolyBin->Render_BeginFrame();

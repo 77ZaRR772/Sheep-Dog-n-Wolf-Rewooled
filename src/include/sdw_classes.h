@@ -146,7 +146,12 @@ struct EmitterFlagBits;
 struct EmitterPerfumeParams;
 struct EmitterRiseParams;
 struct EmitterTrailParams;
-struct FILE;
+/* `struct FILE;` here would conflict with glibc's `typedef struct _IO_FILE FILE;` in any TU that
+ * also pulls a real <stdio.h> (net.cpp via <SDL3/SDL.h>). The CRT shims (src/sdk/crt.h, bs_io.h)
+ * declare the tag themselves for their TUs, which never include stdio. */
+#ifndef SDW_NO_STDIO_FILE
+#include <stdio.h> /* the real FILE typedef for PackJpeg::file below */
+#endif
 class FacingCamera;
 class FallingGate;
 class FallingGate2;

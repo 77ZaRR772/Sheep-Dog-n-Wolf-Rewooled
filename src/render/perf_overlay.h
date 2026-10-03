@@ -27,8 +27,9 @@ void PerfOverlay_FrameStart();
 void PerfOverlay_PresentBegin(u32 draws, u32 vertices);
 void PerfOverlay_PresentEnd();
 
-/* the overlay's text, one line per row; the number of lines (0 before the first half second is measured) */
-#define PERF_OVERLAY_MAX_LINES 4
+/* the overlay's text, one line per row; the number of lines (0 before the first half second is measured)
+ * + two netplay rows (NET / DESYNC), shown whenever a net session is configured */
+#define PERF_OVERLAY_MAX_LINES 6
 #define PERF_OVERLAY_LINE_SIZE 48
 int PerfOverlay_Lines(char lines[PERF_OVERLAY_MAX_LINES][PERF_OVERLAY_LINE_SIZE]);
 

@@ -389,6 +389,11 @@ u8 Load_DAVnWAR(const char *levelPath, Dav *dav)
     }
     Load_WarMeshes(fullPath, &g_pDav->war);
     g_gameFlags |= GF_LEVEL_LOADED_A;
+    /* netplay: the clone reference dies with the previous world */
+    {
+        extern void WolfClone_ResetForNewLevel();
+        WolfClone_ResetForNewLevel();
+    }
 
     Debug_Printf("{Allocating Objects...\n");
     Time_Init();
