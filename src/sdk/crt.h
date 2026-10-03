@@ -18,9 +18,7 @@
 #define _S_IWRITE 0000200
 
 
-#ifndef __FILE_defined
 struct FILE;
-#endif
 
 #include <stdarg.h> /* the compiler's: the stand-in below is only right for 32-bit cdecl (x64 passes 8-byte slots) */
 

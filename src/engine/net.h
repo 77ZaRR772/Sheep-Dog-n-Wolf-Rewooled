@@ -28,6 +28,8 @@ enum NetMsg {
 
 /* INPUT payload, little-endian wire order: u8 msgType, u32 frame, u16 buttons, s8 lx, ly, rx, ry */
 #define NET_WOLF_SPAWN_OFFSET 96 /* world units the remote wolf spawns beside the local one */
+#define NET_INPUT_DELAY       8   /* frames of look-ahead before an input is simulated: absorbs one RTT */
+#define NET_INPUT_DELAY_CATCHUP 8 /* wolf_clone.cpp: extra buffered frames allowed during a scene reload */
 
 /* ---- session ---- */
 int  Net_Init(const char *netOpt);   /* "--net-host[=port]" / "--net-join=host[:port]"; 0 ok, <0 disabled/error */

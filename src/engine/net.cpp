@@ -2,6 +2,7 @@
 /* NOTE: include SDL3 + enet BEFORE sdw_classes.h: that header forward-declares
  * `struct FILE;` which conflicts with glibc's `typedef struct _IO_FILE FILE;`
  * once a real <stdio.h> is pulled in afterwards. */
+#define SDW_HAVE_STDIO 1
 #include <SDL3/SDL.h>
 #include <enet/enet.h>
 
@@ -24,8 +25,6 @@ extern Wolf *g_pWolf;      /* game.cpp: the LOCAL player's wolf */
 
 /* ---- tunables ---- */
 #define NET_DEFAULT_PORT      7654
-#define NET_INPUT_DELAY       8     /* frames of look-ahead before an input is simulated: absorbs one RTT */
-#define NET_INPUT_DELAY_CATCHUP 8   /* wolf_clone.cpp: same value, spelled out for the scene-change catch-up */
 #define NET_RING_SIZE         64    /* remote snapshot ring capacity */
 #define NET_GATE_TIMEOUT_MS   5000  /* stop waiting for the peer after this long */
 #define NET_CHECKSUM_PERIOD_MS 4000

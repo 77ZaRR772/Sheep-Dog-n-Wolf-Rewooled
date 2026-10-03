@@ -10,9 +10,7 @@ void *Bs_LoadFile(const char *path, u32 *sizeOut);
 /* The functions and globals bs_io.cpp defines, declared once for every file that uses them. */
 #include "sdw_types.h"
 
-#ifndef __FILE_defined
 struct FILE;
-#endif
 
 u32 Bs_FileSize(FILE *f);
 

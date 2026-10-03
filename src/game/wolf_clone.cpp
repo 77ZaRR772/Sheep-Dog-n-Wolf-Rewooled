@@ -11,15 +11,16 @@
  *   - PostLoadInit() gives it movement banks, collision boxes, ground snap and respawn state. Its tail aims the
  *     shared camera and fades the screen: those are re-asserted for the LOCAL wolf right after.
  *   - It spawns NET_WOLF_SPAWN_OFFSET units beside the local wolf. */
+/* wolf.h must be the FIRST sdw_classes consumer in this TU: it defines the SDW_MEMBERS_* hooks and
+ * includes sdw_classes.h itself (the header's include guard then keeps the bare include below inert). */
+#include "wolf.h" /* class Wolf + its inline members -- this TU is part of the wolf module */
+
 #include "sdw_types.h"
 #include "sdw_enums.h"
 #include "sdw_classes.h"
-
-#include "../game/wolf.h"    /* class Wolf, g_pWolf */
-#include "../game/wolf_api.h"/* g_wolfInstanceCount */
-#include "scenaric.h"        /* Scenaric_CreateObject, AddToWorld via classes */
-#include "object_lookup.h"   /* Scenaric_FindByClass */
-#include "net.h"
+#include "../engine/scenaric.h"        /* Scenaric_CreateObject, AddToWorld via classes */
+#include "../engine/object_lookup.h"   /* Scenaric_FindByClass */
+#include "../engine/net.h"
 #include "../app/app_main.h" /* Camera g_camera */
 
 extern u32 g_gameFlags;      /* sdw_enums GameFlags: GF_LEVEL_LOADED_A/B */
