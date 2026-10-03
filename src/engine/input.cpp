@@ -275,8 +275,23 @@ void PadRec_Save(const char *name)
  * `buttons` is set and never read. */
 void Input_Poll()
 {
+    extern int Net_IsActive();
+    extern int Net_IsConnected();
+    extern void Net_SendLocalInput();
+    extern int Net_RemoteInputForFrame(s32 frame, PadFrame *out);
+    extern s32 g_frameCount;
+
     Pad_ReadRaw(&g_pad);
     g_padRawSnapshot = g_pad.raw;
+    if (Net_IsActive())
+        Net_SendLocalInput(); /* queue this frame's snapshot, stamped g_frameCount + delay (net.cpp) */
+    if (Net_IsConnected()) {
+        /* the remote player's pad: the snapshot for THIS frame was gated for in Main_Loop before Time_Update,
+         * so it is buffered; without a connection g_pad2 keeps the cleared frame Pad_ClearFrames left */
+        PadFrame remote;
+        if (Net_RemoteInputForFrame(g_frameCount, &remote))
+            g_pad2.raw = remote;
+    }
     u16 buttons = 0xffff;
     switch (g_inputMode) {
         case INPUT_MODE_LIVE:

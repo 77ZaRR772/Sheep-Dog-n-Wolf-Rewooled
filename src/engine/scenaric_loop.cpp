@@ -300,20 +300,40 @@ void Game_Frame()
  * sound mixer. */
 void Game_Frame_2()
 {
-    if (g_pad.IsConnected() && Pad_MenuPressed((u16)~PAD_SELECT) && !g_cinePlayer.IsActive() &&
+    /* lockstep netplay: spawn the remote wolf once its scene is installed, drop the menu openers while the
+     * peer's inputs are still arriving (menus change the simulation on one machine only), and let the host
+     * announce the scene to a client that connected (or finished loading) only now */
+    extern void WolfClone_Update();
+    extern int Net_IsActive();
+    extern int Net_IsHost();
+    extern int Net_IsConnected();
+    extern int Net_RemoteInputReadyForFrame(s32 frame);
+    extern void Net_NotifyLevelStart(s32 levelId);
+    extern s32 g_frameCount;
+    int netGateInputs = 0;
+    WolfClone_Update();
+    if (Net_IsActive()) {
+        netGateInputs = Net_IsConnected() && !Net_RemoteInputReadyForFrame(g_frameCount + 1);
+        if (Net_IsHost() && Net_IsConnected() && !g_cinePlayer.IsActive()) {
+            extern Progress *g_pProgress; /* progress.h, not included here */
+            Net_NotifyLevelStart((s32)g_pProgress->CurrentLevel());
+        }
+    }
+
+    if (!netGateInputs && g_pad.IsConnected() && Pad_MenuPressed((u16)~PAD_SELECT) && !g_cinePlayer.IsActive() &&
         !g_pStreamPlayer->IsBusy() && GAME_STATE->Game_CanOpenMenu() && !Game_IsPaused()) {
         if (SelectMenu_GetState() == SEL_CLOSED)
             SelectMenu_SetState(SEL_OPEN_WIPE);
         else if (SelectMenu_GetState() == SEL_INTERACTIVE)
             SelectMenu_SetState(SEL_CLOSE_HOLD);
     }
-    if (g_pad.IsConnected() && g_inputMgr.escPressed && !g_cinePlayer.IsActive() && !Map_IsOpen() &&
+    if (!netGateInputs && g_pad.IsConnected() && g_inputMgr.escPressed && !g_cinePlayer.IsActive() && !Map_IsOpen() &&
         !g_pStreamPlayer->IsBusy() && GAME_STATE->Game_CanOpenMenu() &&
         (SelectMenu_GetState() == SEL_CLOSED || SelectMenu_GetState() == SEL_SUPPRESSED) && !Game_IsPaused()) {
         g_gameFlags ^= GF_PAUSE_TOGGLE;
         PauseMenu_Open();
     }
-    if (g_pad.IsConnected() && g_inputMgr.pausePressed && !g_cinePlayer.IsActive() && !Map_IsOpen() &&
+    if (!netGateInputs && g_pad.IsConnected() && g_inputMgr.pausePressed && !g_cinePlayer.IsActive() && !Map_IsOpen() &&
         !g_pStreamPlayer->IsBusy() && GAME_STATE->Game_CanOpenMenu() && !Game_IsPaused() &&
         (SelectMenu_GetState() == SEL_CLOSED || SelectMenu_GetState() == SEL_SUPPRESSED)) {
         g_gameFlags ^= GF_PAUSE_TOGGLE;

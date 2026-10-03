@@ -3,6 +3,7 @@
 
 #include "perf_overlay.h"
 #include "../engine/game_state.h"
+#include "../engine/net.h" /* lockstep netplay stats on the F3 overlay */
 
 static int s_enabled;
 
@@ -113,7 +114,18 @@ int PerfOverlay_Lines(char lines[PERF_OVERLAY_MAX_LINES][PERF_OVERLAY_LINE_SIZE]
     SDL_snprintf(lines[1], PERF_OVERLAY_LINE_SIZE, "GAME %5.2f MS  WORST %5.2f", s_workMs, s_workWorstMs);
     SDL_snprintf(lines[2], PERF_OVERLAY_LINE_SIZE, "PRESENT %5.2f MS  LIMITER %5.2f MS", s_presentMs, s_limiterMs);
     SDL_snprintf(lines[3], PERF_OVERLAY_LINE_SIZE, "DRAWS %u  VERTICES %u", (unsigned)s_draws, (unsigned)s_vertices);
-    return 4;
+    int count = 4;
+    if (Net_IsActive()) {
+        NetStats st;
+        Net_GetStats(&st);
+        SDL_snprintf(lines[count++], PERF_OVERLAY_LINE_SIZE,
+                     "NET %s%s RTT %u MS BUF %d STALL %d", st.role, st.connected ? "" : " WAITING PEER",
+                     (unsigned)st.rttMs, st.bufferedFrames, st.stallEvents);
+        if (st.desync)
+            SDL_snprintf(lines[count++], PERF_OVERLAY_LINE_SIZE, "DESYNC! LOCAL %08X REMOTE %08X",
+                         (unsigned)st.localChecksum, (unsigned)st.remoteChecksum);
+    }
+    return count;
 }
 
 /* ---- the font ---- */

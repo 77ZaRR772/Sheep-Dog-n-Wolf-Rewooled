@@ -28,6 +28,7 @@ typedef struct GameOptions {
     int controller; /* OPTIONS_CONTROLLER_KEYBOARD or a controller index */
     int startLevel;
     char exeDir[512]; /* the game's data folder (--game-dir, saved as GameDir); "" : next to the executable */
+    char net[160];    /* lockstep multiplayer: "host[=port]" / "join=host[:port]" (--net-host / --net-join); "" : off */
 } GameOptions;
 
 extern GameOptions g_options;

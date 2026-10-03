@@ -158,6 +158,34 @@ file(GLOB JPEG_SRC CONFIGURE_DEPENDS
         )
 
 # ---------------------------------------------------------------------------
+# ENet: the reliable UDP transport of the lockstep netplay (src/engine/net.cpp)
+# ---------------------------------------------------------------------------
+
+add_library(enet STATIC
+        third_party/enet/callbacks.c
+        third_party/enet/compress.c
+        third_party/enet/host.c
+        third_party/enet/list.c
+        third_party/enet/packet.c
+        third_party/enet/peer.c
+        third_party/enet/protocol.c
+        $<$<PLATFORM_ID:Windows>:third_party/enet/win32.c>
+        $<$<NOT:$<PLATFORM_ID:Windows>>:third_party/enet/unix.c>
+        )
+
+target_include_directories(enet PUBLIC third_party/enet/include)
+
+if(MSVC)
+    target_compile_options(enet PRIVATE /W0)
+else()
+    target_compile_options(enet PRIVATE -w)
+endif()
+
+if(WIN32)
+    target_link_libraries(enet PUBLIC winmm ws2_32)
+endif()
+
+# ---------------------------------------------------------------------------
 # IJG libjpeg 6
 # ---------------------------------------------------------------------------
 
@@ -423,6 +451,7 @@ target_compile_definitions(SheepD3D PRIVATE
 
 target_link_libraries(SheepD3D PRIVATE
         SDL3::SDL3-static
+        enet
         )
 
 # ---------------------------------------------------------------------------

@@ -124,6 +124,13 @@ void Options_ParseArgs(GameOptions *o, int argc, char **argv)
             o->controller = strcmp(v, "keyboard") == 0 ? OPTIONS_CONTROLLER_KEYBOARD : atoi(v);
         } else if ((v = Options_Value(a, "level")) != 0) {
             o->startLevel = atoi(v);
+        } else if (Options_Flag(a, "net-host")) {
+            strncpy(o->net, "host", sizeof(o->net) - 1);
+            o->net[sizeof(o->net) - 1] = 0;
+        } else if ((v = Options_Value(a, "net-host")) != 0) {
+            snprintf(o->net, sizeof(o->net), "host=%s", v);
+        } else if ((v = Options_Value(a, "net-join")) != 0) {
+            snprintf(o->net, sizeof(o->net), "join=%s", v);
         }
     }
 }

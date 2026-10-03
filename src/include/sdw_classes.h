@@ -146,7 +146,11 @@ struct EmitterFlagBits;
 struct EmitterPerfumeParams;
 struct EmitterRiseParams;
 struct EmitterTrailParams;
+/* `struct FILE;` conflicts with glibc's `typedef struct _IO_FILE FILE;` in any TU that also pulls a real
+ * <stdio.h> (net.cpp does, via SDL3). Guard it: TUs that include stdio define SDW_HAVE_STDIO first. */
+#ifndef SDW_HAVE_STDIO
 struct FILE;
+#endif
 class FacingCamera;
 class FallingGate;
 class FallingGate2;
