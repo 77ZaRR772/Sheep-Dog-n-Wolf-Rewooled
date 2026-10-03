@@ -7,3 +7,4 @@ __pycache__/
 # CMake build folders (each holds a copy of the game's data, BUILDING.md section 3)
 /cmake-build-*/
 /build*/
+TODO.txt

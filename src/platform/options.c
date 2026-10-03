@@ -47,6 +47,7 @@ void Options_LoadSaved(GameOptions *o)
     Options_ReadInt(key, "Height", &o->height);
     Options_ReadInt(key, "Fullscreen", &o->fullscreen);
     Options_ReadInt(key, "Controller", &o->controller);
+    Options_ReadInt(key, "StartLevel", &o->startLevel);
     Options_ReadString(key, "GameDir", o->exeDir, sizeof(o->exeDir));
     Save_CloseKey(key);
 }
@@ -73,6 +74,7 @@ void Options_Save(const GameOptions *o)
     Options_WriteInt(key, "Height", o->height);
     Options_WriteInt(key, "Fullscreen", o->fullscreen);
     Options_WriteInt(key, "Controller", o->controller);
+    Options_WriteInt(key, "StartLevel", o->startLevel);
     Options_WriteString(key, "GameDir", o->exeDir);
     Save_CloseKey(key);
 }
