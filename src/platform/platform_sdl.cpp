@@ -154,6 +154,23 @@ int Platform_GetBasePath(char *out, int capacity)
     return 1;
 }
 
+#ifndef _WIN32
+extern "C" void Sdw_ResolvePath(const char *path, char *out, size_t size); /* crt_posix_compat.cpp */
+#endif
+
+int Platform_ResolvePath(const char *path, char *out, int capacity)
+{
+    if (!path || !out || capacity <= 0)
+        return 0;
+#ifdef _WIN32
+    /* Windows' file systems ignore case already */
+    return SDL_strlcpy(out, path, (size_t)capacity) < (size_t)capacity;
+#else
+    Sdw_ResolvePath(path, out, (size_t)capacity);
+    return SDL_strlen(out) + 1 < (size_t)capacity;
+#endif
+}
+
 int Platform_EnterBaseDir()
 {
     char path[4096];

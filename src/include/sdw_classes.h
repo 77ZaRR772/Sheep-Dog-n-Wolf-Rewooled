@@ -7771,7 +7771,7 @@ public:
     void Level_FinishScene(s32 success);
     void StartAttractDemo();
     s32 GotoScene(s8 scene);
-    char scenePath[128];                           // path prefix of the scene to load, built by Progress_BuildScenePath; g_pProgress itself is the path a
+    char scenePath[SDW_PATH_MAX];                           // path prefix of the scene to load, built by Progress_BuildScenePath; g_pProgress itself is the path a
     u32 field80;                                   // set to 1 by during start-up; just outside the saved record
     u8 timeKeeperBits[4];                          // SAVED. per-level (0..31) TimeKeeper reward bitset: set by Progress_AwardTimeKeeper, tested by Progre
     u8 levelDoneBits[4];                           // SAVED. per-level completion bitset: tested by Progress_IsLevelDone; set by SceneSheepPanel
@@ -9720,7 +9720,7 @@ public:
     u16 clipCount;                                 // entries in +0x134 (0x74 from MusicVoice.BSV)
     char **clipNames;                              // per-clip allocated entries from Load_MusicVoiceBank, used as file names by
     u16 currentClip;                               // clip index being loaded (g_pStreamPlayer id)
-    char path[512];                                // full clip path built + clip name; the loader thread argument. Length inferred from the
+    char path[SDW_PATH_MAX];                       // full clip path built + clip name; the loader thread argument. Length inferred from the
     s32 state;                                     // stream state machine (3 load-next, 5 fade-out, 6 wait-for-load...), per
     s32 pausedState;                               // state saved by on pause and restored on resume; zeroed by the ctor (0
     s32 autoPlay;                                  // 1 by ctor: StreamSound_Play after a load completes

@@ -6,7 +6,7 @@
 
 struct StringBank;
 
-u8 Jpeg_DecodeToRgb555Flipped(void *, u16 *);
+u8 Jpeg_DecodeToRgb555Flipped(void *, u16 *); /* jpeg_decode.cpp */
 u8 Jpeg_GetDimensions(void *, u32 *, u32 *);
 s32 Load_FreeMLT(StringBank *bank);
 int Load_MLT(char *path, StringBank *bank);

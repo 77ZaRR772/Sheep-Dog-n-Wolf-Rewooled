@@ -25,7 +25,7 @@ u8 Video_PlaySequence(FmvList *list)
     u8 resultValue;
     u32 index;
     u32 rateData;
-    char pathValue[256];
+    char pathValue[SDW_PATH_MAX];
     u8 bits;
     resultValue = 1;
     index = 0;

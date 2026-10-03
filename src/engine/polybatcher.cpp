@@ -73,7 +73,7 @@ struct TlVertexTex {
 #include "sdw_classes.h"
 
 #include "draw2d.h"
-char g_davTexturePath[0x80]; /* the .dav path of the loaded texture pages */
+char g_davTexturePath[SDW_PATH_MAX]; /* the .dav path of the loaded texture pages */
 char g_vdx7Magic[] = "VDX7"; /* the texture-page file signature */
 
 int PolyBatcher_CompareSortZ(RenderPoly **a, RenderPoly **b);
