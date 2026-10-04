@@ -44,6 +44,10 @@ int Platform_EnterBaseDir();
  * already use: src/platform/crt_posix_compat.cpp); a path that does not exist keeps its spelling. For code that opens
  * files without the game's fopen, such as SDL's loaders: SDL_IOFromFile(resolved, "rb"). 0 when out was too small. */
 int Platform_ResolvePath(const char *path, char *out, int capacity);
+/* A PNG file decoded to 32-bit RGBA (bytes R, G, B, A, rows packed, top row first), the path found as
+ * Platform_ResolvePath finds it; 0 when there is no such file or it is not a PNG. Free it with Platform_FreeImage. */
+unsigned char *Platform_LoadImageRGBA(const char *path, int *width, int *height);
+void Platform_FreeImage(unsigned char *pixels);
 void Platform_ShowMessage(const char *title, const char *message, int isError);
 /* A line in the log (SDL_Log: the terminal or CLion's Run window, the Console app on macOS), printf-style. For game
  * code: it cannot include SDL's headers, whose C runtime clashes with the game's own declarations (src/sdk/crt.h). */

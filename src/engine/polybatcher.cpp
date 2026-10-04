@@ -295,6 +295,91 @@ s32 PolyBatcher::CreateTexture(const char *fileName, u32 index, u32 width, u32 h
     return result;
 }
 
+/* The texture override of page `index` of the page file davPath, made by tools/retexture.py:
+ * <data folder>/retexture/<level folder>/page_NN.png, for <data folder>/Levels/<level folder>/<name>.DAV, RGBA with the
+ * usual alpha (opacity). Used when it
+ * is the page's shape at a whole multiple of its size (2x, 4x...): the page's UVs are fractions of it, so the models
+ * draw the same images, sharper. 0 when there is none, or it does not fit (said in the log). */
+static Texture *PolyBatcher_LoadPageOverride(D3DApp *renderer, const char *davPath, u32 index, u32 width, u32 height)
+{
+    char path[SDW_PATH_MAX];
+    s32 seps[3] = {-1, -1, -1}; /* the last three separators: before the file, the level folder, "Levels" */
+    s32 i, found = 0, w = 0, h = 0, err, row;
+    unsigned char *rgba;
+    Texture *page;
+    DDSURFACEDESC2 desc;
+    for (i = (s32)strlen(davPath) - 1; i >= 0 && found < 3; i--)
+        if (davPath[i] == '/' || davPath[i] == '\\')
+            seps[found++] = i;
+    if (found < 2)
+        return 0;
+    if (seps[2] >= 0)
+        snprintf(path, sizeof(path), "%.*s/retexture/%.*s/page_%02u.png", (int)seps[2], davPath,
+                 (int)(seps[0] - seps[1] - 1), davPath + seps[1] + 1, (unsigned)index);
+    else
+        snprintf(path, sizeof(path), "retexture/%.*s/page_%02u.png", (int)(seps[0] - seps[1] - 1), davPath + seps[1] + 1,
+                 (unsigned)index);
+    if (!(rgba = Platform_LoadImageRGBA(path, &w, &h)))
+        return 0;
+    if (!width || !height || w % (s32)width || h % (s32)height || w / (s32)width != h / (s32)height) {
+        Platform_Log("texture override %s: %dx%d is not a whole multiple of the page's %ux%u, not used", path, w, h,
+                     (unsigned)width, (unsigned)height);
+        Platform_FreeImage(rgba);
+        return 0;
+    }
+    page = new Texture(renderer, (u32)w, (u32)h, TEXFMT_RGBA8, &err);
+    if (err) {
+        delete page;
+        Platform_FreeImage(rgba);
+        return 0;
+    }
+    /* the PNG's alpha is the usual opacity; the game's is transparency (its blending is INVSRCALPHA / SRCALPHA and its
+     * alpha test drops high alpha), so it is flipped */
+    page->Surface_LockReadWrite(&desc);
+    for (row = 0; row < h; row++) {
+        u8 *to = (u8 *)desc.lpSurface + row * desc.lPitch;
+        const u8 *from = rgba + (size_t)row * w * 4;
+        s32 x;
+        for (x = 0; x < w * 4; x += 4) {
+            to[x] = from[x];
+            to[x + 1] = from[x + 1];
+            to[x + 2] = from[x + 2];
+            to[x + 3] = (u8)(255 - from[x + 3]);
+        }
+    }
+    page->Surface_Unlock();
+    Platform_FreeImage(rgba);
+    Platform_Log("texture override %s (%dx)", path, w / (s32)width);
+    return page;
+}
+
+/* page `index` of the page file at stream (its header read: wid x h texels of `format`): its override, or the disc's
+ * 16-bit texels. 0 when the texture cannot be made. */
+static Texture *PolyBatcher_ReadPage(D3DApp *renderer, BsStream &stream, const char *davPath, u32 index, u32 wid, u32 h,
+                                     u32 format)
+{
+    Texture *page = PolyBatcher_LoadPageOverride(renderer, davPath, index, wid, h);
+    DDSURFACEDESC2 desc;
+    u16 *pix;
+    u32 n;
+    s32 err;
+    if (page) {
+        stream.Skip((int)(wid * h * 2)); /* the disc's texels, replaced */
+        return page;
+    }
+    page = new Texture(renderer, wid, h, format & TEXFMT_PIXEL_MASK, &err);
+    if (err) {
+        delete page;
+        return 0;
+    }
+    page->Surface_LockReadWrite(&desc);
+    pix = (u16 *)desc.lpSurface;
+    for (n = 0; n < wid * h; n++)
+        *pix++ = stream.ReadU16(1);
+    page->Surface_Unlock();
+    return page;
+}
+
 /* reads the VDX7 texture-page file: the immediate pages first (format bits 0x1c == 4), each with its own
  * batch buffer, then the sorted pages (0x08 alpha blend, 0x10 additive), then four blank 4x4 pages. Returns the
  * number of pages read, 0 when the file is missing, not VDX7, or a texture cannot be created. */
@@ -334,14 +419,9 @@ s32 PolyBatcher::LoadTexturePages(const char *path)
             iPage = 0;
             /* the immediate pages (format bits 0x1c == 4) come first */
             do {
-                u32 numTexels;
-                u32 n;
-                DDSURFACEDESC2 *surfDesc;
-                u16 *pix;
                 u32 wid;
                 u32 format;
                 u32 h;
-                s32 err;
 
                 total++;
                 wid = abs(stream.ReadU16(1) - stream.ReadU16(1));
@@ -350,19 +430,8 @@ s32 PolyBatcher::LoadTexturePages(const char *path)
                 immediate = (format & TEXFMT_KIND_MASK) == TEXFMT_KIND_IMMEDIATE;
                 if (immediate == 1) {
                     Platform_Log("W: %u, H: %u,", wid, h);
-                    textures[iPage] = new Texture(renderer, wid, h, format & TEXFMT_PIXEL_MASK, &err);
-                    if (err)
+                    if (!(textures[iPage] = PolyBatcher_ReadPage(renderer, stream, path, iPage, wid, h, format)))
                         return 0;
-                    surfDesc = new DDSURFACEDESC2;
-                    textures[iPage]->Surface_LockReadWrite(surfDesc);
-                    pix = (u16 *)surfDesc->lpSurface;
-                    numTexels = wid * h;
-                    for (n = 0; n < numTexels; n++) {
-                        *pix = stream.ReadU16(1);
-                        pix++;
-                    }
-                    textures[iPage]->Surface_Unlock();
-                    delete surfDesc;
                     texStateFlags[iPage] = RSF_DITHER | RSF_TEXTURED | RSF_FILTER_LINEAR;
                     iPage++;
                 }
@@ -376,32 +445,16 @@ s32 PolyBatcher::LoadTexturePages(const char *path)
             /* back to the first sorted page's header (five u16s) */
             stream.Skip(-10);
             do {
-                u32 numTexels;
-                u32 n;
-                DDSURFACEDESC2 *surfDesc;
-                u16 *pix;
                 u32 wid;
                 u32 format;
                 u32 h;
-                s32 err;
 
                 total++;
                 wid = abs(stream.ReadU16(1) - stream.ReadU16(1));
                 h = abs(stream.ReadU16(1) - stream.ReadU16(1));
                 format = stream.ReadU16(1);
-                textures[iPage] = new Texture(renderer, wid, h, format & TEXFMT_PIXEL_MASK, &err);
-                if (err)
+                if (!(textures[iPage] = PolyBatcher_ReadPage(renderer, stream, path, iPage, wid, h, format)))
                     return 0;
-                surfDesc = new DDSURFACEDESC2;
-                textures[iPage]->Surface_LockReadWrite(surfDesc);
-                pix = (u16 *)surfDesc->lpSurface;
-                numTexels = wid * h;
-                for (n = 0; n < numTexels; n++) {
-                    *pix = stream.ReadU16(1);
-                    pix++;
-                }
-                textures[iPage]->Surface_Unlock();
-                delete surfDesc;
                 switch (format & TEXFMT_KIND_MASK) {
                     case TEXFMT_KIND_BLEND:
                         texStateFlags[iPage] = RSF_BLEND_ALPHA | RSF_TEXTURED | RSF_FILTER_LINEAR;

@@ -9823,7 +9823,7 @@ public:
 #ifdef SDW_EXTRA_TexScroll
     SDW_EXTRA_TexScroll
 #endif
-    u8 _pad000[0x4];
+    s32 scale;                                     // the page's size over the disc's: 1, or 2, 4... for a texture override
     s16 x;                                         // rect left in the texture page
     s16 y;                                         // rect top
     s16 w;                                         // rect width in texels
@@ -9832,7 +9832,7 @@ public:
     s16 srcY;                                      // 0: first backup row copied
     s16 srcW;                                      // = w; texels copied per row
     s16 srcH;                                      // = h; row count
-    s8 offset;                                     // current scroll offset in rows, (offset+step+H)%H each update
+    s16 offset;                                    // current scroll offset in rows, (offset+step*scale+H)%H each update
     s8 step;                                       // +1, or -1 when the list's reverse bit is set
     u16 texPage;                                   // index into g_pPolyBatcher->+0x14 texture table
 };

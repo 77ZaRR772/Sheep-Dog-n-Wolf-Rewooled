@@ -171,6 +171,38 @@ int Platform_ResolvePath(const char *path, char *out, int capacity)
 #endif
 }
 
+unsigned char *Platform_LoadImageRGBA(const char *path, int *width, int *height)
+{
+    char resolved[4096];
+    SDL_Surface *loaded, *rgba;
+    unsigned char *pixels = 0;
+    int row;
+    if (!Platform_ResolvePath(path, resolved, sizeof(resolved)))
+        return 0;
+    if (!(loaded = SDL_LoadPNG(resolved)))
+        return 0; /* most often: no such file, the normal case for a page without an override */
+    rgba = SDL_ConvertSurface(loaded, SDL_PIXELFORMAT_RGBA32);
+    SDL_DestroySurface(loaded);
+    if (!rgba) {
+        SDL_Log("SheepD3D: %s: %s", resolved, SDL_GetError());
+        return 0;
+    }
+    if ((pixels = (unsigned char *)SDL_malloc((size_t)rgba->w * rgba->h * 4)) != 0) {
+        for (row = 0; row < rgba->h; row++)
+            SDL_memcpy(pixels + (size_t)row * rgba->w * 4, (const unsigned char *)rgba->pixels + (size_t)row * rgba->pitch,
+                       (size_t)rgba->w * 4);
+        *width = rgba->w;
+        *height = rgba->h;
+    }
+    SDL_DestroySurface(rgba);
+    return pixels;
+}
+
+void Platform_FreeImage(unsigned char *pixels)
+{
+    SDL_free(pixels);
+}
+
 int Platform_EnterBaseDir()
 {
     char path[4096];

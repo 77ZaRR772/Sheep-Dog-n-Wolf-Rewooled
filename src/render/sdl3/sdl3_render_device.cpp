@@ -153,7 +153,8 @@ private:
 /* ---- textures ---- */
 struct Sdl3Texture {
     SDL_GPUTexture *gpu;
-    u16 *pixels; /* the page's 16-bit texels, rows packed; 0 for a frame capture (on the GPU only) */
+    u16 *pixels; /* the texels, rows packed: 16-bit, or 32-bit RGBA for TEXFMT_RGBA8 (Sdl3_TexelBytes); 0 for a frame
+                  * capture (on the GPU only) */
     u32 width, height, format;
     int dirty;         /* the texels changed since the last upload */
     int lockedToWrite; /* locked with write access: dirty at Unlock */
@@ -161,10 +162,20 @@ struct Sdl3Texture {
 };
 
 /* texels to RGBA8, as Direct3D reads the three formats (565 has alpha 1) */
+/* bytes per texel of a texture format */
+static u32 Sdl3_TexelBytes(u32 format)
+{
+    return format == TEXFMT_RGBA8 ? 4 : 2;
+}
+
 static void Sdl3_ConvertTexels(const Sdl3Texture *t, u8 *out)
 {
     u32 i, n = t->width * t->height;
     const u16 *p = t->pixels;
+    if (t->format == TEXFMT_RGBA8) {
+        SDL_memcpy(out, t->pixels, (size_t)n * 4); /* already what the GPU texture holds */
+        return;
+    }
     for (i = 0; i < n; i++, out += 4) {
         u32 c = p[i];
         switch (t->format) {
@@ -1277,7 +1288,7 @@ s32 Sdl3RenderDevice::CreateTexture(u32 w, u32 h, u32 format, RdTexture **out, u
     Sdl3Texture *t;
     SDL_GPUTextureCreateInfo info;
     *out = 0;
-    if (format != TEXFMT_RGB565 && format != TEXFMT_ARGB1555 && format != TEXFMT_ARGB4444)
+    if (format != TEXFMT_RGB565 && format != TEXFMT_ARGB1555 && format != TEXFMT_ARGB4444 && format != TEXFMT_RGBA8)
         return TEXRES_NO_PIXEL_FORMAT;
     if (!w)
         w = 1;
@@ -1286,7 +1297,7 @@ s32 Sdl3RenderDevice::CreateTexture(u32 w, u32 h, u32 format, RdTexture **out, u
     *outWidth = w;
     *outHeight = h;
     t = (Sdl3Texture *)SDL_calloc(1, sizeof(Sdl3Texture));
-    if (!t || !(t->pixels = (u16 *)SDL_calloc(w * h, 2))) {
+    if (!t || !(t->pixels = (u16 *)SDL_calloc(w * h, Sdl3_TexelBytes(format)))) {
         SDL_free(t);
         return TEXRES_OUT_OF_MEMORY;
     }
@@ -1323,7 +1334,7 @@ long Sdl3RenderDevice::LockTexture(RdTexture *texture, u32 access, RdLockedRect 
         t->lockedToWrite = 1;
     }
     out->pixels = t->pixels;
-    out->pitch = (s32)(t->width * 2);
+    out->pitch = (s32)(t->width * Sdl3_TexelBytes(t->format));
     out->width = t->width;
     out->height = t->height;
     return 0;
@@ -1344,7 +1355,7 @@ long Sdl3RenderDevice::CopyTexture(RdTexture *dstTexture, u32 x, u32 y, RdTextur
     Sdl3Texture *dst = (Sdl3Texture *)dstTexture, *src = (Sdl3Texture *)srcTexture;
     RdRect r;
     s32 row;
-    if (!dst || !src || !dst->pixels || !src->pixels)
+    if (!dst || !src || !dst->pixels || !src->pixels || Sdl3_TexelBytes(dst->format) != Sdl3_TexelBytes(src->format))
         return SDL3_E_FAIL;
     if (srcRect)
         r = *srcRect;
@@ -1357,9 +1368,13 @@ long Sdl3RenderDevice::CopyTexture(RdTexture *dstTexture, u32 x, u32 y, RdTextur
         r.bottom <= r.top || x + (u32)(r.right - r.left) > dst->width || y + (u32)(r.bottom - r.top) > dst->height)
         return SDL3_E_FAIL; /* BltFast's DDERR_INVALIDRECT */
     WaitUntilUnused(dst);
-    for (row = r.top; row < r.bottom; row++)
-        SDL_memmove(dst->pixels + (y + (u32)(row - r.top)) * dst->width + x, src->pixels + (u32)row * src->width + r.left,
-                    (size_t)(r.right - r.left) * 2);
+    {
+        u32 bytes = Sdl3_TexelBytes(src->format);
+        u8 *to = (u8 *)dst->pixels, *from = (u8 *)src->pixels;
+        for (row = r.top; row < r.bottom; row++)
+            SDL_memmove(to + ((y + (u32)(row - r.top)) * dst->width + x) * bytes,
+                        from + ((u32)row * src->width + (u32)r.left) * bytes, (size_t)(r.right - r.left) * bytes);
+    }
     dst->dirty = 1;
     return 0;
 }

@@ -5455,6 +5455,7 @@ enum TextureFormat {
     TEXFMT_RGB565 = 0x0,  // g_texRequestedFormat 0 accepts rBits 5 / gBits 6; format 0 copies 16-bit pixels unchanged
     TEXFMT_ARGB1555 = 0x1,  // 1 accepts 5/5 bits with an alpha mask; format 1 repacks 565 -> 1555
     TEXFMT_ARGB4444 = 0x2,  // 2 accepts 4/4 bits with an alpha mask; format 2 repacks to 4444 (HoleFX mask texture doc: format-2 = ARGB4444)
+    TEXFMT_RGBA8 = 0x3,  // the port's 32-bit RGBA (bytes R, G, B, A): texture-page overrides (PolyBatcher::LoadTexturePages, retexture/)
 };
 
 // Texture::Texture *result codes (engine/texture.cpp)

@@ -33,6 +33,7 @@ u32 Anim_Start(Instance *inst, Animator *animator, u16 id, u32 opts);
     void Surface_LockForRead(DDSURFACEDESC2 *desc);                       \
     long Surface_LockForWrite(DDSURFACEDESC2 *desc);
 #include "sdw_classes.h"
+#include "../engine/tex_scroll.h"
 #define SDW_INLINE_INSTANCE_INST 1
 #include "instance_inlines.h"
 #undef SDW_INLINE_INSTANCE_INST
@@ -467,87 +468,16 @@ ScnObject *RollingCarpet_Create(void *record)
 
 void RollingCarpet::InitBeltScroll(s8 step)
 {
-    struct {
-        s32 result;
-        Texture *source;
-        RECT rect;
-        uptr *entries;
-        u16 pad, count;
-        DavBitmapRec *rects, *rec;
-    } w;
-    w.rects = g_pDav->header->dir->bitmaps;
-    w.entries = IdList_FindWithCount(DAV_IDI_ITPDESS_, &w.count);
-    w.rec = &w.rects[*(u16 *)w.entries[0]];
-    g_rollingCarpetBeltScroll.y = w.rec->v;
-    g_rollingCarpetBeltScroll.h = w.rec->height;
-    g_rollingCarpetBeltScroll.x = w.rec->u;
-    g_rollingCarpetBeltScroll.w = w.rec->width;
-    g_rollingCarpetBeltScroll.texPage = w.rec->page;
-    g_rollingCarpetBeltScroll.srcY = 0;
-    g_rollingCarpetBeltScroll.srcH = w.rec->height;
-    g_rollingCarpetBeltScroll.srcX = 0;
-    g_rollingCarpetBeltScroll.srcW = w.rec->width;
-    g_rollingCarpetBeltScroll.offset = 0;
-    g_rollingCarpetBeltScroll.step = step;
-    w.source = g_pPolyBin->textures[g_rollingCarpetBeltScroll.texPage];
-    g_rollingCarpetBeltBackup = new Texture(g_pD3DAppMain, g_rollingCarpetBeltScroll.w, g_rollingCarpetBeltScroll.h,
-                                            w.source->GetFormat(), &w.result);
-    w.rect.top = w.rec->v;
-    w.rect.bottom = w.rec->v + w.rec->height;
-    w.rect.left = w.rec->u;
-    w.rect.right = w.rec->u + w.rec->width;
-    g_renderDevice->CopyTexture(g_rollingCarpetBeltBackup->GetSurface(), 0, 0, w.source->GetSurface(), (RdRect *)&w.rect);
+    uptr *entries;
+    u16 count;
+    entries = IdList_FindWithCount(DAV_IDI_ITPDESS_, &count);
+    g_rollingCarpetBeltBackup =
+        TexScroll_Setup(&g_rollingCarpetBeltScroll, &g_pDav->header->dir->bitmaps[*(u16 *)entries[0]], step);
 }
 
 /* The callers pass a short; only its low signed byte is stored. */
 void RollingCarpet::ScrollBelt(s16 rows)
 {
-    struct {
-        s32 topRow;
-        Texture *tex;
-        s32 startCol, startRow, width, rowEnd;
-        u16 *backupPixels;
-        DDSURFACEDESC2 *texDesc;
-        s32 row;
-        DDSURFACEDESC2 *backupDesc;
-        s32 position;
-        u16 *pixels;
-    } w;
-    w.tex = g_pPolyBin->textures[g_rollingCarpetBeltScroll.texPage];
     g_rollingCarpetBeltScroll.step = (s8)rows;
-    g_rollingCarpetBeltScroll.offset = (s8)((g_rollingCarpetBeltScroll.offset + g_rollingCarpetBeltScroll.step +
-                                             g_rollingCarpetBeltBackup->GetHeight()) %
-                                            g_rollingCarpetBeltBackup->GetHeight());
-    w.startRow = g_rollingCarpetBeltScroll.srcY;
-    w.rowEnd = g_rollingCarpetBeltScroll.srcH;
-    w.startCol = g_rollingCarpetBeltScroll.srcX;
-    w.width = g_rollingCarpetBeltScroll.srcW;
-    w.texDesc = new DDSURFACEDESC2;
-    w.backupDesc = new DDSURFACEDESC2;
-    w.tex->Surface_LockForWrite(w.texDesc);
-    g_rollingCarpetBeltBackup->Surface_LockForRead(w.backupDesc);
-    w.pixels = (u16 *)w.texDesc->lpSurface;
-    w.backupPixels = (u16 *)w.backupDesc->lpSurface;
-    w.rowEnd -= g_rollingCarpetBeltScroll.offset;
-    w.position = (g_rollingCarpetBeltScroll.y + g_rollingCarpetBeltScroll.offset) * w.tex->GetWidth() +
-                 g_rollingCarpetBeltScroll.x;
-    for (w.row = w.startRow; w.row < w.rowEnd; w.row++) {
-        memcpy(w.pixels + w.position, w.backupPixels + w.row * g_rollingCarpetBeltBackup->GetWidth(),
-               g_rollingCarpetBeltScroll.srcW * 2);
-        w.position += w.tex->GetWidth();
-    }
-    if (g_rollingCarpetBeltScroll.offset != 0) {
-        w.startRow = w.rowEnd;
-        w.rowEnd = g_rollingCarpetBeltScroll.srcH;
-        w.position = g_rollingCarpetBeltScroll.y * w.tex->GetWidth() + g_rollingCarpetBeltScroll.x;
-        for (w.topRow = w.startRow; w.topRow < w.rowEnd; w.topRow++) {
-            memcpy(w.pixels + w.position, w.backupPixels + w.topRow * g_rollingCarpetBeltBackup->GetWidth(),
-                   g_rollingCarpetBeltScroll.srcW * 2);
-            w.position += w.tex->GetWidth();
-        }
-    }
-    w.tex->Surface_Unlock();
-    g_rollingCarpetBeltBackup->Surface_Unlock();
-    delete w.texDesc;
-    delete w.backupDesc;
+    TexScroll_Step(&g_rollingCarpetBeltScroll, g_rollingCarpetBeltBackup);
 }
