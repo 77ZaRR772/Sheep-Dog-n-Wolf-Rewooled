@@ -86,6 +86,19 @@ void Platform_VoiceSetFrequency(int voice, unsigned hz);
 void Platform_VoiceSetNotify(int voice, const unsigned *offsets, int count, int tag);
 unsigned Platform_AudioTakeNotified(); /* the notified tags since the last call, as a bit mask */
 
+/* ---- .wav files (wav_sdl.cpp): read whole by SDL_LoadWAV_IO, for src/engine/wave_file.cpp (WaveFile), on every
+ * platform - no WINMM mmio. The samples are in a format a voice plays: 8-bit unsigned or 16-bit signed little-endian,
+ * mono or stereo (other encodings SDL reads are converted to 16-bit). ---- */
+struct PlatformWav {
+    void *data;         /* the 'data' chunk's samples; Platform_WavFree */
+    unsigned bytes;     /* their size, whole sample frames */
+    int channels, bits, rate;
+    unsigned riffBytes; /* the RIFF chunk's size field (what mmioDescend put in MMCKINFO.cksize) */
+};
+/* the file at `path` (memory 0), or the RIFF image of memoryBytes bytes at `memory`; 1 on success, else 0 (logged) */
+int Platform_WavLoad(const char *path, const void *memory, unsigned memoryBytes, struct PlatformWav *out);
+void Platform_WavFree(void *data);
+
 int Platform_JoystickCount();
 /* Waits up to timeoutMs, handling events, until SDL lists controller `index`: controllers are reported asynchronously
  * (on macOS only once events are handled), so right after start-up the list can still be empty. 1 when it is there. */

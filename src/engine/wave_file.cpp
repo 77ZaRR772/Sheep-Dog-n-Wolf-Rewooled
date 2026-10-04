@@ -1,17 +1,18 @@
-#define SDW_MEMBERS_WaveFile                                                                                    \
-    WaveFile(); /* WaveFile_Construct */ /* The two halves of Open, forced inline (see the header). */ \
-    __forceinline s32 OpenDisk(char *name);                                                                     \
-    __forceinline s32 OpenMemory(char *name, u32 size);
+#define SDW_MEMBERS_WaveFile WaveFile(); /* WaveFile_Construct */
 #include "sdw_classes.h"
 
 #include "../sdk/win32.h"
 #include "../sdk/mmsystem.h"
 #include "../sdk/crt.h"
 
+/* The .wav is read by SDL3 (src/platform/wav_sdl.cpp, SDL_LoadWAV_IO), the same on every platform: the original's WINMM
+ * mmio calls reached the real winmm.dll on Windows, whose byte-packed MMIOINFO did not match the game's declaration on
+ * 64-bit, and every sound came out silent there. */
+#include "../platform/platform.h"
+
 /* the RIFF WAVE chunk ids, named here: the SDK has no constants for them (its samples write mmioFOURCC at each use) */
 #define FOURCC_DATA mmioFOURCC('d', 'a', 't', 'a')
 #define FOURCC_WAVE mmioFOURCC('W', 'A', 'V', 'E')
-#define FOURCC_FMT mmioFOURCC('f', 'm', 't', ' ')
 
 void *operator new(uptr);
 void operator delete(void *);
@@ -21,6 +22,11 @@ void operator delete(void *);
 WaveFile::WaveFile()
 {
     format = 0;
+    samples = 0;
+    sampleBytes = 0;
+    readPos = 0;
+    memset(&ckData, 0, sizeof ckData);
+    memset(&ckRiff, 0, sizeof ckRiff);
 }
 
 WaveFile::~WaveFile()
@@ -32,164 +38,102 @@ WaveFile::~WaveFile()
     }
 }
 
-/* opens a .wav file (fromMemory 0) or `size` bytes of RIFF image at name (fromMemory 1, the 'MEM ' IOProc), parses the
- * header into ckRiff / format and descends to the 'data' chunk. */
-__forceinline s32 WaveFile::OpenDisk(char *name)
-{
-    s32 hr = E_FAIL;
-    HMMIO h;
-
-    h = mmioOpenA(name, 0, MMIO_ALLOCBUF | MMIO_READ);
-    if (h) {
-        if ((hr = ReadRiffHeader(h, &ckRiff, &format)) >= 0) {
-            hmmio = h;
-            hr = S_OK;
-        } else {
-            mmioClose(h, 0);
-        }
-    }
-    return hr;
-}
-
-__forceinline s32 WaveFile::OpenMemory(char *name, u32 size)
-{
-    s32 hr = E_FAIL;
-    HMMIO h;
-    MMIOINFO info;
-
-    memset(&info, 0, sizeof info);
-    info.pchBuffer = name;
-    info.cchBuffer = size;
-    info.fccIOProc = FOURCC_MEM;
-    h = mmioOpenA(0, &info, MMIO_READ);
-    if (h) {
-        if ((hr = ReadRiffHeader(h, &ckRiff, &format)) >= 0) {
-            hmmio = h;
-            hr = S_OK;
-        } else {
-            mmioClose(h, 0);
-        }
-    }
-    return hr;
-}
-
+/* opens a .wav file (fromMemory 0) or `size` bytes of RIFF image at name (fromMemory 1: a .SND bank entry), reads its
+ * format into `format` and its whole 'data' chunk into `samples`, and rewinds to the start of the samples. */
 s32 WaveFile::Open(char *name, u8 fromMemory, u32 size)
 {
-    s32 hr;
+    PlatformWav wav;
+    s32 hr = E_FAIL;
 
     Close();
     if (format) {
         delete format;
         format = 0;
     }
-    if (!fromMemory)
-        hr = OpenDisk(name);
-    else
-        hr = OpenMemory(name, size);
-    if (hr >= 0)
-        hr = ResetFile();
-    return hr;
-}
-
-/* seeks back to the start of the RIFF payload and descends into 'data' again (restoring ckData.cksize). */
-s32 WaveFile::ResetFile()
-{
-    MMCKINFO *riff = &ckRiff;
-    MMCKINFO *ck = &ckData;
-    s32 hr = E_FAIL;
-
-    if (mmioSeek(hmmio, riff->dwDataOffset + 4, SEEK_SET) != -1) {
-        ck->ckid = FOURCC_DATA;
-        if (mmioDescend(hmmio, ck, riff, MMIO_FINDCHUNK) == 0)
-            return S_OK;
+    if (Platform_WavLoad(fromMemory ? 0 : name, fromMemory ? name : 0, size, &wav)) {
+        /* the 18-byte WAVEFORMATEX the header parser made: PCM, as the voice plays it */
+        format = (WAVEFORMATEX *)operator new(18);
+        if (format) {
+            format->wFormatTag = WAVE_FORMAT_PCM;
+            format->nChannels = (u16)wav.channels;
+            format->nSamplesPerSec = (u32)wav.rate;
+            format->wBitsPerSample = (u16)wav.bits;
+            format->nBlockAlign = (u16)(wav.channels * wav.bits / 8);
+            format->nAvgBytesPerSec = format->nSamplesPerSec * format->nBlockAlign;
+            format->cbSize = 0;
+            samples = (u8 *)wav.data;
+            sampleBytes = wav.bytes;
+            /* the two chunk descriptors as mmioDescend filled them; only the sizes are read (ckRiff.cksize by
+             * StreamSound::ServiceNotify, ckData.cksize by Read and the sounds' Create) */
+            ckRiff.ckid = FOURCC_RIFF;
+            ckRiff.cksize = wav.riffBytes;
+            ckRiff.fccType = FOURCC_WAVE;
+            ckRiff.dwDataOffset = 8;
+            ckRiff.dwFlags = 0;
+            ckData.ckid = FOURCC_DATA;
+            ckData.fccType = 0;
+            ckData.dwDataOffset = 0;
+            ckData.dwFlags = 0;
+            hr = ResetFile();
+        } else {
+            Platform_WavFree(wav.data);
+        }
     }
     return hr;
 }
 
-s32 WaveFile::Read(u32 size, u8 *dest, u32 *read)
+/* goes back to the first sample and restores ckData.cksize (the bytes left to read). */
+s32 WaveFile::ResetFile()
 {
-    return ReadMmio(hmmio, size, dest, &ckData, read);
-}
-
-/* closes the handle but neither frees `format` nor clears hmmio. */
-s32 WaveFile::Close()
-{
-    mmioClose(hmmio, 0);
+    if (!samples)
+        return E_FAIL;
+    readPos = 0;
+    ckData.cksize = sampleBytes;
     return S_OK;
 }
 
-/* the DX7 WaveReadFile: copies up to min(size, ck->cksize) bytes through the mmio buffer. */
-s32 WaveFile::ReadMmio(HMMIO h, u32 size, u8 *dest, MMCKINFO *ck, u32 *read)
+/* the DX7 WaveReadFile: copies min(size, ckData.cksize) bytes and takes them off ckData.cksize. */
+s32 WaveFile::Read(u32 size, u8 *dest, u32 *read)
 {
-    MMIOINFO info;
-    s32 hr = E_FAIL;
     u32 n;
-    u32 i;
 
     *read = 0;
-    if (mmioGetInfo(h, &info, 0) == 0) {
-        n = size;
-        if (n > ck->cksize)
-            n = ck->cksize;
-        ck->cksize -= n;
-        for (i = 0; i < n; i++) {
-            if (info.pchNext == info.pchEndRead) {
-                if (mmioAdvance(h, &info, MMIO_READ) != 0)
-                    return E_FAIL;
-                if (info.pchNext == info.pchEndRead)
-                    return E_FAIL;
-            }
-            dest[i] = *info.pchNext;
-            info.pchNext++;
-        }
-        if (mmioSetInfo(h, &info, 0) == 0) {
-            *read = n;
-            hr = S_OK;
-        }
-    }
-    return hr;
+    if (!samples)
+        return E_FAIL;
+    n = size;
+    if (n > ckData.cksize)
+        n = ckData.cksize;
+    if (n > sampleBytes - readPos) /* cannot happen while cksize and readPos move together; a guard */
+        n = sampleBytes - readPos;
+    memcpy(dest, samples + readPos, n);
+    readPos += n;
+    ckData.cksize -= n;
+    *read = n;
+    return S_OK;
 }
 
-s32 WaveFile::ReadRiffHeader(HMMIO__ *h, MMCKINFO *riff, WAVEFORMATEX **format)
+/* frees the samples (the original closed the mmio handle); neither frees `format` nor clears the chunk descriptors. A
+ * second Close (Open closes first) does nothing. */
+s32 WaveFile::Close()
 {
-    s32 result = E_FAIL;
-    PCMWAVEFORMAT pcm;
-    MMCKINFO chunk;
-    *format = 0;
-    if (mmioDescend(h, riff, 0, 0) == 0 && riff->ckid == FOURCC_RIFF && riff->fccType == FOURCC_WAVE) {
-        chunk.ckid = FOURCC_FMT;
-        if (mmioDescend(h, &chunk, riff, MMIO_FINDCHUNK) == 0 && chunk.cksize >= 16 &&
-            mmioRead(h, (char *)&pcm, 16) == 16) {
-            if (pcm.wFormatTag == WAVE_FORMAT_PCM) {
-                *format = (WAVEFORMATEX *)operator new(18);
-                if (*format) {
-                    *(PCMWAVEFORMAT *)*format =
-                        pcm;
-                    (*format)->cbSize = 0;
-                    result = S_OK;
-                }
-            } else {
-                u32 extra = 0;
-                if (mmioRead(h, (char *)&extra, 2) == 2) {
-                    *format = (WAVEFORMATEX *)operator new(18 + extra);
-                    if (*format) {
-                        *(PCMWAVEFORMAT *)*format =
-                            pcm;
-                        (*format)->cbSize = (u16)extra;
-                        if (mmioRead(h, (char *)*format + 18, extra) != extra) {
-                            operator delete(*format);
-                            *format = 0;
-                        } else
-                            result = S_OK;
-                    }
-                }
-            }
-            if (result == S_OK && mmioAscend(h, &chunk, 0) != 0) {
-                operator delete(*format);
-                result = E_FAIL;
-                *format = 0;
-            }
-        }
+    if (samples) {
+        Platform_WavFree(samples);
+        samples = 0;
     }
-    return result;
+    sampleBytes = 0;
+    readPos = 0;
+    return S_OK;
+}
+
+/* the lip-sync meter's read (StreamSound::GetVoiceAmplitude): up to `size` bytes of samples at `offset`, without moving
+ * the read position. The original seeked the mmio file there, read and seeked back - in FILE offsets, so it sampled a
+ * header's length (44 bytes, a few samples) before the play position. Returns the bytes copied, 0 past the end. */
+u32 WaveFile::ReadAt(u32 offset, u8 *dest, u32 size)
+{
+    if (!samples || offset >= sampleBytes)
+        return 0;
+    if (size > sampleBytes - offset)
+        size = sampleBytes - offset;
+    memcpy(dest, samples + offset, size);
+    return size;
 }

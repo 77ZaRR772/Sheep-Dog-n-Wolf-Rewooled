@@ -298,7 +298,6 @@ if(WIN32)
     target_link_libraries(SheepD3D PRIVATE
             ijg
             crt_compat
-            winmm
             kernel32
             user32
             gdi32
@@ -406,15 +405,16 @@ target_sources(SheepD3D PRIVATE
         src/platform/platform_sdl.cpp
         src/platform/platform_audio_sdl.cpp
         src/platform/dsound_sdl.cpp
+        src/platform/wav_sdl.cpp
         src/render/sdl3/sdl3_render_device.cpp
         )
 
-# the Windows, C runtime and multimedia-I/O names the game code calls, where Windows does not provide them
+# the Windows and C runtime names the game code calls, where Windows does not provide them (the .wav files are read by
+# SDL3 on every platform: src/platform/wav_sdl.cpp)
 if(NOT WIN32)
     target_sources(SheepD3D PRIVATE
             src/platform/win32_sdl_compat.cpp
             src/platform/crt_posix_compat.cpp
-            src/platform/mmio_posix_compat.cpp
             )
 endif()
 
