@@ -3,6 +3,7 @@
 #include <SDL3/SDL_main.h> /* main() below is the entry point on every platform (SDL provides WinMain on Windows) */
 
 #include "platform.h"
+#include "save_store.h"
 #include "app_icon.h"
 #include "../render/perf_overlay.h"
 
@@ -20,9 +21,37 @@ static SDL_Window *s_window;
 static unsigned s_flags;
 static int s_wheel; /* the mouse wheel since the last Platform_ReadMouse */
 
+/* SDL's log, also written to SheepD3D.log in the save folder (save_store.h), started afresh every run: on Windows the
+ * game has no console, so the file is the only place a player can find SDL's errors. */
+static SDL_IOStream *s_logFile;
+static SDL_LogOutputFunction s_logDefault;
+static void *s_logDefaultData;
+
+static void SDLCALL Platform_LogOutput(void *userdata, int category, SDL_LogPriority priority, const char *message)
+{
+    (void)userdata;
+    if (s_logFile) {
+        SDL_IOprintf(s_logFile, "%s\n", message);
+        SDL_FlushIO(s_logFile);
+    }
+    s_logDefault(s_logDefaultData, category, priority, message);
+}
+
+static void Platform_OpenLog()
+{
+    char path[1024];
+    const char *dir = Save_Dir();
+    SDL_CreateDirectory(dir);
+    SDL_snprintf(path, sizeof(path), "%s/SheepD3D.log", dir);
+    s_logFile = SDL_IOFromFile(path, "w");
+    SDL_GetLogOutputFunction(&s_logDefault, &s_logDefaultData);
+    SDL_SetLogOutputFunction(Platform_LogOutput, 0);
+}
+
 int Platform_Init(const char *className, int iconResource)
 {
     char icon[16];
+    Platform_OpenLog();
     /* the original's window is not DPI aware: Windows scales it */
     SDL_SetHint("SDL_WINDOWS_DPI_AWARENESS", "unaware");
 #ifdef SDL_PLATFORM_WINDOWS
