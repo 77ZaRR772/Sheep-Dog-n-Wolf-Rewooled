@@ -68,6 +68,9 @@ void CreditsManager::PostLoadInit()
     color = PropertyU32(properties, 0);
     textJust = (u8)PropertyU32(properties, 4);
     text = Text_GetClassString((u8)PropertyU32(properties, 8));
+    if (g_pProgress->CurrentLevel() == SCENE_INTRO && PropertyU32(properties, 8) == 1) {
+        text = "Infogrames and the Sheep Raider community presents";
+    }
     timeAppearMs = (u16)PropertyU32(properties, 12);
     timeDisappearMs = (u16)PropertyU32(properties, 16);
     active = 0;
