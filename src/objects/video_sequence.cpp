@@ -18,13 +18,9 @@ extern HWND__ *g_hGameWindow;
 
 u8 Video_PlaySequence(FmvList *list)
 {
-#ifndef _WIN32
     (void)list;
     return 1; /* DirectShow/Indeo FMVs have no SDL3 decoder; skip them without disturbing SDL audio. */
-#else
-    (void)list;
-    return 1;
-    /**
+#if 0 /* the original DirectShow player, kept for an SDL3 version: it deletes and recreates the sound device */
     u8 resultValue;
     u32 index;
     u32 rateData;
@@ -53,6 +49,6 @@ u8 Video_PlaySequence(FmvList *list)
     CoUninitialize();
     g_pSoundSystem = new SoundDevice;
     g_pSoundSystem->Init(g_hGameWindow, rateData, bits);
-    return resultValue;**/
+    return resultValue;
 #endif
 }
