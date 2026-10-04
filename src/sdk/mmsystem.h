@@ -33,7 +33,11 @@ struct WAVEFORMATEX { /* mmreg.h, packed: 0x12 bytes */
 typedef HMMIO__ *HMMIO;
 typedef UINT MMRESULT;
 
-struct MMIOINFO { /* mmsystem.h, 0x48 bytes */
+/* byte-packed, as the SDK's mmsystem.h declares it (pshpack1.h): on x64 htask is at +0x14 and pchBuffer at +0x20, 100
+ * bytes in all. Natural alignment would put them at +0x18 and +0x28, and the real WINMM (Windows) would read the
+ * pointers from the wrong place, so no wave would open. */
+#pragma pack(push, 1)
+struct MMIOINFO {
     DWORD dwFlags;
     u32 fccIOProc;
     void *pIOProc;
@@ -51,6 +55,8 @@ struct MMIOINFO { /* mmsystem.h, 0x48 bytes */
     DWORD dwReserved2;
     HMMIO hmmio;
 };
+#pragma pack(pop)
+static_assert(sizeof(MMIOINFO) == 100, "MMIOINFO must match WINMM's x64 layout");
 
 /* ReadRiffHeader's declarations */
 struct PCMWAVEFORMAT {

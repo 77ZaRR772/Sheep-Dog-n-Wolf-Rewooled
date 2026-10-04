@@ -74,7 +74,7 @@ s32 PackJpeg::SelectAndFetch(const char *name, void *out)
 }
 s32 PackJpeg::Open(const char *pathNoExt)
 {
-    char path[64];
+    char path[SDW_PATH_MAX];
     Str_Concat2(path, pathNoExt, ".SDW");
     file = fopen(path, "rb");
     if (file) {

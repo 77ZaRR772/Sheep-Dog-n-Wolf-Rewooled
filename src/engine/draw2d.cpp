@@ -76,9 +76,9 @@ class Texture;
 #undef SDW_INLINE_D3DAPP_SETSTATEFLAGSINLINE_U32
 
 /* The constructed globals are defined further down, in the order of their static initialisers. ---- */
-char g_musicsPath[256];
+char g_musicsPath[SDW_PATH_MAX];
 SoundDevice *g_pSoundSystem;
-char g_dirBonusGame[256];    /* exeDir + ".\Bonus\" */
+char g_dirBonusGame[SDW_PATH_MAX];    /* exeDir + ".\Bonus\" */
 /* g_matUnk6d5428 (constructed, below) */
 u8 g_sharedScratch[512 / 4 * sizeof(void *)]; /* shared scratch (collision, camera, shadow, text...); room for the same number of pointers on 64-bit */
 /* the second 512-byte scratch: the ping-pong vertex buffer of the Poly_Clip* chain and the second merge
@@ -92,19 +92,19 @@ u8 g_clipTriBuffer[0x200 / 4 * sizeof(void *)]; /* also a merge buffer of triang
 /* 3072 bytes no instruction refers to. Genuinely opaque: nothing reads or writes them, so neither their type nor their
  * name can be recovered; kept as bytes. */
 u8 g_unref6d5868[0xc00];
-char g_pathScene[256];
+char g_pathScene[SDW_PATH_MAX];
 D3DApp *g_pD3DAppMain;
 /* g_textCatalog (constructed, below) */
-char g_introDir[256];
+char g_introDir[SDW_PATH_MAX];
 u32 g_maxImmediateTriangles;
-char g_pathWheelDir[256];
+char g_pathWheelDir[SDW_PATH_MAX];
 /* g_inputMgr (constructed, below) */
-char g_voiceDir[256];
-char g_pathEnding[256];
-char g_pathDemoDir[256];
-char g_levelPathFmt[256]; /* exeDir + ".\Levels\Lvl-%02d\Lvl-%02d" */
-char g_dirReference[256];
-char g_pathFendDir[256];
+char g_voiceDir[SDW_PATH_MAX];
+char g_pathEnding[SDW_PATH_MAX];
+char g_pathDemoDir[SDW_PATH_MAX];
+char g_levelPathFmt[SDW_PATH_MAX]; /* exeDir + ".\Levels\Lvl-%02d\Lvl-%02d" */
+char g_dirReference[SDW_PATH_MAX];
+char g_pathFendDir[SDW_PATH_MAX];
 HWND__ *g_hGameWindow;
 Frustrum *g_pViewFrustum;
 PolyBatcher *g_pPolyBin;

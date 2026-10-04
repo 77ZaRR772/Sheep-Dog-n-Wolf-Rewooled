@@ -15,7 +15,7 @@ s32 File_Close(FileHandle *h);
 /* ---- globals defined here ---- */
 s32 g_fileLastSize = 1;  /* size of the last file File_Open opened */
 s32 g_fileBytesRead = 1;
-char g_filePath[0x104] = {0}; /* base directory + name, built by File_Open */
+char g_filePath[SDW_PATH_MAX] = {0}; /* base directory + name, built by File_Open */
 char g_fileBaseDir[4] = {0};  /* prefix File_Open puts before every name; never written: "" */
 
 /* opens g_fileBaseDir + name read-only (O_BINARY), fills h and returns the size, or -1. */
