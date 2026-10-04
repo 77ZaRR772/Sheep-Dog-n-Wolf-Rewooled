@@ -201,7 +201,7 @@ void Catapult::UpdateBucketArmed()
 }
 void Catapult::UpdateArmAngle()
 {
-    armAngle = 0xe60 + (power * 0x140 >> 10);
+    armAngle = 0xe60 + (power * 0x140 / 1024);
 }
 void Catapult::SetArmPose(s16 angle)
 {

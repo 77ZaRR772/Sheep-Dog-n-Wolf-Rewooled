@@ -248,7 +248,6 @@ int main(int argc, char **argv)
     GameOptions options;
     Options_SetDefaults(&options);
     Options_LoadSaved(&options);
-    options.startLevel = -1;
 
     std::vector<const RendererChoice *> renderers = Launcher_AvailableRenderers();
     int rendererIndex = 0;
@@ -261,6 +260,9 @@ int main(int argc, char **argv)
         if (resolutions[i].w == options.width && resolutions[i].h == options.height)
             resolutionIndex = (int)i;
     int sceneIndex = 0;
+    for (int i = 0; i < (int)(sizeof(s_scenes) / sizeof(s_scenes[0])); i++)
+        if (s_scenes[i].id == options.startLevel)
+            sceneIndex = i;
     bool fullscreen = options.fullscreen != 0;
     bool pickingFolder = false;
     bool hasGameData = Launcher_HasGameData(options.exeDir[0] ? options.exeDir : Launcher_DefaultGameDir().c_str());

@@ -18,6 +18,7 @@
 #include "sdw_types.h"
 
 void PerfOverlay_Toggle(); /* F3 (src/platform/platform_sdl.cpp) */
+void CamDebug_Toggle();     /* F5 (src/platform/platform_sdl.cpp) */
 int PerfOverlay_Enabled();
 
 /* the timing points: FrameStart when the limiter's wait ends (the game's work begins); PresentBegin / PresentEnd
