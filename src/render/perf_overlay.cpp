@@ -2,6 +2,7 @@
 #include <SDL3/SDL.h>
 
 #include "perf_overlay.h"
+#include "../engine/game_state.h"
 
 static int s_enabled;
 
@@ -33,6 +34,11 @@ void PerfOverlay_Toggle()
     s_shown = 0; /* start a fresh window: nothing stale on screen */
     SDL_zero(s_window);
 }
+
+void CamDebug_Toggle() {
+    g_camDebugMode = (g_camDebugMode == 2) ? 0 : 2; //0 - game cam, 2 - freecam
+}
+
 
 int PerfOverlay_Enabled()
 {

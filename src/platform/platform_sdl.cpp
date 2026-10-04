@@ -101,6 +101,8 @@ unsigned Platform_PollEvents()
                 /* the performance overlay (src/render/perf_overlay.h) */
                 if (e.key.key == SDLK_F3 && !e.key.repeat)
                     PerfOverlay_Toggle();
+                if (e.key.key == SDLK_F5 && !e.key.repeat)
+                    CamDebug_Toggle();
                 break;
         }
     }

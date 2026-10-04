@@ -9,3 +9,4 @@ __pycache__/
 /build*/
 # The tools' Python environment (tools/requirements.txt)
 /tools/.venv/
+TODO.txt
