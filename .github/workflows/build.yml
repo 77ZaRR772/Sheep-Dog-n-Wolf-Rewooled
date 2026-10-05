@@ -1,6 +1,7 @@
 # Builds the game and the launcher for Linux, Windows and macOS (Release) on every push and pull request, and uploads
-# a zip per platform as a build artifact. Pushing a tag v* (git tag v0.1.0 && git push origin v0.1.0) also publishes
-# the three zips as a GitHub Release.
+# a zip per platform as a build artifact. Pushing a tag v* (git tag v0.1.0 && git push origin v0.1.0), or merging a pull
+# request labelled release:patch, release:minor or release:major (the next version after the latest v* tag), also
+# publishes the three zips as a GitHub Release.
 #
 # The zips hold SheepD3D and SheepLauncher only (on macOS the app bundle Rewooled.app, which holds both): the game's data comes from your own copy (BUILDING.md section 3).
 name: Build
@@ -16,6 +17,35 @@ permissions:
   contents: read
 
 jobs:
+  # on a push to the default branch (a merged pull request): which version bump its release:* label asks for, if any
+  version:
+    name: Version
+    if: github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      bump: ${{ steps.label.outputs.bump }}
+    steps:
+      - name: Read the merged pull request's label
+        id: label
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # the pull request this commit came from (merge, squash or rebase merge alike)
+          labels=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/pulls" \
+            --jq 'map(select(.merged_at != null)) | (.[0].labels // []) | .[].name' || true)
+          echo "labels: $labels"
+          case "$labels" in
+            *release:major*) bump=major ;;
+            *release:minor*) bump=minor ;;
+            *release:patch*) bump=patch ;;
+            *) bump= ;;
+          esac
+          echo "bump=$bump" >> "$GITHUB_OUTPUT"
+          echo "bump: ${bump:-none, no release}"
+
   build:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
@@ -140,9 +170,14 @@ jobs:
 
   release:
     name: Release
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: build
+    needs: [version, build]
+    # a pushed v* tag, or a merge labelled release:*; the build must have passed
+    if: >-
+      !cancelled() && needs.build.result == 'success' &&
+      (startsWith(github.ref, 'refs/tags/v') || needs.version.outputs.bump != '')
     runs-on: ubuntu-24.04
+    # one release at a time, so two quick merges can't pick the same version
+    concurrency: release
     permissions:
       contents: write
 
@@ -153,12 +188,41 @@ jobs:
           path: dist
           merge-multiple: true
 
+      - name: Pick the tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUMP: ${{ needs.version.outputs.bump }}
+        run: |
+          if [ -z "$BUMP" ]; then
+            # a tag pushed by hand
+            tag="$GITHUB_REF_NAME"
+          else
+            latest=$(gh api --paginate "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/v" --jq '.[].ref' \
+              | sed 's|^refs/tags/||' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1 || true)
+            IFS=. read -r major minor patch <<< "${latest:-v0.0.0}"
+            major=${major#v}
+            case "$BUMP" in
+              major) major=$((major + 1)); minor=0; patch=0 ;;
+              minor) minor=$((minor + 1)); patch=0 ;;
+              patch) patch=$((patch + 1)) ;;
+            esac
+            tag="v$major.$minor.$patch"
+            echo "latest: ${latest:-none}, bump: $BUMP"
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "releasing $tag"
+
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
         run: |
           ls -l dist
-          gh release create "$GITHUB_REF_NAME" dist/*.zip \
+          # creates the tag on this commit if it doesn't exist yet (a labelled merge); a tag created with the workflow's
+          # own token doesn't start another run, so nothing is built twice
+          gh release create "$TAG" dist/*.zip \
             --repo "$GITHUB_REPOSITORY" \
-            --title "$GITHUB_REF_NAME" \
+            --target "$GITHUB_SHA" \
+            --title "$TAG" \
             --generate-notes
