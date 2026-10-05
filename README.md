@@ -32,9 +32,10 @@ It builds for **Windows (MSVC, x64)**, **macOS (Apple Clang, arm64)** and **Linu
 To be written nicely
 
 ## Credits
-
+- **lu9** For making an icon for this project
 - **uhwot**, for [sdw_re_stuff](https://github.com/uhwot/sdw_re_stuff) (MIT): the research into the game's asset formats (WAR, DAV, SND and others), with an exporter and ImHex patterns.
 - **The whole Sheep Raider Discord community**, for helping crack this game open.
+
 
 ## Licence
 
