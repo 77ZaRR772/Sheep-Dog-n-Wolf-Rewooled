@@ -10658,10 +10658,11 @@ public:
     s32 ResetFile();
     s32 Read(u32 size, u8 *dest, u32 *read);
     s32 Close();
-    s32 ReadMmio(HMMIO__ *h, u32 size, u8 *dest, MMCKINFO *ck, u32 *read);
-    s32 ReadRiffHeader(HMMIO__ *h, MMCKINFO *riff, WAVEFORMATEX **format);
+    u32 ReadAt(u32 offset, u8 *dest, u32 size);                  /* (port) the lip-sync meter's peek: no cursor moves */
     WAVEFORMATEX *format;                          // Heap-allocated format block filled by the header parser; free()d by the dtors. NULL means '
-    HMMIO__ *hmmio;                                // (HMMIO) The multimedia file handle from mmioOpenA (MMIO_ALLOCBUF, or an in-memory 'MEM ' IOProc). [t
+    u8 *samples;                                   // (port: was HMMIO hmmio) The whole 'data' chunk, read by SDL_LoadWAV_IO (Platform_WavLoad); NULL when closed.
+    u32 sampleBytes;                               // (port) Size of `samples`.
+    u32 readPos;                                   // (port) Offset in `samples` of the next byte Read copies (the mmio file position).
     MMCKINFO ckData;                               // The 'data' chunk descriptor (20 bytes, 0x0C..0x1F). WaveFile_ReadMmio decrements its cksize as a byt
     MMCKINFO ckRiff;                               // The RIFF/WAVE parent chunk descriptor (20 bytes, 0x20..0x33), filled by the header parser.
 };

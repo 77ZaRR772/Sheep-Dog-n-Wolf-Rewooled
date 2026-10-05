@@ -11,7 +11,8 @@ project(SheepD3D C CXX)
 
 # explicit, so every compiler builds the same language (older Apple Clang defaults to C++98, which Dear ImGui rejects)
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD_REQUIRED OFF)
+set(CMAKE_CXX_EXTENSIONS ON)
 
 # ---------------------------------------------------------------------------
 # Platform validation
@@ -23,7 +24,7 @@ endif()
 
 if(WIN32)
 
-    if(NOT MSVC)
+    if(NOT MSVC AND NOT CMAKE_CROSSCOMPILING)
         message(FATAL_ERROR
                 "Windows builds of SheepD3D require Microsoft Visual C++ (MSVC).")
     endif()
@@ -271,12 +272,13 @@ else()
 
     # -fsigned-char: the game code expects a signed char, which ARM Linux does not default to (x86 and Apple do)
     target_compile_options(SheepD3D PRIVATE
-            -fno-exceptions
-            -fno-rtti
+            $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions>
+            $<$<COMPILE_LANGUAGE:CXX>:-fno-rtti>
             -fsigned-char
             -ffunction-sections
             -fdata-sections
             -w
+            $<$<COMPILE_LANGUAGE:CXX>:-fpermissive>
             )
 
     if(APPLE)
@@ -296,7 +298,6 @@ if(WIN32)
     target_link_libraries(SheepD3D PRIVATE
             ijg
             crt_compat
-            winmm
             kernel32
             user32
             gdi32
@@ -304,7 +305,6 @@ if(WIN32)
             shell32
             ole32
             uuid
-            legacy_stdio_definitions
             dxguid
             strmiids
             )
@@ -405,15 +405,16 @@ target_sources(SheepD3D PRIVATE
         src/platform/platform_sdl.cpp
         src/platform/platform_audio_sdl.cpp
         src/platform/dsound_sdl.cpp
+        src/platform/wav_sdl.cpp
         src/render/sdl3/sdl3_render_device.cpp
         )
 
-# the Windows, C runtime and multimedia-I/O names the game code calls, where Windows does not provide them
+# the Windows and C runtime names the game code calls, where Windows does not provide them (the .wav files are read by
+# SDL3 on every platform: src/platform/wav_sdl.cpp)
 if(NOT WIN32)
     target_sources(SheepD3D PRIVATE
             src/platform/win32_sdl_compat.cpp
             src/platform/crt_posix_compat.cpp
-            src/platform/mmio_posix_compat.cpp
             )
 endif()
 

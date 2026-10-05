@@ -23,7 +23,11 @@
 - **Scaled Textures:** Support for swapping texture for arbitrarily sized PNGs
 
 
-It builds for **Windows (MSVC, x64)**, **macOS (Apple Clang, arm64)** and **Linux (Clang, x86_64 or arm64)**. You need your own copy of the game: its data is read at run time and is not part of this repository.
+It builds for **Windows (MSVC, x64)**, **macOS (Apple Clang, arm64)** and **Linux (Clang, x86_64 or arm64)**.
+
+For Linux users, it is also possible to cross-compile for Windows 64-bit using MinGW-w64 (Clang) via the provided `build_win64.sh` script. This requires the `mingw-w64-gcc` package (on Arch Linux). Note that the resulting `.exe` requires the MinGW runtime DLLs (e.g., `libstdc++-6.dll`, `libgcc_s_seh-1.dll`, `libwinpthread-1.dll`) to be present in the game folder to run.
+
+You need your own copy of the game: its data is read at run time and is not part of this repository.
 
 **How it was made:** the decompilation was done with Claude and Codex coordinating via an MCP mailbox server - reading the machine code, naming, writing the source. In-game testing and technical knowledge about the game's inner workings came from the Sheep Raider community.
 

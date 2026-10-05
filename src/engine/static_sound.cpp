@@ -19,8 +19,8 @@
 #define SOUND_VOLUME_FLOOR (-6000) /* the game's floor (-60 dB), not DirectSound's DSBVOLUME_MIN (-10000) */
 
 /* ---- globals ---- */
-u8 g_waveStagingBuffer
-    [0x100000]; /* StaticSound_FillBuffer reads the whole data chunk here (1 MiB: the map's size) */
+/* (port) g_waveStagingBuffer, the original's 1 MiB staging buffer for StaticSound_FillBuffer, is gone: FillBuffer reads
+ * into the locked buffer. */
 
 /* ================================================================ StaticSound (vtable) */
 
@@ -276,7 +276,9 @@ s32 StaticSound::Sound_SetBufferFrequency(u32 hz)
     return hr;
 }
 
-/* reads the whole data chunk into the staging buffer, rewinds the file and copies bufferBytes into the buffer. */
+/* reads the whole data chunk into the buffer and rewinds the file. (port) The original read it into the 1 MiB
+ * g_waveStagingBuffer and copied bufferBytes from there; the samples now go straight into the locked buffer, so a sample
+ * SDL decoded to more than 1 MiB (ADPCM is 4x larger as 16-bit PCM) cannot overrun the staging buffer. */
 s32 StaticSound::FillBuffer()
 {
     void *ptr1;
@@ -284,16 +286,14 @@ s32 StaticSound::FillBuffer()
     DWORD len1;
     DWORD len2;
     u32 read;
-    u32 size;
     s32 hr;
 
-    size = wave->ckData.cksize;
-    if ((hr = wave->Read(size, g_waveStagingBuffer, &read)) >= 0) {
+    if ((hr = buffer->Lock(0, bufferBytes, &ptr1, &len1, &ptr2, &len2, 0)) >= 0) {
+        hr = wave->Read(len1, (u8 *)ptr1, &read);
+        if (hr >= 0 && read < len1)
+            memset((u8 *)ptr1 + read, wave->format->wBitsPerSample == 8 ? 0x80 : 0, len1 - read);
+        buffer->Unlock(ptr1, len1, 0, 0);
         wave->ResetFile();
-        if ((hr = buffer->Lock(0, bufferBytes, &ptr1, &len1, &ptr2, &len2, 0)) >= 0) {
-            memcpy(ptr1, g_waveStagingBuffer, bufferBytes);
-            buffer->Unlock(ptr1, bufferBytes, 0, 0);
-        }
     }
     return hr;
 }

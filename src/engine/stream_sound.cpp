@@ -482,7 +482,6 @@ u32 StreamSound::GetVoiceAmplitude(s32 refresh)
     u32 sum = 0;
     u16 window = 16;
     u16 i;
-    s32 pos;
     u32 delta;
     u32 avg;
     char sample[2];
@@ -507,11 +506,11 @@ u32 StreamSound::GetVoiceAmplitude(s32 refresh)
                 window = 8;
             for (i = 0; i < window - 1; i++)
                 amplitudeWindow[i] = amplitudeWindow[i + 1];
-            pos = mmioSeek(wave->hmmio, 0, SEEK_CUR);
-            if (pos < 0)
+            /* (port) the original saved the mmio position, seeked to playProgress, read and seeked back; the samples are
+             * in memory now and WaveFile::ReadAt peeks without moving the read position. */
+            if (!wave->samples)
                 return 0;
-            mmioSeek(wave->hmmio, playProgress, SEEK_SET);
-            if (mmioRead(wave->hmmio, sample, bytesPerSampleChannel) > 0) {
+            if (wave->ReadAt(playProgress, (u8 *)sample, bytesPerSampleChannel) > 0) {
                 if (bytesPerSampleChannel > 1) {
                     /* the two bytes are sign-extended separately and OR'ed, so a low byte >= 0x80 fills the top bits and the magnitude comes
                      * out as a small negative number: the meter under-reads most 16-bit samples. */
@@ -524,7 +523,6 @@ u32 StreamSound::GetVoiceAmplitude(s32 refresh)
                     amplitudeWindow[window - 1] = v << 7;
                 }
             }
-            mmioSeek(wave->hmmio, pos, SEEK_SET);
             for (i = 0; i < window - 1; i++)
                 sum += amplitudeWindow[i];
             avg = sum / window;
