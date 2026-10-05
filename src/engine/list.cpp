@@ -332,9 +332,9 @@ u8 Load_DAVnWAR(const char *levelPath, Dav *dav)
     u16 dummy2 = 0;
     u16 unused1 = 0;
     s32 texPages;
-    char base[128];
+    char base[SDW_PATH_MAX];
     u32 rgb;
-    char fullPath[128];
+    char fullPath[SDW_PATH_MAX];
     u16 i;
     u16 j;
     u16 w;

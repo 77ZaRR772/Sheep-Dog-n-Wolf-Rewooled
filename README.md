@@ -22,7 +22,7 @@ It builds for **Windows (MSVC, x64)**, **macOS (Apple Clang, arm64)** and **Linu
 | `src/sdk/` | Declarations of the Windows, DirectX and C runtime names the game code uses |
 | `src/include/` | Shared headers: types, enums and the classes. `scenaric_props.h` is generated from your copy of the game (`tools/scenaric_to_c.py`) |
 | `src/jpeg/` | The Independent JPEG Group's library, release 6, unmodified, under IJG's own licence |
-| `tools/` | Build helpers and level-file readers ([TOOLS.md](TOOLS.md)) |
+| `tools/` | Build helpers and level-file readers ([TOOLS.md](TOOLS.md)); `retexture.py` exports every texture of the game for upscaling and stitches the results into HD texture pages the game loads from `retexture/` |
 | `docs/` | Notes on the engine: conventions, the game's files, the frame loop, the object system, the input system |
 
 

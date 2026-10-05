@@ -78,7 +78,7 @@ BonusEntry g_bonusEntries[8] = {{BONUS_KIND_IMAGES, 1, "PERSO"},
                                 {BONUS_KIND_IMAGES, 3, "INTRO"},
                                 {BONUS_KIND_TEXT, 3, {BONUSSTR_TIP_AUTUMN_TEXT}},
                                 {BONUS_KIND_TEXT, 3, {BONUSSTR_TIP_PAST_PRESENT_TEXT}}};
-char g_bonusPath[256];
+char g_bonusPath[SDW_PATH_MAX];
 char *g_bonusCategoryStrings[4];
 char g_bonusUiBuf[128];
 char g_bonusFooterInitial;

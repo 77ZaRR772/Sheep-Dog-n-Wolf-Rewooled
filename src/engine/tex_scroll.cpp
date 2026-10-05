@@ -5,6 +5,7 @@
  * on every entry once per frame while GF_UPDATE_OBJECTS is set (tail jump into). Texture::Surface_LockForWrite is
  * declared returning long, as src/engine/texture.cpp defines it (same code).
  */
+#include "sdw_enums.h"
 #include "../sdk/ddraw.h"
 #include "../sdk/crt.h"
 #define SDW_MEMBERS_Texture                                                                                        \
@@ -54,100 +55,77 @@ void TexScroll_AddList(u16 listId, s8 reverse)
     }
 }
 
-/* fills the next TexScroll entry from a DAV bitmap rect and blits the rect's texels from its page texture into a
- * new backup Texture of the rect's size. Neither the constructor's result code nor the 16 backup slots are checked.
- * Names chosen for their slots: entry -0x1c, res -0x18, source -0x14, rect -0x10, as in the original. */
-void TexScroll_AddRect(const DavBitmapRec *rec, s8 step)
+/* Sets up scroll from a DAV bitmap rect: the rect on its texture page, and a backup Texture holding a copy of its
+ * texels, which TexScroll_Step copies back shifted. On an overridden page (retexture/, PolyBatcher::LoadTexturePages),
+ * a whole multiple of the disc's 256-texel page, the rect is scaled to the page. The backup is returned. */
+Texture *TexScroll_Setup(TexScroll *scroll, const DavBitmapRec *rec, s8 step)
 {
-    TexScroll *entry;
-    Texture *source;
+    Texture *page = g_pPolyBin->textures[rec->page];
+    Texture *backup;
     s32 res;
     RECT rect;
-    entry = &g_texScrolls[g_texScrollCount];
-    entry->y = rec->v;
-    entry->h = rec->height;
-    entry->x = rec->u;
-    entry->w = rec->width;
-    entry->texPage = rec->page;
-    entry->srcY = 0;
-    entry->srcH = rec->height;
-    entry->srcX = 0;
-    entry->srcW = rec->width;
-    entry->offset = 0;
-    entry->step = step;
-    source = g_pPolyBin->textures[entry->texPage];
-    g_texScrollBackup[g_texScrollCount] = new Texture(g_pD3DAppMain, entry->w, entry->h, source->GetFormat(), &res);
-    rect.top = rec->v;
-    rect.bottom = rec->v + rec->height;
-    rect.left = rec->u;
-    rect.right = rec->u + rec->width;
-    g_renderDevice->CopyTexture(g_texScrollBackup[g_texScrollCount]->GetSurface(), 0, 0, source->GetSurface(),
-                                (RdRect *)&rect);
+    scroll->scale = page->GetWidth() > 256 ? (s32)(page->GetWidth() / 256) : 1;
+    scroll->x = (s16)(rec->u * scroll->scale);
+    scroll->y = (s16)(rec->v * scroll->scale);
+    scroll->w = (s16)(rec->width * scroll->scale);
+    scroll->h = (s16)(rec->height * scroll->scale);
+    scroll->texPage = rec->page;
+    scroll->srcX = 0;
+    scroll->srcY = 0;
+    scroll->srcW = scroll->w;
+    scroll->srcH = scroll->h;
+    scroll->offset = 0;
+    scroll->step = step;
+    backup = new Texture(g_pD3DAppMain, (u32)scroll->w, (u32)scroll->h, page->GetFormat(), &res);
+    rect.left = scroll->x;
+    rect.top = scroll->y;
+    rect.right = scroll->x + scroll->w;
+    rect.bottom = scroll->y + scroll->h;
+    g_renderDevice->CopyTexture(backup->GetSurface(), 0, 0, page->GetSurface(), (RdRect *)&rect);
+    return backup;
+}
+
+/* Scrolls by step rows of the disc's page (step * scale on an override, the same speed on screen): offset =
+ * (offset + step * scale) mod H, then rewrites the rect on its page from the backup: backup rows 0..H-offset-1 go to
+ * page rows y+offset.., and the last offset backup rows to the top of the rect. The original kept the offset in an s8
+ * and copied 16-bit texels; the offset is now an s16 (rects over 128 rows) and the copies are in bytes (32-bit pages). */
+void TexScroll_Step(TexScroll *scroll, Texture *backup)
+{
+    Texture *page = g_pPolyBin->textures[scroll->texPage];
+    DDSURFACEDESC2 pageDesc, backupDesc;
+    s32 height = scroll->srcH, bytes = page->GetFormat() == TEXFMT_RGBA8 ? 4 : 2;
+    s32 row, offset;
+    u8 *to, *from;
+    if (height <= 0)
+        return;
+    offset = (scroll->offset + scroll->step * scroll->scale) % height;
+    scroll->offset = (s16)(offset < 0 ? offset + height : offset);
+    page->Surface_LockForWrite(&pageDesc);
+    backup->Surface_LockForRead(&backupDesc);
+    to = (u8 *)pageDesc.lpSurface + (scroll->y + scroll->offset) * pageDesc.lPitch + scroll->x * bytes;
+    from = (u8 *)backupDesc.lpSurface;
+    for (row = 0; row < height - scroll->offset; row++, to += pageDesc.lPitch)
+        memcpy(to, from + row * backupDesc.lPitch, (size_t)scroll->srcW * bytes);
+    to = (u8 *)pageDesc.lpSurface + scroll->y * pageDesc.lPitch + scroll->x * bytes;
+    for (; row < height; row++, to += pageDesc.lPitch)
+        memcpy(to, from + row * backupDesc.lPitch, (size_t)scroll->srcW * bytes);
+    page->Surface_Unlock();
+    backup->Surface_Unlock();
+}
+
+/* adds the next TexScroll entry from a DAV bitmap rect (TexScroll_Setup). Neither the Texture's result code nor the 16
+ * backup slots are checked, as in the original. */
+void TexScroll_AddRect(const DavBitmapRec *rec, s8 step)
+{
+    g_texScrollBackup[g_texScrollCount] = TexScroll_Setup(&g_texScrolls[g_texScrollCount], rec, step);
     g_texScrollCount++;
 }
 
-/* scrolls entry index by one step: offset = (offset + step + H) % H, then rewrites the rect on its texture page
- * from the backup: backup rows startRow..rowEnd-offset go to page rows y+offset.., and (when offset != 0) the last offset
- * backup rows go to the top of the rect. Pitch = Texture width in texels, 16-bit texels.
- * Names and declaration order chosen for their slots (see the file header): texels -4, wpos -8, bakDdsd -0xc,
- * row -0x10, texDdsd -0x14, bak -0x18, bakMem -0x1c, rowEnd -0x20, cw -0x24, startRow -0x28, startCol -0x2c, tex -0x30,
- * cur -0x34, topRow -0x38, as in the original. cw and startCol are copied and never read.
- * The offset is an s8 but runs over 0..H-1 of the backup's height H: see the note after the function. */
+/* scrolls entry index by one step. */
 void TexScroll_Update(u16 index)
 {
-    DDSURFACEDESC2 *bakDdsd;
-    s32 wpos;
-    u16 *texels;
-    s32 row;
-    Texture *bak;
-    DDSURFACEDESC2 *texDdsd;
-    u16 *bakMem;
-    s32 startRow, cw, rowEnd;
-    s32 startCol;
-    Texture *tex;
-    s32 topRow;
-    TexScroll *cur;
-    cur = &g_texScrolls[index];
-    bak = g_texScrollBackup[index];
-    tex = g_pPolyBin->textures[cur->texPage];
-    cur->offset = (s8)((cur->offset + cur->step + bak->GetHeight()) % bak->GetHeight());
-    startRow = cur->srcY;
-    rowEnd = cur->srcH;
-    startCol = cur->srcX;
-    cw = cur->srcW;
-    texDdsd = new DDSURFACEDESC2;
-    bakDdsd = new DDSURFACEDESC2;
-    tex->Surface_LockForWrite(texDdsd);
-    bak->Surface_LockForRead(bakDdsd);
-    texels = (u16 *)texDdsd->lpSurface;
-    bakMem = (u16 *)bakDdsd->lpSurface;
-    rowEnd -= cur->offset;
-    wpos = (cur->y + cur->offset) * tex->GetWidth() + cur->x;
-    for (row = startRow; row < rowEnd; row++) {
-        memcpy(texels + wpos, bakMem + row * bak->GetWidth(), cur->srcW * 2);
-        wpos += tex->GetWidth();
-    }
-    if (cur->offset != 0) {
-        startRow = rowEnd;
-        rowEnd = cur->srcH;
-        wpos = cur->y * tex->GetWidth() + cur->x;
-        for (topRow = startRow; topRow < rowEnd; topRow++) {
-            memcpy(texels + wpos, bakMem + topRow * bak->GetWidth(), cur->srcW * 2);
-            wpos += tex->GetWidth();
-        }
-    }
-    tex->Surface_Unlock();
-    bak->Surface_Unlock();
-    delete texDdsd;
-    delete bakDdsd;
+    TexScroll_Step(&g_texScrolls[index], g_texScrollBackup[index]);
 }
-/* Note (read, not observed in game): H is the backup Texture's height, which the constructor rounds up to a power of two
- * (and to a square) when the device reports D3DPTEXTURECAPS_POW2 / SQUAREONLY, while the copy loops use the rect height h
- * (srcH). With H > h the offset reaches h..H-1, rowEnd goes negative and the second loop reads backup rows before the
- * locked memory and writes up to H rows from the rect's top, past its bottom. Separately, H > 128 makes the s8 offset wrap
- * to negative values, so rowEnd -= offset grows past h and the first loop reads below the backup and writes above the rect.
- * Neither has been checked against the shipped data or hardware; on a device without the power-of-two cap and with rects
- * of at most 128 rows neither happens. */
 
 /* at level load (Load_DAVnWAR): builds the scroll list from the four id-lists of the type-0x83 header. */
 void TexScroll_Init(void)

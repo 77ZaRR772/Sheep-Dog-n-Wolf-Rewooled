@@ -124,7 +124,7 @@ inline StreamPlayer::~StreamPlayer()
  * entries, each copied to its own allocation (NULL for size 0). */
 void StreamPlayer::Load_MusicVoiceBank()
 {
-    char path[256];
+    char path[SDW_PATH_MAX];
     u32 size = 0;
     char *magic;
     strcpy(path, g_dirReference);

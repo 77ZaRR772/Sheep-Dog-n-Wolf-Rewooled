@@ -58,6 +58,13 @@ void CreditsManager_CreateProjectionVBs();
 #define SDW_INLINE_FREE_PROPERTYU32_VOID_U32 1
 #include "../engine/scn_tools_inlines.h"
 #undef SDW_INLINE_FREE_PROPERTYU32_VOID_U32
+/* The port's addition to the intro credits: appended to the card "a lyon house production" (TEXTNUM 2 in Intro.WAR) in
+ * every language, so the disc's Intro.MLT stays untouched. A '\n' starts a new line; the card is drawn with
+ * Text_Printf(textJust, text), so a literal '%' must be written "%%". */
+#define CREDITS_PORT_TEXTNUM 1
+static const char s_creditsPortText[] = "\n\nand the Sheep Raider community";
+static char s_creditsPortCard[256];
+
 void CreditsManager::PostLoadInit()
 {
     SetUpdateMode(SCN_UPD_ALWAYS);

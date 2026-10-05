@@ -104,9 +104,9 @@ static void App_Error(const char *message)
  * window and the renderer, the sound, then the main loop until the window is closed. */
 int Game_Main(int argc, char **argv)
 {
-    char path[512];
+    char path[SDW_PATH_MAX];
     char szTitle[256];
-    char exeDir[512];
+    char exeDir[SDW_PATH_MAX];
 
     Options_SetDefaults(&g_options);
     Options_LoadSaved(&g_options);

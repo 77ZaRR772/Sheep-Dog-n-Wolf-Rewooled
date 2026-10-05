@@ -28,6 +28,7 @@ static Voice *s_voices[AUDIO_MAX_VOICES]; /* voice id - 1 */
 static SDL_AtomicInt s_notified;
 static float *s_mix;
 static int s_mixFrames;
+static int s_mixLogged, s_playLogged; /* the first callback and the first Play are logged */
 
 static float Audio_Gain(int centibels)
 {
@@ -125,6 +126,10 @@ static void SDLCALL Audio_Callback(void *userdata, SDL_AudioStream *stream, int 
         s_mix = grown;
         s_mixFrames = frames;
     }
+    if (!s_mixLogged) {
+        s_mixLogged = 1;
+        SDL_Log("SheepD3D: audio: the device asked for its first %d frames", frames);
+    }
     SDL_memset(s_mix, 0, frames * 2 * sizeof(float));
     for (i = 0; i < AUDIO_MAX_VOICES; i++)
         if (s_voices[i] && s_voices[i]->playing)
@@ -157,8 +162,10 @@ int Platform_AudioOpen()
     SDL_AudioSpec spec;
     if (s_stream)
         return 1;
-    if (!SDL_WasInit(SDL_INIT_AUDIO) && !SDL_InitSubSystem(SDL_INIT_AUDIO))
+    if (!SDL_WasInit(SDL_INIT_AUDIO) && !SDL_InitSubSystem(SDL_INIT_AUDIO)) {
+        SDL_Log("SheepD3D: audio: no audio subsystem: %s", SDL_GetError());
         return 0;
+    }
     spec.format = SDL_AUDIO_F32;
     spec.channels = 2;
     spec.freq = AUDIO_RATE;
@@ -168,7 +175,17 @@ int Platform_AudioOpen()
         return 0;
     }
     SDL_SetAtomicInt(&s_notified, 0);
-    SDL_ResumeAudioStreamDevice(s_stream);
+    if (!SDL_ResumeAudioStreamDevice(s_stream))
+        SDL_Log("SheepD3D: audio: resume: %s", SDL_GetError());
+    {
+        SDL_AudioDeviceID device = SDL_GetAudioStreamDevice(s_stream);
+        SDL_AudioSpec deviceSpec;
+        int deviceFrames = 0;
+        SDL_zero(deviceSpec);
+        SDL_GetAudioDeviceFormat(device, &deviceSpec, &deviceFrames);
+        SDL_Log("SheepD3D: audio: driver %s, device \"%s\", %d Hz, %d channels, %d frames", SDL_GetCurrentAudioDriver(),
+                SDL_GetAudioDeviceName(device), deviceSpec.freq, deviceSpec.channels, deviceFrames);
+    }
     return 1;
 }
 
@@ -217,6 +234,7 @@ int Platform_VoiceCreate(unsigned bytes, int channels, int bits, int rate, void 
         s_voices[i] = v;
     SDL_UnlockAudioStream(s_stream);
     if (i == AUDIO_MAX_VOICES) {
+        SDL_Log("SheepD3D: audio: all %d voices are in use", AUDIO_MAX_VOICES);
         SDL_free(v->data);
         SDL_free(v);
         return 0;
@@ -243,6 +261,11 @@ void Platform_VoicePlay(int voice, int looping)
         return;
     v->looping = looping;
     v->playing = 1;
+    if (!s_playLogged) {
+        s_playLogged = 1;
+        SDL_Log("SheepD3D: audio: first voice played: %u Hz, %d-bit, %d channels, volume %d, pan %d", v->frequency,
+                v->bits, v->channels, v->volume, v->pan);
+    }
     Audio_Unlock();
 }
 

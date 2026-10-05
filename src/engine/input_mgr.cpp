@@ -599,7 +599,7 @@ u8 InputMgr::LoadBindingTable(u8 fromRegistry, const char *dir, const char *name
     FILE *strm;
     u8 result;
     u32 fsize;
-    char fileName[512];
+    char fileName[SDW_PATH_MAX];
     u8 *cfgBlob;
     InputBinding *table;
     InputBindingIdx *remaps;
@@ -743,7 +743,7 @@ u8 InputMgr::SaveBindingTable(u8 toRegistry, const char *dir, const char *name, 
     for (d = 12; d < 16; d++)
         PUT(&padTable[d].code, 2);
     if (!toRegistry) {
-        char path[512];
+        char path[SDW_PATH_MAX];
         FILE *f;
         strcpy(path, dir);
         strcat(path, name);

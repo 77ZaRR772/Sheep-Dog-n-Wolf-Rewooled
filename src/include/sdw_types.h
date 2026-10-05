@@ -34,4 +34,9 @@ typedef struct Box { u32 flags; s16 min[3]; s16 max[3];          // zone / trigg
     SDW_MEMBERS_Box                                                 // member functions only
 #endif
 } Box;
+/* the size of a buffer holding a path to the game's data. The original only built short relative paths (".\\Levels\\..."),
+ * in buffers of 64 to 260 bytes; a game folder chosen in the launcher (--game-dir) is a full path, so every buffer a
+ * data path goes through has this size. */
+#define SDW_PATH_MAX 1024
+
 #endif
