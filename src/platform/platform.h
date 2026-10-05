@@ -39,6 +39,15 @@ int Platform_GetBasePath(char *out, int capacity);
 /* Makes the executable's folder the working directory (1 on success), so the game's paths can be short relative ones:
  * its fixed-size path buffers were sized for a short Windows install folder, not an absolute path. */
 int Platform_EnterBaseDir();
+/* The path as this system can open it: the game's data spelled in any case ("LEVELS\\LVL-01\\Lvl-01.WAR") is found
+ * as it is on disc, on the case-sensitive file systems of macOS and Linux too (the lookup fopen and the level loader
+ * already use: src/platform/crt_posix_compat.cpp); a path that does not exist keeps its spelling. For code that opens
+ * files without the game's fopen, such as SDL's loaders: SDL_IOFromFile(resolved, "rb"). 0 when out was too small. */
+int Platform_ResolvePath(const char *path, char *out, int capacity);
+/* A PNG file decoded to 32-bit RGBA (bytes R, G, B, A, rows packed, top row first), the path found as
+ * Platform_ResolvePath finds it; 0 when there is no such file or it is not a PNG. Free it with Platform_FreeImage. */
+unsigned char *Platform_LoadImageRGBA(const char *path, int *width, int *height);
+void Platform_FreeImage(unsigned char *pixels);
 void Platform_ShowMessage(const char *title, const char *message, int isError);
 /* A line in the log (SDL_Log: the terminal or CLion's Run window, the Console app on macOS), printf-style. For game
  * code: it cannot include SDL's headers, whose C runtime clashes with the game's own declarations (src/sdk/crt.h). */

@@ -78,6 +78,7 @@ extern "C" void qsort(void *base, size_t n, size_t size,
 extern "C" int rand(void);                                         /* CRT, */
 extern "C" double __cdecl sin(double);                             /* CRT */
 extern "C" int sprintf(char *buf, const char *fmt, ...);
+extern "C" int snprintf(char *buf, size_t size, const char *fmt, ...);
 extern "C" double sqrt(double);                                    /* CRT */
 extern "C" void srand(unsigned int seed);                          /* CRT, */
 extern "C" char *strcat(char *dst, const char *src);
