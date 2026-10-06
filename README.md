@@ -22,6 +22,14 @@
 - **Modern Controllers:** Support for modern controllers via SDL3
 - **Scaled Textures:** Support for swapping texture for arbitrarily sized PNGs
 
+### For Mac users
+
+As the releases are unsigned, you will need to run
+`xattr -r -d com.apple.quarantine Rewooled.app`
+
+to prevent your OS from blocking the execution
+
+### Building
 
 It builds for **Windows (MSVC, x64)**, **macOS (Apple Clang, arm64)** and **Linux (Clang, x86_64 or arm64)**.
 
