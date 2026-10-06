@@ -1121,7 +1121,7 @@ sptr Robot::HandleMessage(ScnObject *sender, u32 msgId, void *arg)
                 return UpdateCamera((Pad *)arg);
             case MSG_DRAW_PROMPT: /* the HUD prompts, drawn by the Wolf's code with the robot's context block */
                 if (robotFlags & ROBOT_F_DRIVEN) {
-                    ((Wolf *)this)->DrawActionPrompt(&ctxAction, 0, 1);
+                    ((Wolf *)this)->DrawActionPrompt(&ctxAction, heldActionType, ctxPromptExtra, 0, 1);
                     ((Wolf *)this)->Hud_DrawItemPrompt(&itemPromptId, itemPromptId != CLASSID_ROBOT);
                     return 1;
                 }

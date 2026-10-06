@@ -76,6 +76,12 @@ extern "C" int printf(const char *fmt, ...);
 extern "C" void qsort(void *base, size_t n, size_t size,
                       int (*compare)(const void *, const void *)); /* CRT, */
 extern "C" int rand(void);                                         /* CRT, */
+/* rand() in the range of the game's CRT (MSVC: 0..0x7fff), which the game scales by 32767: other C libraries return up
+ * to 0x7fffffff */
+static inline int Crt_Rand15()
+{
+    return rand() & 0x7fff;
+}
 extern "C" double __cdecl sin(double);                             /* CRT */
 extern "C" int sprintf(char *buf, const char *fmt, ...);
 extern "C" int snprintf(char *buf, size_t size, const char *fmt, ...);

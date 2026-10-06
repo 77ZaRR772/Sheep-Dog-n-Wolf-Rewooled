@@ -10961,7 +10961,7 @@ public:
     void StoreActiveItemInInventory();
     s32 IsFalling();
     s32 CanJump();
-    void DrawActionPrompt(ActionHit *, ActionHit *, s32);
+    void DrawActionPrompt(ActionHit *, s32 heldAction, s32 viewPrompt, ActionHit *, s32);
     void Hud_DrawItemPrompt(u16 *, s32);
     void InitActionPromptStrings();
     ZoneList climbZones;                           // prop CLIMBBOXES list (record+0x14) {Box **boxes; u16 count}; ctx action 0xF/0x11. One field: Wolf_Cl

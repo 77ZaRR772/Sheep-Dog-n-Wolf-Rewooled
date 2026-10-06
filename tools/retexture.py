@@ -6,7 +6,9 @@ Each level's .DAV holds its texture pages (256 x 256, 16-bit) and a rectangle ta
 
   export   cuts every page into its images and writes each one as a PNG with a margin of its own edge pixels around it
            (context for the upscaler, so nothing of the neighbouring image leaks in). An image used by several levels
-           is written once (same pixels = same file). Also writes the original pages, for reference.
+           is written once (same pixels = same file). The fonts are cut into their characters, one image each, named
+           font_<game|debug>_<code>.png (the hex character code: font_game_5f.png is the action button's hand). Also
+           writes the original pages, for reference.
 
   import   reads the (upscaled) images back, crops their margins and pastes each at its place on a page scaled by the
            same factor, over the original page enlarged (for the few texels no image covers). The pages are written
@@ -52,6 +54,10 @@ ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_GAME = ROOT / "Sheep, Dog 'n' Wolf (PAL Version)"
 MANIFEST = "manifest.json"
 PAGE_FORMATS = {0: "565", 1: "1555", 2: "4444"}  # format & 3 (TEXFMT_PIXEL_MASK)
+# the fonts, by .DAV id list (Font_LoadFromRes): exported one character per image. Every font has 16 characters a row
+# from 0x20 (div(c - 0x20, 16), src/engine/text.cpp), so a cell is the sheet's width / 16 wide and 16 high.
+FONTS = {0x24: "game", 0x1D: "debug"}  # DAV_IDI_IGLTYPO_, DAV_IDI_IGLFONTE
+FONT_CELL_H = 16
 
 
 # ---- reading the game's files ----
@@ -120,6 +126,19 @@ def model_usage(war_path, dav):
     return usage
 
 
+def font_cells(dav_path, dav):
+    """{rectangle index: [(character code, x, y, w, h), ...]}: the non-empty character cells of each font sheet."""
+    out = {}
+    for res, name in FONTS.items():
+        for rect in war_meshes.read_dav_idlists(dav_path).get(res, []):
+            x, w, y, h, page = dav["rects"][rect]
+            cw = w // 16
+            rows = min(h // FONT_CELL_H, (0x100 - 0x20) // 16)
+            out[rect] = (name, [(0x20 + r * 16 + c, x + c * cw, y + r * FONT_CELL_H, cw, FONT_CELL_H)
+                                for r in range(rows) for c in range(16)])
+    return out
+
+
 # ---- images ----
 
 def pad_edges(img, m):
@@ -155,21 +174,33 @@ def export(game, work, only, margin):
         (pages_dir / name).mkdir(parents=True, exist_ok=True)
         for i, page in enumerate(pages):
             page.save(pages_dir / name / ("page_%02d.png" % i))
+        fonts = font_cells(dav_path, dav)
         level = {"pages": [{"w": p["w"], "h": p["h"], "format": p["format"]} for p in dav["pages"]], "images": []}
         for index, (x, w, y, h, page) in enumerate(dav["rects"]):
             if page >= len(pages) or w == 0 or h == 0 or x + w > pages[page].width or y + h > pages[page].height:
                 continue  # the four blank pages the game adds, or an empty record
-            crop = pages[page].crop((x, y, x + w, y + h))
-            key = hashlib.sha1(crop.tobytes() + struct.pack("<HH", w, h)).hexdigest()
-            if key not in by_hash:
-                file = "%s_p%02d_r%04d.png" % (name, page, index)
-                pad_edges(crop, margin).save(images_dir / file)
-                by_hash[key] = file
-                manifest["files"][file] = {"w": w, "h": h, "uses": 0}
-            file = by_hash[key]
-            manifest["files"][file]["uses"] += 1
-            level["images"].append({"rect": index, "page": page, "x": x, "y": y, "w": w, "h": h, "file": file,
-                                    "models": usage.get(index, 0)})
+            if index in fonts:  # a font: one image per character, named by font and code
+                font, cells = fonts[index]
+                pieces = [("font_%s_%02x" % (font, code), {"glyph": code}, cx, cy, cw, ch)
+                          for code, cx, cy, cw, ch in cells]
+            else:
+                pieces = [("%s_p%02d_r%04d" % (name, page, index), {}, x, y, w, h)]
+            for stem, extra, px, py, pw, ph in pieces:
+                crop = pages[page].crop((px, py, px + pw, py + ph))
+                if extra and not crop.getchannel("A").getbbox():
+                    continue  # an empty character cell
+                key = hashlib.sha1(crop.tobytes() + struct.pack("<HH", pw, ph)).hexdigest()
+                if key not in by_hash:
+                    file = stem + ".png"
+                    if file in manifest["files"]:  # the same character drawn differently in another level
+                        file = "%s_%s.png" % (stem, name)
+                    pad_edges(crop, margin).save(images_dir / file)
+                    by_hash[key] = file
+                    manifest["files"][file] = {"w": pw, "h": ph, "uses": 0}
+                file = by_hash[key]
+                manifest["files"][file]["uses"] += 1
+                level["images"].append(dict({"rect": index, "page": page, "x": px, "y": py, "w": pw, "h": ph,
+                                             "file": file, "models": usage.get(index, 0)}, **extra))
         manifest["levels"][name] = level
         print("%-8s %2d pages, %4d images" % (name, len(pages), len(level["images"])))
     (work / MANIFEST).write_text(json.dumps(manifest, indent=1))

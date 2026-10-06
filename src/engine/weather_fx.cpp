@@ -344,9 +344,9 @@ void Weather::SfxParticles_InitRandom(Vec3f *dir, float spread, float speedMin, 
         float r;
         float a;
 
-        a = (float)rand() / 32767.0f * 3.14159265f * 2.0f;
-        pitch = (float)rand() / 32767.0f * 3.14159265f * 2.0f;
-        r = (float)rand() / 32767.0f * radius;
+        a = (float)Crt_Rand15() / 32767.0f * 3.14159265f * 2.0f;
+        pitch = (float)Crt_Rand15() / 32767.0f * 3.14159265f * 2.0f;
+        r = (float)Crt_Rand15() / 32767.0f * radius;
         aRot.Mat44_SetRotZYX(a, pitch, 0.0f);
         particles[i].pos.x = r * aRot.m[2][0];
         particles[i].pos.y = r * aRot.m[2][1];
@@ -355,9 +355,9 @@ void Weather::SfxParticles_InitRandom(Vec3f *dir, float spread, float speedMin, 
         particles[i].viewPos.x = particles[i].pos.x;
         particles[i].viewPos.y = particles[i].pos.y;
         particles[i].viewPos.z = particles[i].pos.z;
-        a = (float)rand() / 32767.0f * spread * 2.0f;
-        aC = (float)rand() / 32767.0f * spread * 2.0f;
-        r = (float)rand() / 32767.0f * (speedMax - speedMin) + speedMin;
+        a = (float)Crt_Rand15() / 32767.0f * spread * 2.0f;
+        aC = (float)Crt_Rand15() / 32767.0f * spread * 2.0f;
+        r = (float)Crt_Rand15() / 32767.0f * (speedMax - speedMin) + speedMin;
         aRot.Mat44_SetRotZYX(spread - a, 0.0f, spread - aC);
         aRot.TransformPoint(dir, &vec);
         aScale = r / (float)sqrt(VEC3F_LENSQ(vec));

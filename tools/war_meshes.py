@@ -64,6 +64,25 @@ def read_dav(path):
     return {"entries": entries, "rects": rects, "pages": pages, "end": o, "size": len(d), "trailer": d[o:]}
 
 
+def read_dav_idlists(path):
+    """{resource id: [rectangle index, ...]}: the .DAV's id lists (Load_DAV, IdList_FindWithCount), the bitmaps the 2D
+    code asks for by id (DAV_IDI_* in src/include/scenaric_props.h). The directory at the header's +0x14 is {u16
+    entries, rects, pages; u32 entry table, rect table, file size, id lists}; the id lists are {u32 count; records}, a
+    record {u32 id | count << 16; u32 file offset of an entry-table slot per entry}, and the slot holds the rect index."""
+    d = path.read_bytes()
+    hdr, = struct.unpack_from("<I", d, 0x14)
+    lists_at, = struct.unpack_from("<I", d, hdr + 0x12)
+    count, = struct.unpack_from("<I", d, lists_at)
+    out, o = {}, lists_at + 4
+    for _ in range(count):
+        head, = struct.unpack_from("<I", d, o)
+        n = head >> 16
+        slots = struct.unpack_from("<%dI" % n, d, o + 4)
+        out[head & 0xFFFF] = [struct.unpack_from("<H", d, s)[0] for s in slots]
+        o += 4 + 4 * n
+    return out
+
+
 def read_mesh(d, off):
     """A geometry record: its vertex count and entries, with the texture ids of the textured ones."""
     vtx_at, ent_at, n_vtx, n_ent = struct.unpack_from("<IIHH", d, off)
