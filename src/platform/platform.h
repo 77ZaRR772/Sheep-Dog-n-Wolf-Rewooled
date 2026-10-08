@@ -31,6 +31,10 @@ struct SDL_Window *Platform_Window();
 void Platform_ShowWindow();
 /* Handles the pending events; PLATFORM_EVENT_* */
 unsigned Platform_PollEvents();
+/* Handles the pending events for a loop that runs for a while outside the main loop (the blocking screen transition),
+ * so that the system does not take the window for hung ("Not Responding" on Windows after about 5 s); what they
+ * report is kept for the next Platform_PollEvents, so a quit is not lost. */
+void Platform_PumpEvents();
 int Platform_IsActive(); /* the window has the keyboard focus */
 void Platform_RequestQuit(); /* the original's PostQuitMessage: the next Platform_PollEvents reports QUIT */
 void Platform_Shutdown();

@@ -109,10 +109,19 @@ void Platform_ShowWindow()
     SDL_RaiseWindow(s_window);
 }
 
+/* what Platform_PumpEvents saw, reported by the next Platform_PollEvents */
+static unsigned s_pumpedEvents;
+
+void Platform_PumpEvents()
+{
+    s_pumpedEvents |= Platform_PollEvents();
+}
+
 unsigned Platform_PollEvents()
 {
     SDL_Event e;
-    unsigned result = 0;
+    unsigned result = s_pumpedEvents;
+    s_pumpedEvents = 0;
     while (SDL_PollEvent(&e)) {
         switch (e.type) {
             case SDL_EVENT_QUIT:

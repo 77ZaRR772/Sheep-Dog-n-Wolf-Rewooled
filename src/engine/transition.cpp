@@ -42,6 +42,7 @@ struct DavDirectory {
 #include "draw2d.h"
 #include "stream_player.h"
 #include "progress.h"
+#include "../platform/platform.h"
 void Scenaric_RegisterClass_2(u16 classId, ScnObject *(*factory)(void *), u32 classFlags, u16 iconIdA, u16 iconIdB);
 
 extern u32 g_gameFlags;
@@ -139,6 +140,7 @@ void Transition_OutUpdate()
             g_holeFX.Draw(g_pPolyBin);
             g_pPolyBin->Render_EndFrame(1);
             g_pPolyBin->Render_Present(60);
+            Platform_PumpEvents(); /* 3 s a phase outside the main loop: the window stays responsive */
             now = g_transitionTimer.GetElapsed(TIMER_SECONDS);
         } while (g_holeFX.alpha != 0.0f);
         g_transIrisPhase = TRANSITION_IN;
@@ -201,6 +203,7 @@ void Transition_InUpdate()
             g_holeFX.Draw(g_pPolyBin);
             g_pPolyBin->Render_EndFrame(1);
             g_pPolyBin->Render_Present(60);
+            Platform_PumpEvents(); /* 3 s a phase outside the main loop: the window stays responsive */
             time = 3.0f - (float)g_transitionTimer.GetElapsed(TIMER_SECONDS);
         } while (time >= 0.0f);
         g_transIrisPhase = TRANSITION_IDLE;
