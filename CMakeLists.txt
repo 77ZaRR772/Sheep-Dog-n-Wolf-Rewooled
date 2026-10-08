@@ -536,6 +536,19 @@ if(APPLE)
 endif()
 
 # ---------------------------------------------------------------------------
+# psxdav_convert: the game's PlayStation .DAV conversion (src/engine/psx_dav.cpp) as a command, for tools/retexture.py
+# ---------------------------------------------------------------------------
+
+add_executable(psxdav_convert
+        tools/psxdav_convert.cpp
+        src/engine/psx_dav.cpp
+        )
+
+target_include_directories(psxdav_convert PRIVATE
+        src/include
+        )
+
+# ---------------------------------------------------------------------------
 # macOS
 # ---------------------------------------------------------------------------
 

@@ -7,13 +7,19 @@ Each level's .DAV holds its texture pages (256 x 256, 16-bit) and a rectangle ta
   export   cuts every page into its images and writes each one as a PNG with a margin of its own edge pixels around it
            (context for the upscaler, so nothing of the neighbouring image leaks in). An image used by several levels
            is written once (same pixels = same file). The fonts are cut into their characters, one image each, named
-           font_<game|debug>_<code>.png (the hex character code: font_game_5f.png is the action button's hand). Also
-           writes the original pages, for reference.
+           font_<game|debug>_<code>.png (the hex character code: font_game_5f.png is the action button's icon;
+           PlayStation levels' are font_game_5f_psx.png, with the console's button symbols; a level whose font differs
+           from the others gets its own, font_game_5f_<Level>.png). Also writes the original pages, for
+           reference.
 
   import   reads the (upscaled) images back, crops their margins and pastes each at its place on a page scaled by the
            same factor, over the original page enlarged (for the few texels no image covers). The pages are written
            as <game>/retexture/<Level>/page_NN.png, which the game uses in place of the .DAV's pages
            (PolyBatcher::LoadTexturePages): full 32-bit colour, any whole multiple of 256.
+
+PlayStation levels: a level whose .DAV is the PlayStation's is converted first, by psxdav_convert (built with the
+game: the same conversion the game makes when it loads the level), into WORK/converted/<Level>.DAV, and its pages go
+to <game>/retexture-psx/<Level>/ instead: the converted pages are not the PC's, and the game reads them from there.
 
 Upscaled images may be any size: each page takes the scale most of its images have (or --scale), and every image is
 resized to fit it. Images left as they are keep the original. A page none of whose images changed is not written.
@@ -32,12 +38,15 @@ Usage (needs Pillow: pip install pillow):
   python3 tools/retexture.py import WORK                 # writes <game>/retexture/<Level>/page_NN.png
   python3 tools/retexture.py import WORK --scale 4 --out SOME/retexture
   --game DIR: the game's data folder (default: the disc folder next to this repository).
+  --psxdav FILE: the psxdav_convert program (default: the one in a cmake-build-* or build folder of this repository).
 """
 import argparse
 import array
 import hashlib
 import json
+import shutil
 import struct
+import subprocess
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
@@ -91,6 +100,39 @@ def _texel_table(fmt):
 _TABLES = {}
 
 
+def is_psx_dav(path):
+    """whether a .DAV is the PlayStation's (psx_dav.cpp: "V2.6" at 4, the material section's label at 0x30)"""
+    with open(path, "rb") as f:
+        head = f.read(0x44)
+    return head[4:8] == b"V2.6" and head[0x30:0x44] == b"----Section material"
+
+
+def find_converter(given):
+    if given:
+        return given
+    names = ("psxdav_convert", "psxdav_convert.exe")
+    for folder in sorted(ROOT.glob("cmake-build-*")) + [ROOT / "build", ROOT / "build" / "Release", ROOT / "build" / "Debug"]:
+        for n in names:
+            if (folder / n).is_file():
+                return folder / n
+    found = shutil.which("psxdav_convert")
+    if found:
+        return Path(found)
+    sys.exit("a PlayStation .DAV needs psxdav_convert: build the game (target psxdav_convert) or pass --psxdav")
+
+
+def page_file(name, dav_path, work, converter):
+    """the VDX7 file to read a level's pages from, and whether it was converted from the PlayStation's"""
+    if not is_psx_dav(dav_path):
+        return dav_path, False
+    out = work / "converted" / ("%s.DAV" % name)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    r = subprocess.run([str(find_converter(converter)), str(dav_path), str(out)], capture_output=True, text=True)
+    if r.returncode != 0:
+        sys.exit("%s: psxdav_convert failed: %s" % (dav_path, r.stderr.strip()))
+    return out, True
+
+
 def decode_pages(dav_path):
     """The .DAV's pages as RGBA images, and its rectangle table (x, w, y, h, page)."""
     dav = war_meshes.read_dav(dav_path)
@@ -127,10 +169,11 @@ def model_usage(war_path, dav):
 
 
 def font_cells(dav_path, dav):
-    """{rectangle index: [(character code, x, y, w, h), ...]}: the non-empty character cells of each font sheet."""
+    """{rectangle index: (font name, [(character code, x, y, w, h), ...])}: the character cells of each font sheet."""
     out = {}
+    lists = war_meshes.read_dav_idlists(dav_path)
     for res, name in FONTS.items():
-        for rect in war_meshes.read_dav_idlists(dav_path).get(res, []):
+        for rect in lists.get(res, []):
             x, w, y, h, page = dav["rects"][rect]
             cw = w // 16
             rows = min(h // FONT_CELL_H, (0x100 - 0x20) // 16)
@@ -160,7 +203,7 @@ def pad_edges(img, m):
 
 # ---- export ----
 
-def export(game, work, only, margin):
+def export(game, work, only, margin, converter):
     images_dir, pages_dir = work / "images", work / "pages"
     images_dir.mkdir(parents=True, exist_ok=True)
     manifest = {"version": 1, "margin": margin, "game": str(game), "levels": {}, "files": {}}
@@ -169,19 +212,21 @@ def export(game, work, only, margin):
     if not found:
         sys.exit("no level with a .DAV under %s" % (game / "Levels"))
     for name, (dav_path, war_path) in found.items():
+        dav_path, psx = page_file(name, dav_path, work, converter)
         dav, pages = decode_pages(dav_path)
         usage = model_usage(war_path, dav)
         (pages_dir / name).mkdir(parents=True, exist_ok=True)
         for i, page in enumerate(pages):
             page.save(pages_dir / name / ("page_%02d.png" % i))
+        level = {"pages": [{"w": p["w"], "h": p["h"], "format": p["format"]} for p in dav["pages"]], "images": [],
+                 "psx": psx}
         fonts = font_cells(dav_path, dav)
-        level = {"pages": [{"w": p["w"], "h": p["h"], "format": p["format"]} for p in dav["pages"]], "images": []}
         for index, (x, w, y, h, page) in enumerate(dav["rects"]):
             if page >= len(pages) or w == 0 or h == 0 or x + w > pages[page].width or y + h > pages[page].height:
                 continue  # the four blank pages the game adds, or an empty record
             if index in fonts:  # a font: one image per character, named by font and code
                 font, cells = fonts[index]
-                pieces = [("font_%s_%02x" % (font, code), {"glyph": code}, cx, cy, cw, ch)
+                pieces = [("font_%s_%02x%s" % (font, code, "_psx" if psx else ""), {"glyph": code}, cx, cy, cw, ch)
                           for code, cx, cy, cw, ch in cells]
             else:
                 pieces = [("%s_p%02d_r%04d" % (name, page, index), {}, x, y, w, h)]
@@ -189,7 +234,9 @@ def export(game, work, only, margin):
                 crop = pages[page].crop((px, py, px + pw, py + ph))
                 if extra and not crop.getchannel("A").getbbox():
                     continue  # an empty character cell
-                key = hashlib.sha1(crop.tobytes() + struct.pack("<HH", pw, ph)).hexdigest()
+                # a font character is never shared between the PC and the PlayStation, so each keeps its own names
+                tag = b"psx" if extra and psx else b""
+                key = hashlib.sha1(crop.tobytes() + struct.pack("<HH", pw, ph) + tag).hexdigest()
                 if key not in by_hash:
                     file = stem + ".png"
                     if file in manifest["files"]:  # the same character drawn differently in another level
@@ -202,7 +249,7 @@ def export(game, work, only, margin):
                 level["images"].append(dict({"rect": index, "page": page, "x": px, "y": py, "w": pw, "h": ph,
                                              "file": file, "models": usage.get(index, 0)}, **extra))
         manifest["levels"][name] = level
-        print("%-8s %2d pages, %4d images" % (name, len(pages), len(level["images"])))
+        print("%-8s %2d pages, %4d images%s" % (name, len(pages), len(level["images"]), " (PlayStation)" if psx else ""))
     (work / MANIFEST).write_text(json.dumps(manifest, indent=1))
     total = sum(len(lv["images"]) for lv in manifest["levels"].values())
     print("%d images in %d levels, %d unique files in %s (margin %d)" % (
@@ -224,7 +271,7 @@ def load_image(path, w, h, margin):
     return scale, img.crop((m, m, img.width - m, img.height - m)), has_alpha
 
 
-def import_(game, work, out, only, forced_scale):
+def import_(game, work, out, only, forced_scale, converter):
     manifest = json.loads((work / MANIFEST).read_text())
     margin = manifest["margin"]
     found = levels(game, only)
@@ -242,7 +289,12 @@ def import_(game, work, out, only, forced_scale):
             if not only:
                 print("%s: not in %s, skipped" % (name, game / "Levels"))
             continue
-        _, originals = decode_pages(found[name][0])
+        dav_path, psx = page_file(name, found[name][0], work, converter)
+        if psx != level.get("psx", False):
+            print("%s: the .DAV is not the version (PC / PlayStation) that was exported, skipped" % name)
+            continue
+        _, originals = decode_pages(dav_path)
+        root = out.parent / (out.name + "-psx") if psx else out
         by_page = defaultdict(list)
         for im in level["images"]:
             by_page[im["page"]].append(im)
@@ -270,12 +322,12 @@ def import_(game, work, out, only, forced_scale):
                 result.paste(piece, (x, y))
             if not changed:
                 continue
-            dest = out / name / ("page_%02d.png" % page)
+            dest = root / name / ("page_%02d.png" % page)
             dest.parent.mkdir(parents=True, exist_ok=True)
             result.save(dest)
             written += 1
             print("%s page %02d: %dx (%dx%d)" % (name, page, scale, size[0], size[1]))
-    print("%d pages written to %s" % (written, out))
+    print("%d pages written to %s (PlayStation levels: %s-psx)" % (written, out, out))
 
 
 def main(argv):
@@ -286,6 +338,7 @@ def main(argv):
         p.add_argument("work", type=Path, help="the folder of the exported images")
         p.add_argument("--game", type=Path, default=DEFAULT_GAME, help="the game's data folder")
         p.add_argument("--levels", nargs="*", help="only these level folders (Lvl-01, Wheel...)")
+        p.add_argument("--psxdav", type=Path, help="the psxdav_convert program, for PlayStation levels")
         if cmd == "export":
             p.add_argument("--margin", type=int, default=8, help="edge pixels repeated around each image (default 8)")
         else:
@@ -293,9 +346,9 @@ def main(argv):
             p.add_argument("--out", type=Path, help="where the pages go (default: <game>/retexture)")
     a = ap.parse_args(argv)
     if a.command == "export":
-        export(a.game, a.work, a.levels, a.margin)
+        export(a.game, a.work, a.levels, a.margin, a.psxdav)
     else:
-        import_(a.game, a.work, a.out or a.game / "retexture", a.levels, a.scale)
+        import_(a.game, a.work, a.out or a.game / "retexture", a.levels, a.scale, a.psxdav)
 
 
 if __name__ == "__main__":

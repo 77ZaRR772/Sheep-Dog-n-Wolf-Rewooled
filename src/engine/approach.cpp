@@ -10,6 +10,7 @@ extern "C" s16 Math_RadiansToAngle4096(float radians);
 #include "lerp.h"
 
 extern s32 g_dt;
+extern s32 g_dtDither; /* time.cpp */
 extern s32 g_dtMs;
 
 #define SDW_ABS(v) ((v) >= 0 ? (v) : -(v))
@@ -62,7 +63,10 @@ s16 Math_ApproachAngle(s16 cur, s16 target, s32 *rate, s32 limit, s32 accel, s32
 }
 
 /* step uses accel when target >= cur, decel otherwise; it is not a speed-magnitude comparison.
- * The per-frame step is truncated, so it can be ZERO at high frame rates (accel * g_dt < 4096). */
+ * The original truncated the per-frame step, which is ZERO at high frame rates (accel * g_dt < 4096: an acceleration
+ * under 61 at 60 fps), so the raft on the water and the inflatable sheep never got moving until the frame rate dropped.
+ * The port rounds it with g_dtDither instead: over the frames the step adds up to accel per second at any frame
+ * rate. */
 s32 Math_ApproachLinear(s32 cur, s32 target, s32 limit, s32 accel, s32 decel)
 {
     s32 step;
@@ -70,7 +74,7 @@ s32 Math_ApproachLinear(s32 cur, s32 target, s32 limit, s32 accel, s32 decel)
         step = accel;
     else
         step = decel;
-    step = (step * g_dt) >> 12;
+    step = (step * g_dt + g_dtDither) >> 12;
     if (SDW_ABS(target - cur) <= step) {
         if (target > limit)
             target = limit;

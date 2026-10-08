@@ -67,7 +67,7 @@ def read_dav(path):
 def read_dav_idlists(path):
     """{resource id: [rectangle index, ...]}: the .DAV's id lists (Load_DAV, IdList_FindWithCount), the bitmaps the 2D
     code asks for by id (DAV_IDI_* in src/include/scenaric_props.h). The directory at the header's +0x14 is {u16
-    entries, rects, pages; u32 entry table, rect table, file size, id lists}; the id lists are {u32 count; records}, a
+    entries, rects, pages; u32 entry table, rect table, pages, id lists}; the id lists are {u32 count; records}, a
     record {u32 id | count << 16; u32 file offset of an entry-table slot per entry}, and the slot holds the rect index."""
     d = path.read_bytes()
     hdr, = struct.unpack_from("<I", d, 0x14)
