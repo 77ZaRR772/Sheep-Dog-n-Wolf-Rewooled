@@ -1,7 +1,9 @@
 # Builds the game and the launcher for Linux, Windows and macOS (Release) on every push and pull request, and uploads
-# a zip per platform as a build artifact. Pushing a tag v* (git tag v0.1.0 && git push origin v0.1.0), or merging a pull
-# request labelled release:patch, release:minor or release:major (the next version after the latest v* tag), also
-# publishes the three zips as a GitHub Release.
+# a zip per platform as a build artifact (as it is: downloaded from the run's page it is that zip, not a zip around it),
+# Rewooled-<Platform>-<commit>.zip (Rewooled-<Platform>-pr<number>-<commit>.zip for a pull request), or
+# Rewooled-<Platform>-<version>.zip for a pushed tag. Pushing a tag v* (git tag v0.1.0 && git push origin v0.1.0), or
+# merging a pull request labelled release:patch, release:minor or release:major (the next version after the latest v*
+# tag), also publishes the three zips as a GitHub Release, named after the version (Rewooled-Windows-x64-0.1.0.zip).
 #
 # The zips hold SheepD3D and SheepLauncher only (on macOS the app bundle Rewooled.app, which holds both): the game's data comes from your own copy (BUILDING.md section 3).
 name: Build
@@ -58,10 +60,13 @@ jobs:
       matrix:
         include:
           - name: linux-x86_64
+            label: Linux-x86_64
             os: ubuntu-24.04
           - name: windows-x64
+            label: Windows-x64
             os: windows-2022
           - name: macos-arm64
+            label: macOS-arm64
             os: macos-14
 
     steps:
@@ -145,11 +150,25 @@ jobs:
           spctl --assess --type execute --verbose "$APP"
 
       # zipped here, on the build machine: an artifact upload drops the executable bit of the Linux and macOS binaries
+      # Rewooled-<Platform>-<version>.zip: the version of a pushed v* tag, pr<number>-<commit> for a pull request (its
+      # last commit: GITHUB_SHA is the merge GitHub builds it as), else the commit (a release renames it)
       - name: Package
+        id: package
         shell: bash
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           mkdir -p dist
-          zipname="SheepD3D-${{ matrix.name }}.zip"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            version="${GITHUB_REF_NAME#v}"
+          elif [ -n "$PR_NUMBER" ]; then
+            version="pr$PR_NUMBER-${PR_HEAD::7}"
+          else
+            version="${GITHUB_SHA::7}"
+          fi
+          zipname="Rewooled-${{ matrix.label }}-$version.zip"
+          echo "zipname=$zipname" >> "$GITHUB_OUTPUT"
           if [ "$RUNNER_OS" = "Windows" ]; then
             (cd build/Release && 7z a "../../dist/$zipname" SheepD3D.exe SheepLauncher.exe)
           elif [ "$RUNNER_OS" = "macOS" ]; then
@@ -161,11 +180,12 @@ jobs:
           fi
           ls -l dist
 
+      # the zip as it is (archive: false), not wrapped in the artifact's own zip; the artifact is named after the file
       - name: Upload
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: Rewooled-${{ matrix.name }}
-          path: dist/*.zip
+          path: dist/${{ steps.package.outputs.zipname }}
+          archive: false
           if-no-files-found: error
 
   release:
@@ -183,8 +203,9 @@ jobs:
 
     steps:
       - name: Download the zips
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
+          pattern: Rewooled-*.zip
           path: dist
           merge-multiple: true
 
@@ -218,7 +239,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.tag.outputs.tag }}
         run: |
+          # Rewooled-<Platform>-<commit>.zip -> Rewooled-<Platform>-<version>.zip (the version without its "v")
+          for z in dist/Rewooled-*.zip; do
+            named=$(echo "$z" | sed -E "s/-[^-]+\.zip$/-${TAG#v}.zip/")
+            [ "$z" = "$named" ] || mv "$z" "$named"
+          done
           ls -l dist
+          # the three platform zips, each a zip with the files in it (not a zip around a zip, nor unpacked)
+          [ "$(ls dist/*.zip | wc -l)" -eq 3 ] || { echo "expected 3 zips in dist"; exit 1; }
+          for z in dist/*.zip; do
+            unzip -Z1 "$z" | grep -qv '\.zip$' || { echo "$z: not the platform zip"; exit 1; }
+          done
           # creates the tag on this commit if it doesn't exist yet (a labelled merge); a tag created with the workflow's
           # own token doesn't start another run, so nothing is built twice
           gh release create "$TAG" dist/*.zip \
