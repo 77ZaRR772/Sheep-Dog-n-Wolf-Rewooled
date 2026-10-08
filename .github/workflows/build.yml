@@ -208,6 +208,8 @@ jobs:
           pattern: Rewooled-*.zip
           path: dist
           merge-multiple: true
+          # the artifacts are zips uploaded as they are: without this the action unpacks them into dist
+          skip-decompress: true
 
       - name: Pick the tag
         id: tag
@@ -239,20 +241,24 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.tag.outputs.tag }}
         run: |
-          # Rewooled-<Platform>-<commit>.zip -> Rewooled-<Platform>-<version>.zip (the version without its "v")
-          for z in dist/Rewooled-*.zip; do
-            named=$(echo "$z" | sed -E "s/-[^-]+\.zip$/-${TAG#v}.zip/")
-            [ "$z" = "$named" ] || mv "$z" "$named"
+          ls -lR dist
+          # each downloaded zip, Rewooled-<Platform>-<commit>.zip (with however many .zip the download gave it), into
+          # release/ as Rewooled-<Platform>-<version>.zip (the version without its "v")
+          mkdir -p release
+          find dist -type f -name 'Rewooled-*' | while read -r f; do
+            base=$(basename "$f")
+            while [ "${base%.zip}" != "$base" ]; do base=${base%.zip}; done
+            mv "$f" "release/${base%-*}-${TAG#v}.zip"
           done
-          ls -l dist
+          ls -l release
           # the three platform zips, each a zip with the files in it (not a zip around a zip, nor unpacked)
-          [ "$(ls dist/*.zip | wc -l)" -eq 3 ] || { echo "expected 3 zips in dist"; exit 1; }
-          for z in dist/*.zip; do
+          [ "$(find release -name '*.zip' | wc -l)" -eq 3 ] || { echo "expected 3 zips in release"; exit 1; }
+          for z in release/*.zip; do
             unzip -Z1 "$z" | grep -qv '\.zip$' || { echo "$z: not the platform zip"; exit 1; }
           done
           # creates the tag on this commit if it doesn't exist yet (a labelled merge); a tag created with the workflow's
           # own token doesn't start another run, so nothing is built twice
-          gh release create "$TAG" dist/*.zip \
+          gh release create "$TAG" release/*.zip \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --title "$TAG" \
