@@ -25,6 +25,7 @@
 #include "time.h"
 #include "sound_mgr.h"
 #include "bs_io.h"
+#include "../platform/platform.h"
 /* (g_streamWaves itself is defined below, with its initialiser.) */
 StreamPlayer *g_pStreamPlayer;
 char *g_streamLoadPath;           /* the path the loader thread is opening */
@@ -176,6 +177,12 @@ void StreamPlayer::StopAndFree()
  * meanwhile (state 5). The language argument is not used - the switch reads the progress object again. */
 void StreamPlayer::PlayVoice(u32 clip, u8 language, u32 unused, u32 lipSync)
 {
+    /* clip is 1-based into the voice bank; an object's record can hold anything there (the PlayStation's .WAR keeps
+     * disc positions in the voice properties), so a clip the bank does not have is not played */
+    if (!bankLoaded || clip == 0 || clip > clipCount || !clipNames[clip - 1]) {
+        Platform_Log("StreamPlayer: no voice clip %u (the bank has %u)", clip, (unsigned)clipCount);
+        return;
+    }
     currentClip = clip;
     if (g_pSoundSystem->initialized != 1)
         return;

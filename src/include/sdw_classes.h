@@ -506,12 +506,6 @@ typedef struct ScnObject * (*ScnFactoryFn)(void *record);   // a scenaric class 
 
 struct Aabb {
 public:
-#ifdef SDW_MEMBERS_Aabb
-    SDW_MEMBERS_Aabb
-#endif
-#ifdef SDW_EXTRA_Aabb
-    SDW_EXTRA_Aabb
-#endif
     Vec3s min;                                     // minimum corner
     u8 _pad006[0x2];
     Vec3s max;                                     // maximum corner (Cull_IsAabbVisible reads it as words 4..6)
@@ -519,12 +513,6 @@ public:
 
 struct ActionHit {
 public:
-#ifdef SDW_MEMBERS_ActionHit
-    SDW_MEMBERS_ActionHit
-#endif
-#ifdef SDW_EXTRA_ActionHit
-    SDW_EXTRA_ActionHit
-#endif
     s32 action;                                    // nonzero reply of the candidate to msg 2 (primary) or 0x26 (secondary); ScnControllable_ScanInteracta
     ScnObject *target;                             // the object that gave the reply
 };
@@ -533,9 +521,6 @@ class AltModel {
 public:
 #ifdef SDW_MEMBERS_AltModel
     SDW_MEMBERS_AltModel
-#endif
-#ifdef SDW_EXTRA_AltModel
-    SDW_EXTRA_AltModel
 #endif
     s32 IsValid();
     u16 modelResIdx;                               // DAV resource index of the model, 0xffff = none; written into WAR record word 0 on swap
@@ -547,12 +532,6 @@ public:
 
 struct InstanceBase {
 public:
-#ifdef SDW_MEMBERS_InstanceBase
-    SDW_MEMBERS_InstanceBase
-#endif
-#ifdef SDW_EXTRA_InstanceBase
-    SDW_EXTRA_InstanceBase
-#endif
     u16 inst_flags;                                // Instance flags: 1 drawn/visible last render, 2 (mode bit 5), 4 animated, 8 attached to parent, 0x10
     u8 inst_mode;                                  // Instance_InitBase stores its mode argument here: 0xFF ScnBody, 0xFE ScnLogic, or for world objects t
     u8 inst_kind;                                  // 0 = rigid scenaric instance, 4 = animated (set by Animator_Init). World objects use 1/2/3 for resour
@@ -561,12 +540,6 @@ public:
 
 class Instance : public InstanceBase {
 public:
-#ifdef SDW_MEMBERS_Instance
-    SDW_MEMBERS_Instance
-#endif
-#ifdef SDW_EXTRA_Instance
-    SDW_EXTRA_Instance
-#endif
     Instance *Inst();
     Vec3s pos;                                     // world position (y down)
     u8 attachedChildCount;                         // Also the length of this parent's run of consecutive AttachLink slots in g_attachLinkPool. AttachLink
@@ -691,12 +664,6 @@ public:
 
 class ScnLogic : public ScnObject {
 public:
-#ifdef SDW_MEMBERS_ScnLogic
-    SDW_MEMBERS_ScnLogic
-#endif
-#ifdef SDW_EXTRA_ScnLogic
-    SDW_EXTRA_ScnLogic
-#endif
     virtual void PostLoadInit() {}                 // ScnObject_Nop (override)
     virtual void Update() {}                       // ScnObject_Nop (override)
     virtual void Render(Camera *view);             // ScnLogic_Render (override)
@@ -708,12 +675,6 @@ public:
 
 class AmbientSoundManager : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_AmbientSoundManager
-    SDW_MEMBERS_AmbientSoundManager
-#endif
-#ifdef SDW_EXTRA_AmbientSoundManager
-    SDW_EXTRA_AmbientSoundManager
-#endif
     virtual void PostLoadInit();                   // AmbientSoundManager_Init (override)
     virtual void Update();                         // AmbientSoundManager_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // AmbientSoundManager_HandleMessage (override)
@@ -734,12 +695,6 @@ public:
 
 struct AnimHeader {
 public:
-#ifdef SDW_MEMBERS_AnimHeader
-    SDW_MEMBERS_AnimHeader
-#endif
-#ifdef SDW_EXTRA_AnimHeader
-    SDW_EXTRA_AnimHeader
-#endif
     u8 _pad000[0x8];
     u16 keyCount;                                  // number of key records (the frame-index modulus in Anim_Start/Advance/StartDirect); the records are k
     u8 keys[0x4];                                  // (AnimKey[]) variable-length key records, next = key + 8 + 2*payloadWords
@@ -747,12 +702,6 @@ public:
 
 struct AnimJointPose {
 public:
-#ifdef SDW_MEMBERS_AnimJointPose
-    SDW_MEMBERS_AnimJointPose
-#endif
-#ifdef SDW_EXTRA_AnimJointPose
-    SDW_EXTRA_AnimJointPose
-#endif
     float rot[3];                                  // joint Euler angles in radians [0, 2PI), used by Mat44_SetRotYXZ in Instance_DrawAnimParts
     float pos[3];                                  // joint translation in model units, added to the hierarchy offset
     float scale[3];                                // joint scale, 1.0 default; scales this joint (second pass) and its children's base offsets
@@ -762,12 +711,6 @@ public:
 
 struct AnimKey {
 public:
-#ifdef SDW_MEMBERS_AnimKey
-    SDW_MEMBERS_AnimKey
-#endif
-#ifdef SDW_EXTRA_AnimKey
-    SDW_EXTRA_AnimKey
-#endif
     u16 durationMs;                                // key duration in ms; the animator accumulator counts 1/1024 ms, so a key lasts durationMs << 10 accum
     u16 entryCount;                                // number of packed joint entries that follow
     u16 payloadWords;                              // payload size in u16 words, used only to find the next record (never reconciled with entryCount)
@@ -779,9 +722,6 @@ class Mesh {
 public:
 #ifdef SDW_MEMBERS_Mesh
     SDW_MEMBERS_Mesh
-#endif
-#ifdef SDW_EXTRA_Mesh
-    SDW_EXTRA_Mesh
 #endif
     virtual ~Mesh();                                  // Mesh_ScalarDeletingDtor
     virtual u8 BuildFromBsFile(D3DApp *app, BsFile *file); // Mesh_BuildFromBsFile
@@ -809,9 +749,6 @@ class AnimMesh : public Mesh {
 public:
 #ifdef SDW_MEMBERS_AnimMesh
     SDW_MEMBERS_AnimMesh
-#endif
-#ifdef SDW_EXTRA_AnimMesh
-    SDW_EXTRA_AnimMesh
 #endif
     virtual ~AnimMesh();                              // AnimMesh_ScalarDeletingDtor
     virtual u8 BuildFromBsFile(D3DApp *app, BsFile *file); // AnimMesh_BuildFromBsFile (override)
@@ -842,12 +779,6 @@ public:
 
 struct SpriteFrame {
 public:
-#ifdef SDW_MEMBERS_SpriteFrame
-    SDW_MEMBERS_SpriteFrame
-#endif
-#ifdef SDW_EXTRA_SpriteFrame
-    SDW_EXTRA_SpriteFrame
-#endif
     u16 texPage;                                   // texture page (TexAtlas_GetPage) of the frame bitmap; +4 is the RenderPoly type
     u8 u;                                          // U origin
     u8 v;                                          // V origin
@@ -857,9 +788,6 @@ class AnimSprite {
 public:
 #ifdef SDW_MEMBERS_AnimSprite
     SDW_MEMBERS_AnimSprite
-#endif
-#ifdef SDW_EXTRA_AnimSprite
-    SDW_EXTRA_AnimSprite
 #endif
     s32 InitFromRes(u16 resId);                                  /* AnimSprite_InitFromRes */
     void Draw(u32 *layer, s32 x0, s32 y0, s32 x1, s32 y1, u32 color, u8 frame, u32 flipMode);
@@ -875,12 +803,6 @@ public:
 
 struct Animator {
 public:
-#ifdef SDW_MEMBERS_Animator
-    SDW_MEMBERS_Animator
-#endif
-#ifdef SDW_EXTRA_Animator
-    SDW_EXTRA_Animator
-#endif
     AnimHeader *cur;                               // current animation (AnimHeader: u16 keyCount at +8) (ScnBody +0x40)
     void *bufA;                                    // AnimJointPose[jointCount]: pose of the key being left ('from'); interpolation input A; swapped with
     void *bufB;                                    // AnimJointPose[jointCount]: pose of the key being approached ('to'); always the destination of Anim_D
@@ -897,12 +819,6 @@ public:
 
 struct AnimatedWorldObj {
 public:
-#ifdef SDW_MEMBERS_AnimatedWorldObj
-    SDW_MEMBERS_AnimatedWorldObj
-#endif
-#ifdef SDW_EXTRA_AnimatedWorldObj
-    SDW_EXTRA_AnimatedWorldObj
-#endif
     Instance inst;                                 // the world object's instance: WorldObj's InstanceBase header, then pos/rot/record/attach fields; Worl
     Animator anim;                                 // the animation state (Animator_Init, WorldObj_DrawAnimated); its three pose buffers are the nbJoints
 };
@@ -939,12 +855,6 @@ public:
 
 class Anvil : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Anvil
-    SDW_MEMBERS_Anvil
-#endif
-#ifdef SDW_EXTRA_Anvil
-    SDW_EXTRA_Anvil
-#endif
     virtual void PostLoadInit();                   // Anvil_PostLoadInit (override)
     virtual void Update();                         // Anvil_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Anvil_HandleMessage (override)
@@ -955,12 +865,6 @@ public:
 
 struct AttachLinkBits {
 public:
-#ifdef SDW_MEMBERS_AttachLinkBits
-    SDW_MEMBERS_AttachLinkBits
-#endif
-#ifdef SDW_EXTRA_AttachLinkBits
-    SDW_EXTRA_AttachLinkBits
-#endif
     u8 matrixValid : 1;                            // (bits) bit 0: the parent published this link's matrix during its Render (AttachLinkFlags 1) | AttachLink.fl
     u8 parentDone : 1;                             // (bits) bit 1: the parent has been through Scn_RenderIfVisible this frame (set on every child link at 0x5601
     u8 rootRotation : 1;                           // (bits) bit 2: AttachLink_Alloc's rootRotation argument; Instance_CalcWorldMatrix then keeps the child's own
@@ -974,9 +878,6 @@ class Mat44 {
 public:
 #ifdef SDW_MEMBERS_Mat44
     SDW_MEMBERS_Mat44
-#endif
-#ifdef SDW_EXTRA_Mat44
-    SDW_EXTRA_Mat44
 #endif
     Mat44 &Copy(const Mat44 &src);
     Mat44 &ScaleInPlace(float s);
@@ -1010,12 +911,6 @@ public:
 
 struct AttachLink {
 public:
-#ifdef SDW_MEMBERS_AttachLink
-    SDW_MEMBERS_AttachLink
-#endif
-#ifdef SDW_EXTRA_AttachLink
-    SDW_EXTRA_AttachLink
-#endif
     Vec3s localOffset;                             // offset in the parent part's frame, *8, applied when flags & 0x08 (Instance_CalcWorldMatrix)
     u8 partIndex;                                  // parent model part whose matrix M[partIndex] is published into the link
     union {
@@ -1050,12 +945,6 @@ public:
 
 class AutomaticDoor : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_AutomaticDoor
-    SDW_MEMBERS_AutomaticDoor
-#endif
-#ifdef SDW_EXTRA_AutomaticDoor
-    SDW_EXTRA_AutomaticDoor
-#endif
     virtual void PostLoadInit();                   // AutomaticDoor_PostLoadInit (override)
     virtual void Update();                         // AutomaticDoor_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // AutomaticDoor_HandleMessage (override)
@@ -1068,12 +957,6 @@ public:
 
 struct BallBits {
 public:
-#ifdef SDW_MEMBERS_BallBits
-    SDW_MEMBERS_BallBits
-#endif
-#ifdef SDW_EXTRA_BallBits
-    SDW_EXTRA_BallBits
-#endif
     u8 movable : 1;
     u8 magnet : 1;                                 // (bits) bit 1 (1-byte unsigned unit)
     u8 sound : 1;                                  // (bits) bit 2 (1-byte unsigned unit)
@@ -1081,12 +964,6 @@ public:
 
 class Bat : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Bat
-    SDW_MEMBERS_Bat
-#endif
-#ifdef SDW_EXTRA_Bat
-    SDW_EXTRA_Bat
-#endif
     virtual void PostLoadInit();                   // Bat_PostLoadInit (override)
     virtual void Update();                         // Bat_Update (override)
     virtual void Render(Camera *view);             // Bat_Render (override)
@@ -1114,9 +991,6 @@ public:
 #ifdef SDW_MEMBERS_UiQuad
     SDW_MEMBERS_UiQuad
 #endif
-#ifdef SDW_EXTRA_UiQuad
-    SDW_EXTRA_UiQuad
-#endif
     void SetColor(u32 rgb);
     void SetFadeLevel(u8 level);
     void UiQuad_Mirror(s32 flipX, s32 flipY);
@@ -1137,12 +1011,6 @@ public:
 
 class Battery : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Battery
-    SDW_MEMBERS_Battery
-#endif
-#ifdef SDW_EXTRA_Battery
-    SDW_EXTRA_Battery
-#endif
     virtual void PostLoadInit();                   // Battery_PostLoadInit (override)
     virtual void Update();                         // Battery_Update (override)
     virtual void Render(Camera *view);             // Battery_Render (override)
@@ -1186,12 +1054,6 @@ public:
 
 class Bees : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Bees
-    SDW_MEMBERS_Bees
-#endif
-#ifdef SDW_EXTRA_Bees
-    SDW_EXTRA_Bees
-#endif
     virtual void PostLoadInit();                   // Bees_PostLoadInit (override)
     virtual void Update();                         // Bees_Update (override)
     virtual void Render(Camera *view);             // Bees_Render (override)
@@ -1235,12 +1097,6 @@ public:
 
 class Bell : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Bell
-    SDW_MEMBERS_Bell
-#endif
-#ifdef SDW_EXTRA_Bell
-    SDW_EXTRA_Bell
-#endif
     virtual void PostLoadInit();                   // Bell_PostLoadInit (override)
     virtual void Update();                         // Bell_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Bell_HandleMessage (override)
@@ -1256,9 +1112,6 @@ public:
 #ifdef SDW_MEMBERS_TrajFollower
     SDW_MEMBERS_TrajFollower
 #endif
-#ifdef SDW_EXTRA_TrajFollower
-    SDW_EXTRA_TrajFollower
-#endif
     Trajectory *traj;                              // the trajectory it follows ({u16 count; Vec3s pts[count]}): TrajFollower_Init stores it, Tra
     s16 pointIndex;                                // index of the waypoint currently being steered toward; wraps to 0 at the end
     s16 speed;                                     // movement speed in units/s; multiplies the normalised direction to give the output velocity
@@ -1273,12 +1126,6 @@ public:
 
 class BipbipLevel14 : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_BipbipLevel14
-    SDW_MEMBERS_BipbipLevel14
-#endif
-#ifdef SDW_EXTRA_BipbipLevel14
-    SDW_EXTRA_BipbipLevel14
-#endif
     virtual void PostLoadInit();                   // BipbipLevel14_PostLoadInit (override)
     virtual void Update();                         // BipbipLevel14_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // BipbipLevel14_HandleMessage (override)
@@ -1310,12 +1157,6 @@ public:
 
 class Bird : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Bird
-    SDW_MEMBERS_Bird
-#endif
-#ifdef SDW_EXTRA_Bird
-    SDW_EXTRA_Bird
-#endif
     virtual void PostLoadInit();                   // Bird_Init (override)
     virtual void Update();                         // Bird_Update (override)
     virtual void Render(Camera *view);             // Bird_Render (override)
@@ -1343,23 +1184,11 @@ public:
 
 struct BlackHoleFlagBits {
 public:
-#ifdef SDW_MEMBERS_BlackHoleFlagBits
-    SDW_MEMBERS_BlackHoleFlagBits
-#endif
-#ifdef SDW_EXTRA_BlackHoleFlagBits
-    SDW_EXTRA_BlackHoleFlagBits
-#endif
     u8 registered : 1;                             // (bits) bit view of BlackHole.flags (+0x65): the hole is in the Wolf's move-modifier list. Read as a one-bit
 };
 
 class BlackHole : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_BlackHole
-    SDW_MEMBERS_BlackHole
-#endif
-#ifdef SDW_EXTRA_BlackHole
-    SDW_EXTRA_BlackHole
-#endif
     virtual void PostLoadInit();                   // BlackHole_PostLoadInit (override)
     virtual void Update();                         // BlackHole_Update (override)
     virtual void Render(Camera *view);             // BlackHole_Render (override)
@@ -1372,12 +1201,6 @@ public:
 
 struct BonusEntry {
 public:
-#ifdef SDW_MEMBERS_BonusEntry
-    SDW_MEMBERS_BonusEntry
-#endif
-#ifdef SDW_EXTRA_BonusEntry
-    SDW_EXTRA_BonusEntry
-#endif
     s8 kind;
     u8 price;                                      // price in points, read unsigned
     char payload[10];                              // the gallery name (PERSO, DECOR, STORY, COLOR, TEAM, INTRO) of a kind 0 entry, or in payload[0] the t
@@ -1385,12 +1208,6 @@ public:
 
 class ScrollText {
 public:
-#ifdef SDW_MEMBERS_ScrollText
-    SDW_MEMBERS_ScrollText
-#endif
-#ifdef SDW_EXTRA_ScrollText
-    SDW_EXTRA_ScrollText
-#endif
     void Init(char *text, const s16 *rect);                      /* ScrollText_Init */
     void ScrollList_Update(s8 dir);
     void Draw(u8 layerIndex, u8 align);                          /* ScrollText_Draw */
@@ -1405,12 +1222,6 @@ public:
 
 class BonusManager : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_BonusManager
-    SDW_MEMBERS_BonusManager
-#endif
-#ifdef SDW_EXTRA_BonusManager
-    SDW_EXTRA_BonusManager
-#endif
     virtual void PostLoadInit();                   // BonusManager_PostLoadInit (override)
     virtual void Update();                         // BonusManager_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // BonusManager_HandleMessage (override)
@@ -1438,24 +1249,12 @@ public:
 
 struct Box6i {
 public:
-#ifdef SDW_MEMBERS_Box6i
-    SDW_MEMBERS_Box6i
-#endif
-#ifdef SDW_EXTRA_Box6i
-    SDW_EXTRA_Box6i
-#endif
     s32 min[3];                                    // collision-space box min x,y,z (coords x16)
     s32 max[3];                                    // collision-space box max x,y,z
 };
 
 struct BoxCrate {
 public:
-#ifdef SDW_MEMBERS_BoxCrate
-    SDW_MEMBERS_BoxCrate
-#endif
-#ifdef SDW_EXTRA_BoxCrate
-    SDW_EXTRA_BoxCrate
-#endif
     u8 _pad000[0x7c];
     ScnObject *contents;                           // The object this crate delivers. The crate never resolves it â€” Mailbox_Deliver writes it at
     u16 unk80;                                     // Zeroed at the moment the crate opens and referenced nowhere else in. Na
@@ -1467,9 +1266,6 @@ class BsFile {
 public:
 #ifdef SDW_MEMBERS_BsFile
     SDW_MEMBERS_BsFile
-#endif
-#ifdef SDW_EXTRA_BsFile
-    SDW_EXTRA_BsFile
 #endif
     virtual ~BsFile();                                // BsFile_ScalarDeletingDtor
     bool Bs_IsGeometryResource();
@@ -1528,9 +1324,6 @@ public:
 #ifdef SDW_MEMBERS_PolyTri
     SDW_MEMBERS_PolyTri
 #endif
-#ifdef SDW_EXTRA_PolyTri
-    SDW_EXTRA_PolyTri
-#endif
     virtual ~PolyTri();                               // PolyTri_ScalarDeletingDtor
     PolyTri & operator=(const PolyTri &src);
     u32 idx[3];                                    // the triangle's three vertex indices: HoleFX_BuildMesh writes them at +4/+8/+0xc through &poly (0x538
@@ -1540,9 +1333,6 @@ class BsPolyBlendFlat : public PolyTri {
 public:
 #ifdef SDW_MEMBERS_BsPolyBlendFlat
     SDW_MEMBERS_BsPolyBlendFlat
-#endif
-#ifdef SDW_EXTRA_BsPolyBlendFlat
-    SDW_EXTRA_BsPolyBlendFlat
 #endif
     virtual ~BsPolyBlendFlat();                       // BsPolyBlendFlat_VectorDeletingDtor
     u32 colour;                                    // flat colour from BsFile_ReadRgbHalved (BsDecode_Kind10_11)
@@ -1554,9 +1344,6 @@ public:
 #ifdef SDW_MEMBERS_BsPolyBlendGouraud
     SDW_MEMBERS_BsPolyBlendGouraud
 #endif
-#ifdef SDW_EXTRA_BsPolyBlendGouraud
-    SDW_EXTRA_BsPolyBlendGouraud
-#endif
     virtual ~BsPolyBlendGouraud();                    // BsPolyBlendGouraud_VectorDeletingDtor
     u32 colour[3];                                 // per-vertex colours from BsFile_ReadRgbHalved (BsDecode_Kind12)
     u32 blendMode;                                 // a u32 read straight from the file (BsDecode_Kind12); RenderPoly_InitFromBsBlendGouraud swit
@@ -1567,9 +1354,6 @@ public:
 #ifdef SDW_MEMBERS_BsPolyFlat
     SDW_MEMBERS_BsPolyFlat
 #endif
-#ifdef SDW_EXTRA_BsPolyFlat
-    SDW_EXTRA_BsPolyFlat
-#endif
     virtual ~BsPolyFlat();                            // BsPolyFlat_VectorDeletingDtor
     u32 colour;                                    // flat colour from BsFile_ReadRgbHalved, stored
 };
@@ -1579,9 +1363,6 @@ public:
 #ifdef SDW_MEMBERS_BsPolyGouraud
     SDW_MEMBERS_BsPolyGouraud
 #endif
-#ifdef SDW_EXTRA_BsPolyGouraud
-    SDW_EXTRA_BsPolyGouraud
-#endif
     virtual ~BsPolyGouraud();                         // BsPolyGouraud_VectorDeletingDtor
     u32 colour[3];                                 // per-vertex colours from BsFile_ReadRgbHalved: BsDecode_Kind2_3 stores them at +0x10/+0x14/+0x18 of a
 };
@@ -1590,9 +1371,6 @@ class BsPolyTexFlat : public PolyTri {
 public:
 #ifdef SDW_MEMBERS_BsPolyTexFlat
     SDW_MEMBERS_BsPolyTexFlat
-#endif
-#ifdef SDW_EXTRA_BsPolyTexFlat
-    SDW_EXTRA_BsPolyTexFlat
 #endif
     virtual ~BsPolyTexFlat();                         // BsPolyTexFlat_VectorDeletingDtor
     u32 colour;                                    // flat colour from BsFile_ReadU24BE
@@ -1605,9 +1383,6 @@ public:
 #ifdef SDW_MEMBERS_BsPolyTexGouraud
     SDW_MEMBERS_BsPolyTexGouraud
 #endif
-#ifdef SDW_EXTRA_BsPolyTexGouraud
-    SDW_EXTRA_BsPolyTexGouraud
-#endif
     virtual ~BsPolyTexGouraud();                      // BsPolyTexGouraud_VectorDeletingDtor
     u32 colour[3];                                 // per-vertex colours from BsFile_ReadU24BE
     u32 texIndex;                                  // the Vdx7Rect page zero-extended
@@ -1618,9 +1393,6 @@ class BsStream {
 public:
 #ifdef SDW_MEMBERS_BsStream
     SDW_MEMBERS_BsStream
-#endif
-#ifdef SDW_EXTRA_BsStream
-    SDW_EXTRA_BsStream
 #endif
     virtual ~BsStream();                              // BsStream_ScalarDeletingDtor
     bool Seek(u32 pos);
@@ -1657,9 +1429,6 @@ public:
 
 class ScnMobile : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_ScnMobile
-    SDW_MEMBERS_ScnMobile
-#endif
 #ifdef SDW_EXTRA_ScnMobile
     SDW_EXTRA_ScnMobile
 #endif
@@ -1675,12 +1444,6 @@ public:
 
 class Bullet : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Bullet
-    SDW_MEMBERS_Bullet
-#endif
-#ifdef SDW_EXTRA_Bullet
-    SDW_EXTRA_Bullet
-#endif
     virtual void PostLoadInit();                   // Bullet_PostLoadInit (override)
     virtual void Update();                         // Bullet_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Bullet_HandleMessage (override)
@@ -1696,12 +1459,6 @@ public:
 
 struct BushFlagBits {
 public:
-#ifdef SDW_MEMBERS_BushFlagBits
-    SDW_MEMBERS_BushFlagBits
-#endif
-#ifdef SDW_EXTRA_BushFlagBits
-    SDW_EXTRA_BushFlagBits
-#endif
     u8 fanBlown : 1;                               // (bits) bit 0 (1-byte unsigned unit)
     u8 liftLock : 1;                               // (bits) bit 1 (1-byte unsigned unit)
     u8 wolfNear : 1;                               // (bits) bit 2 (1-byte unsigned unit)
@@ -1709,12 +1466,6 @@ public:
 
 class Bush : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Bush
-    SDW_MEMBERS_Bush
-#endif
-#ifdef SDW_EXTRA_Bush
-    SDW_EXTRA_Bush
-#endif
     virtual void PostLoadInit();                   // Bush_Init (override)
     virtual void Update();                         // Bush_Update (override)
     virtual void Render(Camera *view);             // Bush_Render (override)
@@ -1731,12 +1482,6 @@ public:
 
 class Butterfly : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Butterfly
-    SDW_MEMBERS_Butterfly
-#endif
-#ifdef SDW_EXTRA_Butterfly
-    SDW_EXTRA_Butterfly
-#endif
     virtual void PostLoadInit();                   // Butterfly_Init (override)
     virtual void Update();                         // Butterfly_Update (override)
     virtual void Render(Camera *view);             // Butterfly_Render (override)
@@ -1764,12 +1509,6 @@ public:
 
 class Cactus : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Cactus
-    SDW_MEMBERS_Cactus
-#endif
-#ifdef SDW_EXTRA_Cactus
-    SDW_EXTRA_Cactus
-#endif
     virtual void PostLoadInit();                   // Cactus_Init (override)
     virtual void Update();                         // Cactus_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Cactus_HandleMessage (override)
@@ -1777,12 +1516,6 @@ public:
 
 struct CamFlagBits {
 public:
-#ifdef SDW_MEMBERS_CamFlagBits
-    SDW_MEMBERS_CamFlagBits
-#endif
-#ifdef SDW_EXTRA_CamFlagBits
-    SDW_EXTRA_CamFlagBits
-#endif
     u8 manual : 1;                                 // (bits) CAMF_MANUAL
     u8 smooth : 1;                                 // (bits) CAMF_SMOOTH
     u8 snap : 1;                                   // (bits) CAMF_SNAP
@@ -1792,12 +1525,6 @@ public:
 
 struct CamMgrEntry {
 public:
-#ifdef SDW_MEMBERS_CamMgrEntry
-    SDW_MEMBERS_CamMgrEntry
-#endif
-#ifdef SDW_EXTRA_CamMgrEntry
-    SDW_EXTRA_CamMgrEntry
-#endif
     CamSetup *camera;                              // camera setup record {u16 focal; s16 rot[3]; Vec3s eye}
     Box *box;                                      // CAMERAnnBOX (Wolf pos tested on 3 axes, inclusive)
     u32 blendIn;                                   // CAMERAnnINTB; nonzero gives CAMSCR_BLEND_IN (1)
@@ -1806,12 +1533,6 @@ public:
 
 struct CamModeParams {
 public:
-#ifdef SDW_MEMBERS_CamModeParams
-    SDW_MEMBERS_CamModeParams
-#endif
-#ifdef SDW_EXTRA_CamModeParams
-    SDW_EXTRA_CamModeParams
-#endif
     s32 pitchSpeed;                                // Max pitch rate in angle units/s (mode 0: 300). Also scaled for manual pitch input and doubled (x2) f
     s32 yawSpeed;                                  // Max yaw rate in angle units/s (mode 0: 1500; mode 0xC: 3000). Manual rotation = input*g_dt*yawSpeed*
     s32 rollSpeed;                                 // max roll rate (mode 0: 800)
@@ -1824,36 +1545,18 @@ public:
 
 struct CamPitchAdjBits {
 public:
-#ifdef SDW_MEMBERS_CamPitchAdjBits
-    SDW_MEMBERS_CamPitchAdjBits
-#endif
-#ifdef SDW_EXTRA_CamPitchAdjBits
-    SDW_EXTRA_CamPitchAdjBits
-#endif
     s8 state : 3;                                  // (bits) g_camPitchAdjState low 3 bits, signed: 0 none, 1 raising the pitch over an obstacle, 2 lo
     s8 unused : 5;                                 // (bits) remaining bits
 };
 
 struct CamProbeFrame {
 public:
-#ifdef SDW_MEMBERS_CamProbeFrame
-    SDW_MEMBERS_CamProbeFrame
-#endif
-#ifdef SDW_EXTRA_CamProbeFrame
-    SDW_EXTRA_CamProbeFrame
-#endif
     u8 value : 3;                                  // (bits) g_camProbeFrame low 3 bits, unsigned: frame counter during turn states 1/2, incremented &
     u8 unused : 5;                                 // (bits) remaining bits
 };
 
 struct CamRequestBits {
 public:
-#ifdef SDW_MEMBERS_CamRequestBits
-    SDW_MEMBERS_CamRequestBits
-#endif
-#ifdef SDW_EXTRA_CamRequestBits
-    SDW_EXTRA_CamRequestBits
-#endif
     u8 ledgeProbe : 1;                             // (bits) CAMREQ_LEDGE_PROBE
     u8 snapYaw : 1;                                // (bits) CAMREQ_SNAP_YAW
     u8 usePitch : 1;                               // (bits) CAMREQ_USE_PITCH
@@ -1864,12 +1567,6 @@ public:
 
 struct CamRestrictBits {
 public:
-#ifdef SDW_MEMBERS_CamRestrictBits
-    SDW_MEMBERS_CamRestrictBits
-#endif
-#ifdef SDW_EXTRA_CamRestrictBits
-    SDW_EXTRA_CamRestrictBits
-#endif
     u8 snapYaw : 1;                                // (bits) bit 0 CAMR_SNAPBETA: yaw snaps to multiples of 0x400 (same path as CAMREQ_SNAP_YAW) | CamRestrict.fl
     u8 forbidPad : 1;                              // (bits) bit 1 CAMR_FORBIDPADCONTROL: pad yaw input ignored (also implied by a trajectory)
     u8 mirrorYaw : 1;                              // (bits) bit 2 CAMR_MIRRORBETA (MIRRORBETAINTERVAL): yaw is also allowed in the arc shifted by 0x800
@@ -1882,12 +1579,6 @@ public:
 
 struct CamRestrict {
 public:
-#ifdef SDW_MEMBERS_CamRestrict
-    SDW_MEMBERS_CamRestrict
-#endif
-#ifdef SDW_EXTRA_CamRestrict
-    SDW_EXTRA_CamRestrict
-#endif
     s16 pitchMin;                                  // ALPHAMIN converted from degrees by deg*2048/180 ( at CameraRestriction init). If mi
     s16 yawMin;                                    // BETAMIN in 4096 units
     s16 rollMin;                                   // GAMMAMIN in 4096 units
@@ -1909,23 +1600,11 @@ public:
 
 struct CamSamPush {
 public:
-#ifdef SDW_MEMBERS_CamSamPush
-    SDW_MEMBERS_CamSamPush
-#endif
-#ifdef SDW_EXTRA_CamSamPush
-    SDW_EXTRA_CamSamPush
-#endif
     s16 value : 10;                                // (bits) g_camSamPush low 10 bits, signed: Sam-visibility push counter (mode 0xC, +-5 per frame, h
 };
 
 struct CamSetup {
 public:
-#ifdef SDW_MEMBERS_CamSetup
-    SDW_MEMBERS_CamSetup
-#endif
-#ifdef SDW_EXTRA_CamSetup
-    SDW_EXTRA_CamSetup
-#endif
     u16 focal;                                     // a CAMERA designer property as Scn_GetPropCamera returns it (the record other classes keep as u16 *):
     s16 rot[3];                                    // pitch, yaw, roll (4096 = full turn)
     Vec3s eye;                                     // eye position of the scripted camera (CrocodileLevel11_UpdateCamera reads it at +8)
@@ -1934,12 +1613,6 @@ public:
 
 class CamShot {
 public:
-#ifdef SDW_MEMBERS_CamShot
-    SDW_MEMBERS_CamShot
-#endif
-#ifdef SDW_EXTRA_CamShot
-    SDW_EXTRA_CamShot
-#endif
     void Init(u32 flags);
     void Start(CamSetup *, ScnObject *, u32);
     void Stop(ScnObject *);
@@ -1953,12 +1626,6 @@ public:
 
 struct Mat34s {
 public:
-#ifdef SDW_MEMBERS_Mat34s
-    SDW_MEMBERS_Mat34s
-#endif
-#ifdef SDW_EXTRA_Mat34s
-    SDW_EXTRA_Mat34s
-#endif
     union {
         s16 rot[9];                                    // 3x3 rotation, 4.12
         Vec3s rows[3];                             // rot as its three rows (rows[2] is the view direction the weather code reads)
@@ -1968,12 +1635,6 @@ public:
 
 class Camera {
 public:
-#ifdef SDW_MEMBERS_Camera
-    SDW_MEMBERS_Camera
-#endif
-#ifdef SDW_EXTRA_Camera
-    SDW_EXTRA_Camera
-#endif
     Vec3s ViewDir();
     Mat34s viewMatS;                               // fixed-point 4.12 view rotation + translation, rebuilt from rot every frame
     u8 _pad020[0x20];
@@ -1988,12 +1649,6 @@ public:
 
 class CameraManager : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_CameraManager
-    SDW_MEMBERS_CameraManager
-#endif
-#ifdef SDW_EXTRA_CameraManager
-    SDW_EXTRA_CameraManager
-#endif
     virtual void PostLoadInit();                   // CameraManager_Init (override)
     virtual void Update();                         // CameraManager_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // CameraManager_HandleMessage (override)
@@ -2007,12 +1662,6 @@ public:
 
 class CameraManager2 : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_CameraManager2
-    SDW_MEMBERS_CameraManager2
-#endif
-#ifdef SDW_EXTRA_CameraManager2
-    SDW_EXTRA_CameraManager2
-#endif
     virtual void PostLoadInit();                   // CameraManager2_Init (override)
     virtual void Update();                         // CameraManager2_Update (override)
     virtual void Reset();                          // CameraManager2_Reset (override)
@@ -2025,12 +1674,6 @@ public:
 
 class CameraRestriction : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_CameraRestriction
-    SDW_MEMBERS_CameraRestriction
-#endif
-#ifdef SDW_EXTRA_CameraRestriction
-    SDW_EXTRA_CameraRestriction
-#endif
     virtual void PostLoadInit();                   // CameraRestriction_Init (override)
     virtual void Update();                         // CameraRestriction_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // CameraRestriction_HandleMessage (override)
@@ -2041,12 +1684,6 @@ public:
 
 struct ContactInfo {
 public:
-#ifdef SDW_MEMBERS_ContactInfo
-    SDW_MEMBERS_ContactInfo
-#endif
-#ifdef SDW_EXTRA_ContactInfo
-    SDW_EXTRA_ContactInfo
-#endif
     ScnObject *floorObj;                           // object of a floor-class contact
     ScnObject *wallObj;                            // object of a wall-class contact
     ScnObject *movableObj;                         // contact object whose classFlags & 4
@@ -2058,12 +1695,6 @@ public:
 
 struct EmitterDriftParams {
 public:
-#ifdef SDW_MEMBERS_EmitterDriftParams
-    SDW_MEMBERS_EmitterDriftParams
-#endif
-#ifdef SDW_EXTRA_EmitterDriftParams
-    SDW_EXTRA_EmitterDriftParams
-#endif
     s32 hSpeed;                                    // horizontal drift per second along -sin/-cos(angle)
     s32 vSpeed;                                    // vertical drift per second; vertical points down
     s32 life;                                      // particle life in ticks
@@ -2075,12 +1706,6 @@ public:
 
 struct EmitterRiseParams {
 public:
-#ifdef SDW_MEMBERS_EmitterRiseParams
-    SDW_MEMBERS_EmitterRiseParams
-#endif
-#ifdef SDW_EXTRA_EmitterRiseParams
-    SDW_EXTRA_EmitterRiseParams
-#endif
     s32 riseSpeed;                                 // vertical speed per second; negative = up
     s32 life;                                      // maximum particle life in ticks
     s32 spawnInterval;                             // passed to the spawner
@@ -2091,12 +1716,6 @@ public:
 
 struct Particle {
 public:
-#ifdef SDW_MEMBERS_Particle
-    SDW_MEMBERS_Particle
-#endif
-#ifdef SDW_EXTRA_Particle
-    SDW_EXTRA_Particle
-#endif
     u32 age : 24;                                  // (bits) age in ticks (g_dt units), bits 0..23
     u32 grey : 8;                                  // (bits) grey level splatted to all three channels for the vertex diffuse, bits 24..31 (Emitter_AddParticle 0
     u32 angle : 12;                                // (bits) 12-bit angle, bits 0..11
@@ -2107,12 +1726,6 @@ public:
 
 struct EmitterFlagBits {
 public:
-#ifdef SDW_MEMBERS_EmitterFlagBits
-    SDW_MEMBERS_EmitterFlagBits
-#endif
-#ifdef SDW_EXTRA_EmitterFlagBits
-    SDW_EXTRA_EmitterFlagBits
-#endif
     u8 active : 1;                                 // (bits) an emitter's flags byte (+0x22) as the code reads it: Wolf_ClearEffects tests it with a byte load, a
 };
 
@@ -2155,9 +1768,6 @@ public:
 #ifdef SDW_MEMBERS_Vec3f
     SDW_MEMBERS_Vec3f
 #endif
-#ifdef SDW_EXTRA_Vec3f
-    SDW_EXTRA_Vec3f
-#endif
     float x;
     float y;                                       // vertical points down
     float z;
@@ -2168,9 +1778,6 @@ public:
 #ifdef SDW_MEMBERS_InlineEmitter16
     SDW_MEMBERS_InlineEmitter16
 #endif
-#ifdef SDW_EXTRA_InlineEmitter16
-    SDW_EXTRA_InlineEmitter16
-#endif
     ParticleEmitter base;                          // the ParticleEmitter this inline-storage emitter is: its inline constructor points slotPool at slotBu
     Vec3f slotBuf[16];                             // 16 x 0xC position records
     Particle particleBuf[16];                      // 16 x 8-byte particle records
@@ -2178,12 +1785,6 @@ public:
 
 struct ScnRecordSynth {
 public:
-#ifdef SDW_MEMBERS_ScnRecordSynth
-    SDW_MEMBERS_ScnRecordSynth
-#endif
-#ifdef SDW_EXTRA_ScnRecordSynth
-    SDW_EXTRA_ScnRecordSynth
-#endif
     u16 modelResIndex;                             // DAV resource index of the exported model, or 0xFFFF when the export list was empty. Instances live i
     u16 secondaryRes;                              // always set to 0xFFFF = no secondary resource
     Vec3s pos;                                     // spawn position, copied from the caller's Vec3s when non-NULL (4 bytes + 2 bytes)
@@ -2195,9 +1796,6 @@ class CannonBall : public ScnMobile {
 public:
 #ifdef SDW_MEMBERS_CannonBall
     SDW_MEMBERS_CannonBall
-#endif
-#ifdef SDW_EXTRA_CannonBall
-    SDW_EXTRA_CannonBall
 #endif
     virtual void PostLoadInit();                   // CannonBall_Init (override)
     virtual void Update();                         // CannonBall_Update (override)
@@ -2283,12 +1881,6 @@ public:
 
 class CannonBall2 : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_CannonBall2
-    SDW_MEMBERS_CannonBall2
-#endif
-#ifdef SDW_EXTRA_CannonBall2
-    SDW_EXTRA_CannonBall2
-#endif
     virtual void PostLoadInit();                   // CannonBall2_PostLoadInit (override)
     virtual void Update();                         // CannonBall2_Update (override)
     virtual void Render(Camera *view);             // CannonBall2_Render (override)
@@ -2305,12 +1897,6 @@ public:
 
 class CanonDummy : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_CanonDummy
-    SDW_MEMBERS_CanonDummy
-#endif
-#ifdef SDW_EXTRA_CanonDummy
-    SDW_EXTRA_CanonDummy
-#endif
     virtual void PostLoadInit();                   // CanonDummy_Init (override)
     virtual void Update();                         // CanonDummy_Update (override)
     virtual void Render(Camera *view);             // CanonDummy_Render (override)
@@ -2325,12 +1911,6 @@ public:
 
 class CanonSheep : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_CanonSheep
-    SDW_MEMBERS_CanonSheep
-#endif
-#ifdef SDW_EXTRA_CanonSheep
-    SDW_EXTRA_CanonSheep
-#endif
     virtual void PostLoadInit();                   // CanonSheep_PostLoadInit (override)
     virtual void Update();                         // CanonSheep_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // CanonSheep_HandleMessage (override)
@@ -2372,12 +1952,6 @@ public:
 
 class CanonSimple : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_CanonSimple
-    SDW_MEMBERS_CanonSimple
-#endif
-#ifdef SDW_EXTRA_CanonSimple
-    SDW_EXTRA_CanonSimple
-#endif
     virtual void PostLoadInit();                   // CanonSimple_Init (override)
     virtual void Update();                         // CanonSimple_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // CanonSimple_HandleMessage (override)
@@ -2418,24 +1992,12 @@ public:
 
 class Case : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Case
-    SDW_MEMBERS_Case
-#endif
-#ifdef SDW_EXTRA_Case
-    SDW_EXTRA_Case
-#endif
     virtual void PostLoadInit();                   // Case_PostLoadInit (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Case_HandleMessage (override)
 };
 
 struct CatapultBits {
 public:
-#ifdef SDW_MEMBERS_CatapultBits
-    SDW_MEMBERS_CatapultBits
-#endif
-#ifdef SDW_EXTRA_CatapultBits
-    SDW_EXTRA_CatapultBits
-#endif
     s32 reserved0 : 1;                             // (bits) bit 0 (4-byte signed unit) | Signed one-bit fields match arithmetic shifts in the original catFlags
     s32 sideways : 1;                              // (bits) bit 1 (4-byte signed unit)
     s32 reversed : 1;                              // (bits) bit 2 (4-byte signed unit)
@@ -2460,12 +2022,6 @@ public:
 
 struct LaunchArcFlagBits {
 public:
-#ifdef SDW_MEMBERS_LaunchArcFlagBits
-    SDW_MEMBERS_LaunchArcFlagBits
-#endif
-#ifdef SDW_EXTRA_LaunchArcFlagBits
-    SDW_EXTRA_LaunchArcFlagBits
-#endif
     s32 noFreeze : 1;                              // (bits) signed bit view of LaunchArc.flags (+0x34), bit order from the LaunchArcFlags enum: LAF_NO_FREEZE
     s32 planeYZ : 1;                               // (bits) LAF_2D_ZY; read signed shl 30 / sar 31
     s32 full3D : 1;                                // (bits) LAF_3D
@@ -2477,9 +2033,6 @@ class LaunchArc {
 public:
 #ifdef SDW_MEMBERS_LaunchArc
     SDW_MEMBERS_LaunchArc
-#endif
-#ifdef SDW_EXTRA_LaunchArc
-    SDW_EXTRA_LaunchArc
 #endif
     s32 Step(s32 dt, s16 *outX, s16 *outY, s16 *outZ);
     void InitCoefficients(s32 x0, s32 x1, s32 x2, s32 y0, s32 y1, s32 y2, s32 z0, s32 z1, s32 z2);
@@ -2495,9 +2048,6 @@ class Catapult : public ScnBody {
 public:
 #ifdef SDW_MEMBERS_Catapult
     SDW_MEMBERS_Catapult
-#endif
-#ifdef SDW_EXTRA_Catapult
-    SDW_EXTRA_Catapult
 #endif
     virtual void PostLoadInit();                   // Catapult_Init (override)
     virtual void Update();                         // Catapult_Update (override)
@@ -2550,12 +2100,6 @@ public:
 
 struct CheckpointEntry {
 public:
-#ifdef SDW_MEMBERS_CheckpointEntry
-    SDW_MEMBERS_CheckpointEntry
-#endif
-#ifdef SDW_EXTRA_CheckpointEntry
-    SDW_EXTRA_CheckpointEntry
-#endif
     Box **triggers;                                // trigger box list (Scn_FindIdList of the entry's first id property); FindEntryAt skips an en
     CollBox *wolfDestination;                      // Wolf's respawn box (PostLoadInit): its centre is sent with MSG_WOLF_SAVE_RESPAWN;
     CollBox *sheepDestination;                     // the sheep's respawn box (PostLoadInit): its centre is sent with MSG_SHEEP_SAVE_RES
@@ -2565,12 +2109,6 @@ public:
 
 class CheckpointManager : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_CheckpointManager
-    SDW_MEMBERS_CheckpointManager
-#endif
-#ifdef SDW_EXTRA_CheckpointManager
-    SDW_EXTRA_CheckpointManager
-#endif
     virtual void PostLoadInit();                   // CheckpointManager_Init (override)
     virtual void Update();                         // CheckpointManager_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // CheckpointManager_HandleMessage (override)
@@ -2586,12 +2124,6 @@ public:
 
 class Chronometer : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Chronometer
-    SDW_MEMBERS_Chronometer
-#endif
-#ifdef SDW_EXTRA_Chronometer
-    SDW_EXTRA_Chronometer
-#endif
     virtual void PostLoadInit();                   // Chronometer_PostLoadInit (override)
     virtual void Update();                         // Chronometer_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Chronometer_HandleMessage (override)
@@ -2613,12 +2145,6 @@ public:
 
 struct CineActorSave {
 public:
-#ifdef SDW_MEMBERS_CineActorSave
-    SDW_MEMBERS_CineActorSave
-#endif
-#ifdef SDW_EXTRA_CineActorSave
-    SDW_EXTRA_CineActorSave
-#endif
     Vec3s pos;                                     // ScnObject.pos at cinematic start
     Vec3s rot;                                     // ScnObject.rot
     s32 visible;                                   // (flags & 0x804) == 0
@@ -2630,24 +2156,12 @@ public:
 
 struct CineActorSlot {
 public:
-#ifdef SDW_MEMBERS_CineActorSlot
-    SDW_MEMBERS_CineActorSlot
-#endif
-#ifdef SDW_EXTRA_CineActorSlot
-    SDW_EXTRA_CineActorSlot
-#endif
     ScnObject *obj;                                // the selector-1/2 track's object (Cine_ResolveTracks)
     CineActorSave save;                            // its state at the start, saved when Cine.flags & 0x40 and restored by Cine_Finish (0x56210
 };
 
 struct CineAttach {
 public:
-#ifdef SDW_MEMBERS_CineAttach
-    SDW_MEMBERS_CineAttach
-#endif
-#ifdef SDW_EXTRA_CineAttach
-    SDW_EXTRA_CineAttach
-#endif
     ScnObject *child;                              // the object to attach: Cine_AttachEntry loads it and tests its inst_flags & 8
     ScnObject *parent;                             // the object to attach to (pushed); compared with the script target by Cine_OpToggleActorE
     Vec3s offset;                                  // &entry+8 passed as the offset
@@ -2658,12 +2172,6 @@ public:
 
 struct CineDialogue {
 public:
-#ifdef SDW_MEMBERS_CineDialogue
-    SDW_MEMBERS_CineDialogue
-#endif
-#ifdef SDW_EXTRA_CineDialogue
-    SDW_EXTRA_CineDialogue
-#endif
     ScnObject *speaker;                            // object whose talk/idle animations follow the dialogue; set from Cine_SetDialogueParams or found via
     u16 idleAnim;                                  // anim played once 2 s have passed since the page began
     u16 talkAnim;                                  // anim played during the first 2 s of a dialogue page and at dialogue start
@@ -2674,9 +2182,6 @@ class Cine {
 public:
 #ifdef SDW_MEMBERS_Cine
     SDW_MEMBERS_Cine
-#endif
-#ifdef SDW_EXTRA_Cine
-    SDW_EXTRA_Cine
 #endif
     s32 IsActive();
     s32 IsFinished();
@@ -2781,12 +2286,6 @@ public:
 
 struct CineActorMsg {
 public:
-#ifdef SDW_MEMBERS_CineActorMsg
-    SDW_MEMBERS_CineActorMsg
-#endif
-#ifdef SDW_EXTRA_CineActorMsg
-    SDW_EXTRA_CineActorMsg
-#endif
     Vec3s *pos;                                    // first position key of the Wolf's track (Cine_FindFirstPosKey), sent with msg 0x12 by Cine_NotifyActo
     Vec3s *rot;                                    // first rotation key of the Wolf's track (Cine_FindFirstRotKey)
     Box *box;                                      // Cine.sheepBox
@@ -2794,12 +2293,6 @@ public:
 
 struct CineRecord {
 public:
-#ifdef SDW_MEMBERS_CineRecord
-    SDW_MEMBERS_CineRecord
-#endif
-#ifdef SDW_EXTRA_CineRecord
-    SDW_EXTRA_CineRecord
-#endif
     u16 opcode;                                    // CineOpcode 1..8; indexes g_cineOpStride (Cine_RecordSize)
     u16 count;                                     // number of keys that follow the 8-byte header (Cine_RecordSize); odd counts of the stride-2
     SDW_WARPTR(u16) keyCursor;  // current key; copied to Cine.keyCur/keyNext by Cine_RunOpcodes
@@ -2807,12 +2300,6 @@ public:
 
 struct CineTrack {
 public:
-#ifdef SDW_MEMBERS_CineTrack
-    SDW_MEMBERS_CineTrack
-#endif
-#ifdef SDW_EXTRA_CineTrack
-    SDW_EXTRA_CineTrack
-#endif
     u8 selector;                                   // CineTrackSelector: 0 camera, 1/2 scenaric object resolved by Scenaric_FindByRecord, 3/4 cinematic-on
     u8 recordCount;                                // number of script records that follow this header (Cine_SkipRecords, Cine_ResetIterators 0x5
     u16 index;
@@ -2821,12 +2308,6 @@ public:
 
 struct CineTrigger {
 public:
-#ifdef SDW_MEMBERS_CineTrigger
-    SDW_MEMBERS_CineTrigger
-#endif
-#ifdef SDW_EXTRA_CineTrigger
-    SDW_EXTRA_CineTrigger
-#endif
     u16 cineId;                                    // CINnn: cinematic id passed to Cine_Start (+0x2 padding)
     Box *cineBox;                                  // CINnnBOX list[0], or NULL (Cine_Start then may use WAR_IDO_CINBBOX)
     Box *actBox;                                   // CINnnACTBOX list[0]: the trigger box tested against the Wolf's pos; also the key for msg 0x1400
@@ -2839,12 +2320,6 @@ public:
 
 class CinematicsManager : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_CinematicsManager
-    SDW_MEMBERS_CinematicsManager
-#endif
-#ifdef SDW_EXTRA_CinematicsManager
-    SDW_EXTRA_CinematicsManager
-#endif
     virtual void PostLoadInit();                   // CinematicsManager_Init (override)
     virtual void Update();                         // CinematicsManager_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // CinematicsManager_HandleMessage (override)
@@ -2857,24 +2332,12 @@ public:
 
 struct CollCell {
 public:
-#ifdef SDW_MEMBERS_CollCell
-    SDW_MEMBERS_CollCell
-#endif
-#ifdef SDW_EXTRA_CollCell
-    SDW_EXTRA_CollCell
-#endif
     u32 count;                                     // number of triangle pointers following
     u8 tris[0x4];                                  // (CollTri *[]) pointer-sorted triangle list (indices rewritten to pointers by Coll_BuildCellGrid)
 };
 
 struct CollContact {
 public:
-#ifdef SDW_MEMBERS_CollContact
-    SDW_MEMBERS_CollContact
-#endif
-#ifdef SDW_EXTRA_CollContact
-    SDW_EXTRA_CollContact
-#endif
     ScnObject *obj;                                // owner of the hit box, NULL for static triangles / static boxes
     Vec3s normal;                                  // 4.12 contact normal in game space
     Vec3s point;                                   // reference point on the surface (first triangle vertex in game space, or a corner/centre of the hit b
@@ -2883,12 +2346,6 @@ public:
 
 struct CollMapHeader {
 public:
-#ifdef SDW_MEMBERS_CollMapHeader
-    SDW_MEMBERS_CollMapHeader
-#endif
-#ifdef SDW_EXTRA_CollMapHeader
-    SDW_EXTRA_CollMapHeader
-#endif
     u16 nx;                                        // grid columns
     u16 nz;                                        // grid rows
     s16 originX;                                   // grid origin x
@@ -2899,12 +2356,6 @@ public:
 
 struct CollRay {
 public:
-#ifdef SDW_MEMBERS_CollRay
-    SDW_MEMBERS_CollRay
-#endif
-#ifdef SDW_EXTRA_CollRay
-    SDW_EXTRA_CollRay
-#endif
     s32 maxDist;                                   // ray length / search limit in world units
     Vec3s dir;                                     // 4.12 unit direction
     Vec3s origin;                                  // start point
@@ -2913,24 +2364,12 @@ public:
 
 struct CollRayHit {
 public:
-#ifdef SDW_MEMBERS_CollRayHit
-    SDW_MEMBERS_CollRayHit
-#endif
-#ifdef SDW_EXTRA_CollRayHit
-    SDW_EXTRA_CollRayHit
-#endif
     Vec3s verts[3];                                // game-space vertices of the nearest hit triangle
     Vec3s normal;                                  // normal of the hit triangle
 };
 
 struct CollTri {
 public:
-#ifdef SDW_MEMBERS_CollTri
-    SDW_MEMBERS_CollTri
-#endif
-#ifdef SDW_EXTRA_CollTri
-    SDW_EXTRA_CollTri
-#endif
     Vec3s bbMin;                                   // game-space AABB min (x, vertical-down, z)
     Vec3s bbMax;                                   // game-space AABB max
     Vec3s normal;                                  // 4.12 plane normal in game space (y<0 = floor facing up)
@@ -2941,23 +2380,11 @@ public:
 
 struct RodFlagBits {
 public:
-#ifdef SDW_MEMBERS_RodFlagBits
-    SDW_MEMBERS_RodFlagBits
-#endif
-#ifdef SDW_EXTRA_RodFlagBits
-    SDW_EXTRA_RodFlagBits
-#endif
     u8 lineOut : 1;                                // (bits) bit 0 (1-byte unsigned unit)
 };
 
 class FishingRod : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_FishingRod
-    SDW_MEMBERS_FishingRod
-#endif
-#ifdef SDW_EXTRA_FishingRod
-    SDW_EXTRA_FishingRod
-#endif
     virtual void PostLoadInit();                   // FishingRod_Init (override)
     virtual void Update();                         // FishingRod_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // FishingRod_HandleMessage (override)
@@ -2979,9 +2406,6 @@ public:
 #ifdef SDW_MEMBERS_RodParts
     SDW_MEMBERS_RodParts
 #endif
-#ifdef SDW_EXTRA_RodParts
-    SDW_EXTRA_RodParts
-#endif
     u16 rodClass;                                  // class id of the rod part (0x43 = FishingRod)
     u16 baitClass;                                 // class id of the bait part (Magnet or Salad)
     ScnObject *rod;                                // the rod part object
@@ -2990,12 +2414,6 @@ public:
 
 class CompositeRod : public FishingRod {
 public:
-#ifdef SDW_MEMBERS_CompositeRod
-    SDW_MEMBERS_CompositeRod
-#endif
-#ifdef SDW_EXTRA_CompositeRod
-    SDW_EXTRA_CompositeRod
-#endif
     virtual void Update();                         // CompositeRod_Update (override)
     virtual void Render(Camera *view);             // CompositeRod_Render (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // CompositeRod_HandleMessage (override)
@@ -3008,12 +2426,6 @@ public:
 
 struct ControlConfig {
 public:
-#ifdef SDW_MEMBERS_ControlConfig
-    SDW_MEMBERS_ControlConfig
-#endif
-#ifdef SDW_EXTRA_ControlConfig
-    SDW_EXTRA_ControlConfig
-#endif
     u8 preset;                                     // 0..2 fixed layouts, 3 = custom (switch); = Progress+0x9a
     u8 actuatorEnable;                             // = Progress+0x9b
     u8 padIsAnalog;                                // = Progress+0x9c
@@ -3022,12 +2434,6 @@ public:
 
 struct DropMsgArg {
 public:
-#ifdef SDW_MEMBERS_DropMsgArg
-    SDW_MEMBERS_DropMsgArg
-#endif
-#ifdef SDW_EXTRA_DropMsgArg
-    SDW_EXTRA_DropMsgArg
-#endif
     Vec3s pos;                                     // message 5 (MSG_DROP) argument: put the item down at pos
     u16 placed : 1;                                // (bits) put down on purpose: set by the Wolf's put-down; Seed plants, Perfume starts. A bitfield:
     u16 flag1 : 1;                                 // (bits) cleared by the Wolf, set with bit 0 by the Robot's drop; not traced
@@ -3035,12 +2441,6 @@ public:
 
 class Crane : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Crane
-    SDW_MEMBERS_Crane
-#endif
-#ifdef SDW_EXTRA_Crane
-    SDW_EXTRA_Crane
-#endif
     virtual void PostLoadInit();                   // Crane_PostLoadInit (override)
     virtual void Update();                         // Crane_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Crane_HandleMessage (override)
@@ -3077,12 +2477,6 @@ public:
 
 class CreditsManager : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_CreditsManager
-    SDW_MEMBERS_CreditsManager
-#endif
-#ifdef SDW_EXTRA_CreditsManager
-    SDW_EXTRA_CreditsManager
-#endif
     virtual void PostLoadInit();                   // CreditsManager_Init (override)
     virtual void Update();                         // CreditsManager_Update (override)
     virtual void Render(Camera *view);             // CreditsManager_Render (override)
@@ -3110,9 +2504,6 @@ class CrocodileLevel09 : public ScnMobile {
 public:
 #ifdef SDW_MEMBERS_CrocodileLevel09
     SDW_MEMBERS_CrocodileLevel09
-#endif
-#ifdef SDW_EXTRA_CrocodileLevel09
-    SDW_EXTRA_CrocodileLevel09
 #endif
     virtual void PostLoadInit();                   // CrocodileLevel09_Init (override)
     virtual void Update();                         // CrocodileLevel09_Update (override)
@@ -3145,12 +2536,6 @@ public:
 
 class CrocodileLevel11 : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_CrocodileLevel11
-    SDW_MEMBERS_CrocodileLevel11
-#endif
-#ifdef SDW_EXTRA_CrocodileLevel11
-    SDW_EXTRA_CrocodileLevel11
-#endif
     virtual void PostLoadInit();                   // CrocodileLevel11_Init (override)
     virtual void Update();                         // CrocodileLevel11_Update (override)
     virtual void Render(Camera *view);             // CrocodileLevel11_Render (override)
@@ -3197,12 +2582,6 @@ public:
 
 class Crowd : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Crowd
-    SDW_MEMBERS_Crowd
-#endif
-#ifdef SDW_EXTRA_Crowd
-    SDW_EXTRA_Crowd
-#endif
     virtual void PostLoadInit();                   // Crowd_PostLoadInit (override)
     virtual void Update();                         // Crowd_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Crowd_HandleMessage (override)
@@ -3212,12 +2591,6 @@ public:
 
 class CrumblyGround : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_CrumblyGround
-    SDW_MEMBERS_CrumblyGround
-#endif
-#ifdef SDW_EXTRA_CrumblyGround
-    SDW_EXTRA_CrumblyGround
-#endif
     virtual void PostLoadInit();                   // CrumblyGround_Init (override)
     virtual void Update();                         // CrumblyGround_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // CrumblyGround_HandleMessage (override)
@@ -3238,12 +2611,6 @@ public:
 
 class CrumblyPlat : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_CrumblyPlat
-    SDW_MEMBERS_CrumblyPlat
-#endif
-#ifdef SDW_EXTRA_CrumblyPlat
-    SDW_EXTRA_CrumblyPlat
-#endif
     virtual void PostLoadInit();                   // CrumblyPlat_PostLoadInit (override)
     virtual void Update();                         // CrumblyPlat_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // CrumblyPlat_HandleMessage (override)
@@ -3262,12 +2629,6 @@ public:
 
 struct D3DDeviceInfo {
 public:
-#ifdef SDW_MEMBERS_D3DDeviceInfo
-    SDW_MEMBERS_D3DDeviceInfo
-#endif
-#ifdef SDW_EXTRA_D3DDeviceInfo
-    SDW_EXTRA_D3DDeviceInfo
-#endif
     char strDesc[40];                              // Human-readable device name: the D3D device name ("Direct3D HAL", "RGB Emulation"...) for the prima
     GUID *pDeviceGUID;                             // Points at guidDevice in the same record. Passed to IDirect3D7::EnumZBufferFormats and IDirect3D7::Cr
     GUID guidDevice;                               // The D3D device CLSID. memcmp'd against IID_IDirect3DHALDevice and IID_IDirect3DTnLHalDevi
@@ -3285,12 +2646,6 @@ public:
 
 struct DIJoystickInfo {
 public:
-#ifdef SDW_MEMBERS_DIJoystickInfo
-    SDW_MEMBERS_DIJoystickInfo
-#endif
-#ifdef SDW_EXTRA_DIJoystickInfo
-    SDW_EXTRA_DIJoystickInfo
-#endif
     char instanceName[80];                         // The controller's DIDEVICEINSTANCEA.tszInstanceName (+0x28 of the instance; strncpy 0x4f bytes at 0x4
     GUID guidInstance;                             // DIDEVICEINSTANCEA.guidInstance (+4 of the instance); copied and passed to IDire
 };
@@ -3299,9 +2654,6 @@ class D3DApp {
 public:
 #ifdef SDW_MEMBERS_D3DApp
     SDW_MEMBERS_D3DApp
-#endif
-#ifdef SDW_EXTRA_D3DApp
-    SDW_EXTRA_D3DApp
 #endif
     virtual ~D3DApp();                                // D3DApp_ScalarDeletingDtor
     HRESULT CreateTextureSurface(IDirectDrawSurface7 **ppSurface, u32 width, u32 height);
@@ -3351,12 +2703,6 @@ public:
 
 struct Menu {
 public:
-#ifdef SDW_MEMBERS_Menu
-    SDW_MEMBERS_Menu
-#endif
-#ifdef SDW_EXTRA_Menu
-    SDW_EXTRA_Menu
-#endif
     MenuPage *items;                               // node array of this menu, loaded into g_menuPages by Menu_SetCurrent (e.g. for g_pauseMenu,
     s16 count;                                     // nodes in use; incremented directly through g_curMenu+4 by Menu_AddItems/Menu_AddPage, zeroed by 0x54
     s16 capacity;                                  // size of items[]: 50 for g_pauseMenu/g_pausedMenu, 4 for the confirm menu, n+2 in. Only 0x54
@@ -3369,12 +2715,6 @@ public:
 
 struct MenuBox {
 public:
-#ifdef SDW_MEMBERS_MenuBox
-    SDW_MEMBERS_MenuBox
-#endif
-#ifdef SDW_EXTRA_MenuBox
-    SDW_EXTRA_MenuBox
-#endif
     char *text;                                    // question / body string
     MenuPage *pages;                               // the choice node array whose root the attached list walks (PorkyLevel01_PostLoadInit -0x45ab3
     Menu *list;                                    // attached choice list; its s16 at +4 is the row count and its u16 at +8 the cursor row
@@ -3386,12 +2726,6 @@ public:
 
 struct MenuPage {
 public:
-#ifdef SDW_MEMBERS_MenuPage
-    SDW_MEMBERS_MenuPage
-#endif
-#ifdef SDW_EXTRA_MenuPage
-    SDW_EXTRA_MenuPage
-#endif
     u8 kind : 2;                                   // (bits) MenuItemFlags bits 0-1: 0 = page/submenu that CROSS enters, 1 = leaf item
     u8 hasHandler : 1;                             // (bits) bit 2 (0x04): +4 is a MenuHandler, else a char* label
     u8 disabled : 1;                               // (bits) bit 3 (0x08): disabled (grey, skipped by navigation)
@@ -3404,12 +2738,6 @@ public:
 
 struct DialogBox {
 public:
-#ifdef SDW_MEMBERS_DialogBox
-    SDW_MEMBERS_DialogBox
-#endif
-#ifdef SDW_EXTRA_DialogBox
-    SDW_EXTRA_DialogBox
-#endif
     s32 active;                                    // 1 while the dialogue is open; Dialog_Close zeroes it
     s32 inputLatch;                                // debounce flag cleared every frame Dialog_Update runs without a confirm
     ScnObject *sender;                             // the NPC that opened the box; receives nothing but is echoed back to the Wolf as the 0x0E/0x0F sender
@@ -3426,9 +2754,6 @@ class DaffyElf : public ScnMobile {
 public:
 #ifdef SDW_MEMBERS_DaffyElf
     SDW_MEMBERS_DaffyElf
-#endif
-#ifdef SDW_EXTRA_DaffyElf
-    SDW_EXTRA_DaffyElf
 #endif
     virtual void PostLoadInit();                   // DaffyElf_PostLoadInit (override)
     virtual void Update();                         // DaffyElf_Update (override)
@@ -3450,12 +2775,6 @@ public:
 
 struct DaffyLevel01FlagBits {
 public:
-#ifdef SDW_MEMBERS_DaffyLevel01FlagBits
-    SDW_MEMBERS_DaffyLevel01FlagBits
-#endif
-#ifdef SDW_EXTRA_DaffyLevel01FlagBits
-    SDW_EXTRA_DaffyLevel01FlagBits
-#endif
     s32 frozen : 1;                                // (bits) signed bit view of DaffyLevel01 +0x12c: bit 0 read as shl 31 / sar 31
     s32 train : 1;                                 // (bits) bit 1, shl 30 / sar 31
     s32 variant13 : 1;                             // (bits) bit 2, shl 29 / sar 31
@@ -3464,12 +2783,6 @@ public:
 
 class DaffyLevel01 : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_DaffyLevel01
-    SDW_MEMBERS_DaffyLevel01
-#endif
-#ifdef SDW_EXTRA_DaffyLevel01
-    SDW_EXTRA_DaffyLevel01
-#endif
     virtual void PostLoadInit();                   // DaffyLevel01_Init (override)
     virtual void Update();                         // DaffyLevel01_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // DaffyLevel01_HandleMessage (override)
@@ -3499,9 +2812,6 @@ class DaffyLevel02 : public ScnMobile {
 public:
 #ifdef SDW_MEMBERS_DaffyLevel02
     SDW_MEMBERS_DaffyLevel02
-#endif
-#ifdef SDW_EXTRA_DaffyLevel02
-    SDW_EXTRA_DaffyLevel02
 #endif
     virtual void PostLoadInit();                   // DaffyLevel02_Init (override)
     virtual void Update();                         // DaffyLevel02_Update (override)
@@ -3563,12 +2873,6 @@ public:
 
 class DaffyLevel09 : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_DaffyLevel09
-    SDW_MEMBERS_DaffyLevel09
-#endif
-#ifdef SDW_EXTRA_DaffyLevel09
-    SDW_EXTRA_DaffyLevel09
-#endif
     virtual void PostLoadInit();                   // DaffyLevel09_PostLoadInit (override)
     virtual void Update();                         // DaffyLevel09_Update (override)
     virtual void Render(Camera *view);             // DaffyLevel09_Render (override)
@@ -3613,9 +2917,6 @@ public:
 #ifdef SDW_MEMBERS_DaffyMilitary
     SDW_MEMBERS_DaffyMilitary
 #endif
-#ifdef SDW_EXTRA_DaffyMilitary
-    SDW_EXTRA_DaffyMilitary
-#endif
     virtual void PostLoadInit();                   // DaffyMilitary_PostLoadInit (override)
     virtual void Update();                         // DaffyMilitary_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // DaffyMilitary_HandleMessage (override)
@@ -3644,9 +2945,6 @@ public:
 #ifdef SDW_MEMBERS_DaffyScene
     SDW_MEMBERS_DaffyScene
 #endif
-#ifdef SDW_EXTRA_DaffyScene
-    SDW_EXTRA_DaffyScene
-#endif
     virtual void PostLoadInit();                   // DaffyScene_PostLoadInit (override)
     virtual void Update();                         // DaffyScene_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // DaffyScene_HandleMessage (override)
@@ -3674,12 +2972,6 @@ public:
 
 struct TextBox {
 public:
-#ifdef SDW_MEMBERS_TextBox
-    SDW_MEMBERS_TextBox
-#endif
-#ifdef SDW_EXTRA_TextBox
-    SDW_EXTRA_TextBox
-#endif
     char *text;                                    // string to render
     s8 confirmChoice;                              // Written by Ui_DrawTextBox only
     s32 fits;                                      // 1 when lineCount+3 fits in the font's row count; the paging UI is only run when set
@@ -3689,24 +2981,12 @@ public:
 
 struct TrainingHelpSlot {
 public:
-#ifdef SDW_MEMBERS_TrainingHelpSlot
-    SDW_MEMBERS_TrainingHelpSlot
-#endif
-#ifdef SDW_EXTRA_TrainingHelpSlot
-    SDW_EXTRA_TrainingHelpSlot
-#endif
     u32 type;                                      // TYPE_n (PostLoadInit)
     Trajectory *trajectory;                        // resolved TRAJECTORY_n; count at +0, nodes at +2
 };
 
 struct TrainingLineBits {
 public:
-#ifdef SDW_MEMBERS_TrainingLineBits
-    SDW_MEMBERS_TrainingLineBits
-#endif
-#ifdef SDW_EXTRA_TrainingLineBits
-    SDW_EXTRA_TrainingLineBits
-#endif
     s32 jokeDone : 1;                              // (bits) signed bit view of DaffyTrainingLevel +0xbc: bit 0 read shl 31 / sar 31 by Reset; set by
     s32 helpPending : 1;                           // (bits) bit 1, shl 30 / sar 31 in Update; set by Reset (or 2), cleared by PostLoadInit/Update (an
     s32 reserved : 30;                             // (bits) remaining bits
@@ -3716,9 +2996,6 @@ class DaffyTrainingLevel : public ScnMobile {
 public:
 #ifdef SDW_MEMBERS_DaffyTrainingLevel
     SDW_MEMBERS_DaffyTrainingLevel
-#endif
-#ifdef SDW_EXTRA_DaffyTrainingLevel
-    SDW_EXTRA_DaffyTrainingLevel
 #endif
     virtual void PostLoadInit();                   // DaffyTrainingLevel_PostLoadInit (override)
     virtual void Update();                         // DaffyTrainingLevel_Update (override)
@@ -3792,12 +3069,6 @@ public:
 
 class DaffyWheel : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_DaffyWheel
-    SDW_MEMBERS_DaffyWheel
-#endif
-#ifdef SDW_EXTRA_DaffyWheel
-    SDW_EXTRA_DaffyWheel
-#endif
     virtual void PostLoadInit();                   // DaffyWheel_Init (override)
     virtual void Update();                         // DaffyWheel_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // DaffyWheel_HandleMessage (override)
@@ -3812,12 +3083,6 @@ public:
 
 struct DanceStep {
 public:
-#ifdef SDW_MEMBERS_DanceStep
-    SDW_MEMBERS_DanceStep
-#endif
-#ifdef SDW_EXTRA_DanceStep
-    SDW_EXTRA_DanceStep
-#endif
     u16 step;                                      // queued dance step (PushStep word store; ClearGhostQueue)
     DancingGhost *partner;                         // partner ghost for the step
     Vec3s point;                                   // target point, copied by value ( ; /27e2/27f8)
@@ -3826,12 +3091,6 @@ public:
 
 struct DancingGhostFlagBits {
 public:
-#ifdef SDW_MEMBERS_DancingGhostFlagBits
-    SDW_MEMBERS_DancingGhostFlagBits
-#endif
-#ifdef SDW_EXTRA_DancingGhostFlagBits
-    SDW_EXTRA_DancingGhostFlagBits
-#endif
     u8 tambourine : 1;                             // (bits) bit view of DancingGhost.danceFlags (+0xf4): a tambourine ghost (mov cl,[+0xf4]; and cl,1 at 0x44174
     u8 paired : 1;                                 // (bits) partner coordination bit (UpdateState)
     u8 leader : 1;                                 // (bits) partner coordination bit (UpdateState)
@@ -3842,9 +3101,6 @@ class DancingGhost : public ScnBody {
 public:
 #ifdef SDW_MEMBERS_DancingGhost
     SDW_MEMBERS_DancingGhost
-#endif
-#ifdef SDW_EXTRA_DancingGhost
-    SDW_EXTRA_DancingGhost
 #endif
     virtual void PostLoadInit();                   // DancingGhost_PostLoadInit (override)
     virtual void Update();                         // DancingGhost_Update (override)
@@ -3881,9 +3137,6 @@ public:
 #ifdef SDW_MEMBERS_Sprite
     SDW_MEMBERS_Sprite
 #endif
-#ifdef SDW_EXTRA_Sprite
-    SDW_EXTRA_Sprite
-#endif
     void DrawThunkAt(u32 *layer, s32 x, s32 y, u32 color, u32 flip);
     s32 LoadFromRes(u16 resType);                                /* Sprite_LoadFromRes */
     void Draw(u32 *layer, s32 x0, s32 y0, s32 x1, s32 y1, u32 color, u32 flipMode); /* Sprite_Draw */
@@ -3902,9 +3155,6 @@ class DancingGhostManager : public ScnLogic {
 public:
 #ifdef SDW_MEMBERS_DancingGhostManager
     SDW_MEMBERS_DancingGhostManager
-#endif
-#ifdef SDW_EXTRA_DancingGhostManager
-    SDW_EXTRA_DancingGhostManager
 #endif
     virtual void PostLoadInit();                   // DancingGhostManager_PostLoadInit (override)
     virtual void Update();                         // DancingGhostManager_Update (override)
@@ -4011,24 +3261,12 @@ public:
 
 struct StringBank {
 public:
-#ifdef SDW_MEMBERS_StringBank
-    SDW_MEMBERS_StringBank
-#endif
-#ifdef SDW_EXTRA_StringBank
-    SDW_EXTRA_StringBank
-#endif
     u16 listCount;                                 // number of string lists; list 0 is the UI list, list 1+classId belongs to scenaric class classId. Ins
     char **lists;                                  // array of pointers to string lists; each list is a u8 count followed by that many NUL-terminated stri
 };
 
 struct WarFile {
 public:
-#ifdef SDW_MEMBERS_WarFile
-    SDW_MEMBERS_WarFile
-#endif
-#ifdef SDW_EXTRA_WarFile
-    SDW_EXTRA_WarFile
-#endif
     WarHeader *header;                             // == blob: start of the in-memory WAR image. Read as the WarHeader (+4 version, +8 colour, +0xc resour
     u32 *table;                                    // blob + 0x10: resource table of u32 {type<<24 | byte offset}. The same array GetResourceType/Install_
     u8 *blob;                                      // malloc(fileSize) buffer. File bytes 4.. are read to blob+4, so blob offsets equal file offsets; blob
@@ -4036,12 +3274,6 @@ public:
 
 struct Dav {
 public:
-#ifdef SDW_MEMBERS_Dav
-    SDW_MEMBERS_Dav
-#endif
-#ifdef SDW_EXTRA_Dav
-    SDW_EXTRA_Dav
-#endif
     DavHeader *header;                             // g_pDav->header == blob after Load_DAV; +0 'VDX7' magic, +0x14 relocated pointer to the DAV directory
     u8 *blob;                                      // malloc'd whole .DAV image (size from directory+0xe); freed by Dav_Free
     WarFile war;                                   // the embedded WarFile {header, table, blob}: Load_WAR/Load_WarMeshes/Load_FreeWAR take &g_pDav->war (
@@ -4050,12 +3282,6 @@ public:
 
 struct DavBitmapRec {
 public:
-#ifdef SDW_MEMBERS_DavBitmapRec
-    SDW_MEMBERS_DavBitmapRec
-#endif
-#ifdef SDW_EXTRA_DavBitmapRec
-    SDW_EXTRA_DavBitmapRec
-#endif
     u16 u;                                         // texel x origin on the page. Tex_CornerUV base for the horizontal corners in MCard_DrawSlotIcons.
     u16 width;                                     // width in texels; every reader subtracts 1 (MCard_Init, MCard_DrawSlotIcons, AnimSprite/Sprite loader
     u16 v;                                         // texel y origin on the page
@@ -4065,12 +3291,6 @@ public:
 
 struct DavHeader {
 public:
-#ifdef SDW_MEMBERS_DavHeader
-    SDW_MEMBERS_DavHeader
-#endif
-#ifdef SDW_EXTRA_DavHeader
-    SDW_EXTRA_DavHeader
-#endif
     char magic[4];                                 // 'VDX7': Load_DAV strncmp's 4 bytes against sprintf('VDX7')
     u8 _pad004[0x10];
     SDW_DAVPTR(DavDirectory) dir;                             // file offset of the DAV directory, relocated to a pointer by Load_DAV ( on the 0x44-byte prob
@@ -4078,12 +3298,6 @@ public:
 
 struct DefusableMineBits {
 public:
-#ifdef SDW_MEMBERS_DefusableMineBits
-    SDW_MEMBERS_DefusableMineBits
-#endif
-#ifdef SDW_EXTRA_DefusableMineBits
-    SDW_EXTRA_DefusableMineBits
-#endif
     u8 hit : 1;                                    // (bits) bit 0 (1-byte unsigned unit)
     u8 failed : 1;                                 // (bits) bit 1 (1-byte unsigned unit)
     u8 wolfFrozen : 1;                             // (bits) bit 2 (1-byte unsigned unit)
@@ -4095,9 +3309,6 @@ public:
 #ifdef SDW_MEMBERS_InlineEmitter1
     SDW_MEMBERS_InlineEmitter1
 #endif
-#ifdef SDW_EXTRA_InlineEmitter1
-    SDW_EXTRA_InlineEmitter1
-#endif
     ParticleEmitter base;                          // the ParticleEmitter this inline-storage emitter is: its inline constructor points slotPool at slotBu
     Vec3f slotBuf[1];                              // 1 x 0xC position records
     Particle particleBuf[1];                       // 1 x 8-byte particle records
@@ -4105,23 +3316,11 @@ public:
 
 struct MineFlagBits {
 public:
-#ifdef SDW_MEMBERS_MineFlagBits
-    SDW_MEMBERS_MineFlagBits
-#endif
-#ifdef SDW_EXTRA_MineFlagBits
-    SDW_EXTRA_MineFlagBits
-#endif
     u8 exploded : 1;                               // (bits) bit 0 (1-byte unsigned unit) | Byte loads and stores at 4d4f4c/4d5127 prove bit 0 of +0xa7.
 };
 
 class Mine : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Mine
-    SDW_MEMBERS_Mine
-#endif
-#ifdef SDW_EXTRA_Mine
-    SDW_EXTRA_Mine
-#endif
     virtual void PostLoadInit();                   // Mine_Init (override)
     virtual void Update();                         // Mine_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Mine_HandleMessage (override)
@@ -4139,12 +3338,6 @@ public:
 
 class DefusableMine : public Mine {
 public:
-#ifdef SDW_MEMBERS_DefusableMine
-    SDW_MEMBERS_DefusableMine
-#endif
-#ifdef SDW_EXTRA_DefusableMine
-    SDW_EXTRA_DefusableMine
-#endif
     virtual void PostLoadInit();                   // DefusableMine_Init (override)
     virtual void Update();                         // DefusableMine_Update (override)
     virtual void Render(Camera *view);             // DefusableMine_Render (override)
@@ -4168,23 +3361,11 @@ public:
 
 struct DialogueShownBits {
 public:
-#ifdef SDW_MEMBERS_DialogueShownBits
-    SDW_MEMBERS_DialogueShownBits
-#endif
-#ifdef SDW_EXTRA_DialogueShownBits
-    SDW_EXTRA_DialogueShownBits
-#endif
     u8 shown : 1;                                  // (bits) g_dialogueShownFlags bit 0 as a bitfield VIEW of that u8 (the ProgressRuntimeFlagBits prece
 };
 
 struct DialogueShownFlags {
 public:
-#ifdef SDW_MEMBERS_DialogueShownFlags
-    SDW_MEMBERS_DialogueShownFlags
-#endif
-#ifdef SDW_EXTRA_DialogueShownFlags
-    SDW_EXTRA_DialogueShownFlags
-#endif
     union {
         u8 all;                                        // g_dialogueShownFlags as the plain byte: Cine_Update reads it as & 1
         DialogueShownBits bits;                    // the same byte as the DialogueShownBits view: Dialogue_Show writes bit 0 with byte bitfield code (0x5
@@ -4193,12 +3374,6 @@ public:
 
 class Diamond : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Diamond
-    SDW_MEMBERS_Diamond
-#endif
-#ifdef SDW_EXTRA_Diamond
-    SDW_EXTRA_Diamond
-#endif
     virtual void PostLoadInit();                   // Diamond_PostLoadInit (override)
     virtual void Update();                         // Diamond_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Diamond_HandleMessage (override)
@@ -4225,12 +3400,6 @@ public:
 
 class DoorLevel : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_DoorLevel
-    SDW_MEMBERS_DoorLevel
-#endif
-#ifdef SDW_EXTRA_DoorLevel
-    SDW_EXTRA_DoorLevel
-#endif
     virtual void PostLoadInit();                   // DoorLevel_PostLoadInit (override)
     virtual void Update();                         // DoorLevel_Update (override)
     virtual void Render(Camera *view);             // DoorLevel_Render (override)
@@ -4246,12 +3415,6 @@ public:
 
 class DoorMechanism : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_DoorMechanism
-    SDW_MEMBERS_DoorMechanism
-#endif
-#ifdef SDW_EXTRA_DoorMechanism
-    SDW_EXTRA_DoorMechanism
-#endif
     virtual void PostLoadInit();                   // DoorMechanism_PostLoadInit (override)
     virtual void Update();                         // DoorMechanism_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // DoorMechanism_HandleMessage (override)
@@ -4260,12 +3423,6 @@ public:
 
 class DoorWorld : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_DoorWorld
-    SDW_MEMBERS_DoorWorld
-#endif
-#ifdef SDW_EXTRA_DoorWorld
-    SDW_EXTRA_DoorWorld
-#endif
     virtual void PostLoadInit();                   // DoorWorld_PostLoadInit (override)
     virtual void Update();                         // DoorWorld_Update (override)
     virtual s32 CustomCollide(ScnObject *querier, CollBox *mover, Vec3s *disp, s32 *outFrac, s32 *outY, CollContact *contacts, s32 *nContacts, u32 mode); // DoorWorld_CustomCollide (override)
@@ -4283,9 +3440,6 @@ class Dragon : public ScnMobile {
 public:
 #ifdef SDW_MEMBERS_Dragon
     SDW_MEMBERS_Dragon
-#endif
-#ifdef SDW_EXTRA_Dragon
-    SDW_EXTRA_Dragon
 #endif
     virtual void PostLoadInit();                   // Dragon_Init (override)
     virtual void Update();                         // Dragon_Update (override)
@@ -4343,12 +3497,6 @@ public:
 
 struct DrawMsgArgs {
 public:
-#ifdef SDW_MEMBERS_DrawMsgArgs
-    SDW_MEMBERS_DrawMsgArgs
-#endif
-#ifdef SDW_EXTRA_DrawMsgArgs
-    SDW_EXTRA_DrawMsgArgs
-#endif
     Camera *view;                                  // render view, argument 1 of ScnBody_RenderTinted
     u32 color;                                     // tint colour, argument 2; its three low bytes are halved while fxFlags & 0
     u16 amount;                                    // tint amount, argument 3; replaced by 0x1000 while fxFlags & 0x20000
@@ -4357,12 +3505,6 @@ public:
 
 struct DynamiteFlagBits {
 public:
-#ifdef SDW_MEMBERS_DynamiteFlagBits
-    SDW_MEMBERS_DynamiteFlagBits
-#endif
-#ifdef SDW_EXTRA_DynamiteFlagBits
-    SDW_EXTRA_DynamiteFlagBits
-#endif
     u8 exploded : 1;                               // (bits) bit 0 (1-byte unsigned unit)
 };
 
@@ -4371,9 +3513,6 @@ public:
 #ifdef SDW_MEMBERS_InlineEmitter3
     SDW_MEMBERS_InlineEmitter3
 #endif
-#ifdef SDW_EXTRA_InlineEmitter3
-    SDW_EXTRA_InlineEmitter3
-#endif
     ParticleEmitter base;                          // the ParticleEmitter this inline-storage emitter is: its inline constructor points slotPool at slotBu
     Vec3f slotBuf[3];                              // 3 x 0xC position records
     Particle particleBuf[3];                       // 3 x 8-byte particle records
@@ -4381,12 +3520,6 @@ public:
 
 class Dynamite : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Dynamite
-    SDW_MEMBERS_Dynamite
-#endif
-#ifdef SDW_EXTRA_Dynamite
-    SDW_EXTRA_Dynamite
-#endif
     virtual void PostLoadInit();                   // Dynamite_Init (override)
     virtual void Update();                         // Dynamite_Update (override)
     virtual void Render(Camera *view);             // Dynamite_Render (override)
@@ -4407,12 +3540,6 @@ public:
 
 class ElasticTree : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_ElasticTree
-    SDW_MEMBERS_ElasticTree
-#endif
-#ifdef SDW_EXTRA_ElasticTree
-    SDW_EXTRA_ElasticTree
-#endif
     virtual void PostLoadInit();                   // ElasticTree_Init (override)
     virtual void Update();                         // ElasticTree_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // ElasticTree_HandleMessage (override)
@@ -4426,9 +3553,6 @@ class Elmer : public ScnMobile {
 public:
 #ifdef SDW_MEMBERS_Elmer
     SDW_MEMBERS_Elmer
-#endif
-#ifdef SDW_EXTRA_Elmer
-    SDW_EXTRA_Elmer
 #endif
     virtual void PostLoadInit();                   // Elmer_PostLoadInit (override)
     virtual void Update();                         // Elmer_Update (override)
@@ -4487,12 +3611,6 @@ public:
 
 struct EmitterColumnParams {
 public:
-#ifdef SDW_MEMBERS_EmitterColumnParams
-    SDW_MEMBERS_EmitterColumnParams
-#endif
-#ifdef SDW_EXTRA_EmitterColumnParams
-    SDW_EXTRA_EmitterColumnParams
-#endif
     s32 riseSpeed;                                 // vertical speed per second
     s32 life;                                      // particle life in ticks
     s32 period;
@@ -4503,12 +3621,6 @@ public:
 
 struct EmitterFadeParams {
 public:
-#ifdef SDW_MEMBERS_EmitterFadeParams
-    SDW_MEMBERS_EmitterFadeParams
-#endif
-#ifdef SDW_EXTRA_EmitterFadeParams
-    SDW_EXTRA_EmitterFadeParams
-#endif
     s32 life;                                      // particle life in ticks
     s32 fadeStart;                                 // age at which the fade to 0 begins (comment of Emitter_UpdateFade; read later in it)
     s32 spawnInterval;                             // ticks between spawns; Wolf_UpdateTrailFx sets 0x4b000 / speed
@@ -4519,12 +3631,6 @@ public:
 
 struct EmitterPerfumeParams {
 public:
-#ifdef SDW_MEMBERS_EmitterPerfumeParams
-    SDW_MEMBERS_EmitterPerfumeParams
-#endif
-#ifdef SDW_EXTRA_EmitterPerfumeParams
-    SDW_EXTRA_EmitterPerfumeParams
-#endif
     s32 hSpeed;
     s32 vSpeed;                                    // vertical drift per second
     s32 life;                                      // particle life in ticks
@@ -4537,12 +3643,6 @@ public:
 
 struct EmitterTrailParams {
 public:
-#ifdef SDW_MEMBERS_EmitterTrailParams
-    SDW_MEMBERS_EmitterTrailParams
-#endif
-#ifdef SDW_EXTRA_EmitterTrailParams
-    SDW_EXTRA_EmitterTrailParams
-#endif
     s32 life;                                      // particle life in ticks, 0x7fffffff = permanent
     s32 param4;                                    // read; 150 in both of the Wolf's footprint blocks; meaning not read
     u16 size;                                      // particle size
@@ -4551,24 +3651,12 @@ public:
 
 class FacingCamera : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_FacingCamera
-    SDW_MEMBERS_FacingCamera
-#endif
-#ifdef SDW_EXTRA_FacingCamera
-    SDW_EXTRA_FacingCamera
-#endif
     virtual void PostLoadInit();                   // FacingCamera_PostLoadInit (override)
     virtual void Render(Camera *view);             // FacingCamera_Render (override)
 };
 
 class FallingGate : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_FallingGate
-    SDW_MEMBERS_FallingGate
-#endif
-#ifdef SDW_EXTRA_FallingGate
-    SDW_EXTRA_FallingGate
-#endif
     virtual void PostLoadInit();                   // FallingGate_Init (override)
     virtual void Update();                         // FallingGate_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // FallingGate_HandleMessage (override)
@@ -4598,9 +3686,6 @@ public:
 #ifdef SDW_MEMBERS_FallingGate2
     SDW_MEMBERS_FallingGate2
 #endif
-#ifdef SDW_EXTRA_FallingGate2
-    SDW_EXTRA_FallingGate2
-#endif
     virtual void PostLoadInit();                   // FallingGate2_PostLoadInit (override)
     virtual void Update();                         // FallingGate2_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // FallingGate2_HandleMessage (override)
@@ -4627,12 +3712,6 @@ public:
 
 class FallingRock : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_FallingRock
-    SDW_MEMBERS_FallingRock
-#endif
-#ifdef SDW_EXTRA_FallingRock
-    SDW_EXTRA_FallingRock
-#endif
     virtual void PostLoadInit();                   // FallingRock_PostLoadInit (override)
     virtual void Update();                         // FallingRock_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // FallingRock_HandleMessage (override)
@@ -4649,24 +3728,12 @@ public:
 
 struct FanReport {
 public:
-#ifdef SDW_MEMBERS_FanReport
-    SDW_MEMBERS_FanReport
-#endif
-#ifdef SDW_EXTRA_FanReport
-    SDW_EXTRA_FanReport
-#endif
     u16 classId;                                   // class id of the reporting object
     u16 proximity;                                 // its proximity value
 };
 
 class Fan : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Fan
-    SDW_MEMBERS_Fan
-#endif
-#ifdef SDW_EXTRA_Fan
-    SDW_EXTRA_Fan
-#endif
     virtual void PostLoadInit();                   // Fan_Init (override)
     virtual void Update();                         // Fan_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Fan_HandleMessage (override)
@@ -4686,12 +3753,6 @@ public:
 
 struct FileHandle {
 public:
-#ifdef SDW_MEMBERS_FileHandle
-    SDW_MEMBERS_FileHandle
-#endif
-#ifdef SDW_EXTRA_FileHandle
-    SDW_EXTRA_FileHandle
-#endif
     s32 fd;                                        // _open handle; File_Open returns -1 when it is -1
     s32 size;                                      // file size from lseek(end) in File_Open (also returned)
     u32 remaining;
@@ -4700,12 +3761,6 @@ public:
 
 class FireBall : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_FireBall
-    SDW_MEMBERS_FireBall
-#endif
-#ifdef SDW_EXTRA_FireBall
-    SDW_EXTRA_FireBall
-#endif
     virtual void PostLoadInit();                   // FireBall_PostLoadInit (override)
     virtual void Update();                         // FireBall_Update (override)
     virtual void Render(Camera *view);             // FireBall_Render (override)
@@ -4721,12 +3776,6 @@ public:
 
 class Firefly : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Firefly
-    SDW_MEMBERS_Firefly
-#endif
-#ifdef SDW_EXTRA_Firefly
-    SDW_EXTRA_Firefly
-#endif
     virtual void PostLoadInit();                   // Firefly_PostLoadInit (override)
     virtual void Update();                         // Firefly_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Firefly_HandleMessage (override)
@@ -4743,12 +3792,6 @@ public:
 
 class Fish : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Fish
-    SDW_MEMBERS_Fish
-#endif
-#ifdef SDW_EXTRA_Fish
-    SDW_EXTRA_Fish
-#endif
     virtual void PostLoadInit();                   // Fish_Init (override)
     virtual void Update();                         // Fish_Update (override)
     virtual void Render(Camera *view);             // Fish_Render (override)
@@ -4769,9 +3812,6 @@ public:
 #ifdef SDW_MEMBERS_InlineEmitter4
     SDW_MEMBERS_InlineEmitter4
 #endif
-#ifdef SDW_EXTRA_InlineEmitter4
-    SDW_EXTRA_InlineEmitter4
-#endif
     void RenderFlat(Camera *view, s32 forward);
     ParticleEmitter base;                          // the ParticleEmitter this inline-storage emitter is: its inline constructor points slotPool at slotBu
     Vec3f slotBuf[4];                              // 4 x 0xC position records
@@ -4782,9 +3822,6 @@ class FloatingBox : public ScnMobile {
 public:
 #ifdef SDW_MEMBERS_FloatingBox
     SDW_MEMBERS_FloatingBox
-#endif
-#ifdef SDW_EXTRA_FloatingBox
-    SDW_EXTRA_FloatingBox
 #endif
     virtual void PostLoadInit();                   // FloatingBox_PostLoadInit (override)
     virtual void Update();                         // FloatingBox_Update (override)
@@ -4826,12 +3863,6 @@ public:
 
 struct FlockScentSource {
 public:
-#ifdef SDW_MEMBERS_FlockScentSource
-    SDW_MEMBERS_FlockScentSource
-#endif
-#ifdef SDW_EXTRA_FlockScentSource
-    SDW_EXTRA_FlockScentSource
-#endif
     ScnObject *obj;                                // the scent source (Perfume bottle, etc.) registered by Flock_AddScentSource
     u32 rangeSq;                                   // squared attraction range
     s16 heading;                                   // heading of the scent cone
@@ -4840,12 +3871,6 @@ public:
 
 class Flute : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Flute
-    SDW_MEMBERS_Flute
-#endif
-#ifdef SDW_EXTRA_Flute
-    SDW_EXTRA_Flute
-#endif
     virtual void PostLoadInit();                   // Flute_Init (override)
     virtual void Update();                         // Flute_Update (override)
     virtual void Render(Camera *view);             // Flute_Render (override)
@@ -4862,24 +3887,12 @@ public:
 
 struct FmvList {
 public:
-#ifdef SDW_MEMBERS_FmvList
-    SDW_MEMBERS_FmvList
-#endif
-#ifdef SDW_EXTRA_FmvList
-    SDW_EXTRA_FmvList
-#endif
     u32 count;                                     // number of clips; App_InitGameSystems writes 3 into g_fmvListIntro and 1 into g_fmvListCre
     char clips[8][256];                            // clip file names, 0x100 apart ( ; Video_PlaySequence i
 };
 
 class FogManager : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_FogManager
-    SDW_MEMBERS_FogManager
-#endif
-#ifdef SDW_EXTRA_FogManager
-    SDW_EXTRA_FogManager
-#endif
     virtual void PostLoadInit();                   // FogManager_Init (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // FogManager_HandleMessage (override)
     u8 _pad040[0x4];
@@ -4889,12 +3902,6 @@ public:
 
 struct Font {
 public:
-#ifdef SDW_MEMBERS_Font
-    SDW_MEMBERS_Font
-#endif
-#ifdef SDW_EXTRA_Font
-    SDW_EXTRA_Font
-#endif
     u32 color;                                     // current text colour, stored as rgb | 0x05000000
     u16 texPage;                                   // texture page index of the font sheet; Text_DrawGlyph writes texPage + 4 as the RenderPoly type, the
     u16 reserved;                                  // explicitly zeroed by Font_LoadFromRes and never read anywhere in the binary
@@ -4914,12 +3921,6 @@ public:
 
 struct RiverCargo {
 public:
-#ifdef SDW_MEMBERS_RiverCargo
-    SDW_MEMBERS_RiverCargo
-#endif
-#ifdef SDW_EXTRA_RiverCargo
-    SDW_EXTRA_RiverCargo
-#endif
     u16 node;                                      // index of the path point it moves toward (FrozenRiver_FindNextNode; ++)
     s32 moving;                                    // 1 while it moves toward node; 0 while another cargo holds that node (FrozenRiver_IsNodeTaken, 0x4c35
     s32 active;                                    // floe slots: 1 while the floe is in the water (FrozenRiver_LaunchFloe), 0 once the crane has
@@ -4930,12 +3931,6 @@ public:
 
 class FrozenRiver : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_FrozenRiver
-    SDW_MEMBERS_FrozenRiver
-#endif
-#ifdef SDW_EXTRA_FrozenRiver
-    SDW_EXTRA_FrozenRiver
-#endif
     virtual void PostLoadInit();                   // FrozenRiver_PostLoadInit (override)
     virtual void Update();                         // FrozenRiver_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // FrozenRiver_HandleMessage (override)
@@ -4971,9 +3966,6 @@ class Frustrum {
 public:
 #ifdef SDW_MEMBERS_Frustrum
     SDW_MEMBERS_Frustrum
-#endif
-#ifdef SDW_EXTRA_Frustrum
-    SDW_EXTRA_Frustrum
 #endif
     virtual ~Frustrum();                              // Frustrum_ScalarDeletingDtor
     void SetProjection(float nearZ, float farZ, float fovRad, float viewDistance);
@@ -5015,12 +4007,6 @@ public:
 
 class GameState {
 public:
-#ifdef SDW_MEMBERS_GameState
-    SDW_MEMBERS_GameState
-#endif
-#ifdef SDW_EXTRA_GameState
-    SDW_EXTRA_GameState
-#endif
     void Game_SetFlags(u32 mask, s32 on);
     void Game_ResetState();
     s32 Game_CanOpenMenu();
@@ -5035,12 +4021,6 @@ public:
 
 class GeyserIn : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_GeyserIn
-    SDW_MEMBERS_GeyserIn
-#endif
-#ifdef SDW_EXTRA_GeyserIn
-    SDW_EXTRA_GeyserIn
-#endif
     virtual void PostLoadInit();                   // GeyserIn_PostLoadInit (override)
     virtual void Update();                         // GeyserIn_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // GeyserIn_HandleMessage (override)
@@ -5069,12 +4049,6 @@ public:
 
 class GeyserManger : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_GeyserManger
-    SDW_MEMBERS_GeyserManger
-#endif
-#ifdef SDW_EXTRA_GeyserManger
-    SDW_EXTRA_GeyserManger
-#endif
     virtual void PostLoadInit();                   // GeyserManger_PostLoadInit (override)
     virtual void Update();                         // GeyserManger_Update (override)
     u16 boxCount;                                  // Number of detection boxes in PROPERTY_GEYSERMANGER_BOXDETECT, returned through Scn_GetPropIdList's c
@@ -5085,12 +4059,6 @@ public:
 
 class GeyserOut : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_GeyserOut
-    SDW_MEMBERS_GeyserOut
-#endif
-#ifdef SDW_EXTRA_GeyserOut
-    SDW_EXTRA_GeyserOut
-#endif
     virtual void PostLoadInit();                   // GeyserOut_PostLoadInit (override)
     virtual void Update();                         // GeyserOut_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // GeyserOut_HandleMessage (override)
@@ -5115,12 +4083,6 @@ public:
 
 struct GhostTravel {
 public:
-#ifdef SDW_MEMBERS_GhostTravel
-    SDW_MEMBERS_GhostTravel
-#endif
-#ifdef SDW_EXTRA_GhostTravel
-    SDW_EXTRA_GhostTravel
-#endif
     Vec3s target;                                  // destination point
     s16 speed;                                     // units per second along the leg; 400 patrol/flee, 200 slow patrol
     s16 heading;                                   // facing to approach the target with: atan2(dx, dz) + 0x800
@@ -5129,12 +4091,6 @@ public:
 
 class Ghost : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Ghost
-    SDW_MEMBERS_Ghost
-#endif
-#ifdef SDW_EXTRA_Ghost
-    SDW_EXTRA_Ghost
-#endif
     virtual void PostLoadInit();                   // Ghost_Init (override)
     virtual void Update();                         // Ghost_Update (override)
     virtual void Render(Camera *view);             // Ghost_Render (override)
@@ -5201,12 +4157,6 @@ public:
 
 class GhostCostume : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_GhostCostume
-    SDW_MEMBERS_GhostCostume
-#endif
-#ifdef SDW_EXTRA_GhostCostume
-    SDW_EXTRA_GhostCostume
-#endif
     virtual void PostLoadInit();                   // GhostCostume_Init (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // GhostCostume_HandleMessage (override)
     Vec3s homePos;                                 // Same as SheepCostume.homePos (identical code).
@@ -5214,24 +4164,12 @@ public:
 
 class GhostHalo : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_GhostHalo
-    SDW_MEMBERS_GhostHalo
-#endif
-#ifdef SDW_EXTRA_GhostHalo
-    SDW_EXTRA_GhostHalo
-#endif
     virtual void PostLoadInit();                   // GhostHalo_PostLoadInit (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // GhostHalo_HandleMessage (override)
 };
 
 struct GhostNode {
 public:
-#ifdef SDW_MEMBERS_GhostNode
-    SDW_MEMBERS_GhostNode
-#endif
-#ifdef SDW_EXTRA_GhostNode
-    SDW_EXTRA_GhostNode
-#endif
     Vec3s pos;                                     // node position; vertical is always written 0
     s16 pad6;                                      // not written by Ghost_BuildNodeGraph
     GhostNode *links[4];                           // neighbours, appended by Ghost_BuildNodeGraph in both directions
@@ -5242,12 +4180,6 @@ public:
 
 struct GoalFlagBits {
 public:
-#ifdef SDW_MEMBERS_GoalFlagBits
-    SDW_MEMBERS_GoalFlagBits
-#endif
-#ifdef SDW_EXTRA_GoalFlagBits
-    SDW_EXTRA_GoalFlagBits
-#endif
     u8 cinematic : 1;                              // (bits) bit 0 (1-byte unsigned unit)
     u8 noSheep : 1;                                // (bits) bit 1 (1-byte unsigned unit)
     u8 triggered : 1;                              // (bits) bit 2 (1-byte unsigned unit)
@@ -5256,12 +4188,6 @@ public:
 
 class Goal : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_Goal
-    SDW_MEMBERS_Goal
-#endif
-#ifdef SDW_EXTRA_Goal
-    SDW_EXTRA_Goal
-#endif
     virtual void PostLoadInit();                   // Goal_Init (override)
     virtual void Update();                         // Goal_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Goal_Reset (override)
@@ -5277,12 +4203,6 @@ public:
 
 class GoldenCoins : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_GoldenCoins
-    SDW_MEMBERS_GoldenCoins
-#endif
-#ifdef SDW_EXTRA_GoldenCoins
-    SDW_EXTRA_GoldenCoins
-#endif
     virtual void PostLoadInit();                   // GoldenCoins_Init (override)
     virtual void Update();                         // GoldenCoins_Update (override)
     virtual void Render(Camera *view);             // GoldenCoins_Render (override)
@@ -5302,12 +4222,6 @@ public:
 
 class GossamerOnde : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_GossamerOnde
-    SDW_MEMBERS_GossamerOnde
-#endif
-#ifdef SDW_EXTRA_GossamerOnde
-    SDW_EXTRA_GossamerOnde
-#endif
     virtual void PostLoadInit();                   // GossamerOnde_PostLoadInit (override)
     virtual void Update();                         // GossamerOnde_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // GossamerOnde_HandleMessage (override)
@@ -5329,9 +4243,6 @@ class Gossamer_Boss : public ScnMobile {
 public:
 #ifdef SDW_MEMBERS_Gossamer_Boss
     SDW_MEMBERS_Gossamer_Boss
-#endif
-#ifdef SDW_EXTRA_Gossamer_Boss
-    SDW_EXTRA_Gossamer_Boss
 #endif
     virtual void PostLoadInit();                   // Gossamer_Boss_PostLoadInit (override)
     virtual void Update();                         // Gossamer_Boss_Update (override)
@@ -5422,9 +4333,6 @@ public:
 #ifdef SDW_MEMBERS_TrajPatrol
     SDW_MEMBERS_TrajPatrol
 #endif
-#ifdef SDW_EXTRA_TrajPatrol
-    SDW_EXTRA_TrajPatrol
-#endif
     void Reverse();
     Trajectory *traj;                              // the trajectory: u16 count then count Vec3s
     s16 pointIndex;                                // index of the point being steered toward; steps by +1 or -1 depending on forward
@@ -5442,12 +4350,6 @@ public:
 
 class Gossamer_Lev08 : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Gossamer_Lev08
-    SDW_MEMBERS_Gossamer_Lev08
-#endif
-#ifdef SDW_EXTRA_Gossamer_Lev08
-    SDW_EXTRA_Gossamer_Lev08
-#endif
     virtual void PostLoadInit();                   // Gossamer_Lev08_PostLoadInit (override)
     virtual void Update();                         // Gossamer_Lev08_Update (override)
     virtual void Render(Camera *view);             // Gossamer_Lev08_Render (override)
@@ -5514,12 +4416,6 @@ public:
 
 struct GroundMineFlagBits {
 public:
-#ifdef SDW_MEMBERS_GroundMineFlagBits
-    SDW_MEMBERS_GroundMineFlagBits
-#endif
-#ifdef SDW_EXTRA_GroundMineFlagBits
-    SDW_EXTRA_GroundMineFlagBits
-#endif
     u16 onMover : 1;                               // (bits) bit 0 (2-byte unsigned unit) | The word read/modify/write at 4d59a9/4d59c3 is bit 0 of +0x120.
     u16 falling : 1;                               // (bits) bit 1 (2-byte unsigned unit)
     u16 triggered : 1;                             // (bits) bit 2 (2-byte unsigned unit)
@@ -5528,12 +4424,6 @@ public:
 
 class GroundMine : public Mine {
 public:
-#ifdef SDW_MEMBERS_GroundMine
-    SDW_MEMBERS_GroundMine
-#endif
-#ifdef SDW_EXTRA_GroundMine
-    SDW_EXTRA_GroundMine
-#endif
     virtual void PostLoadInit();                   // GroundMine_Init (override)
     virtual void Update();                         // GroundMine_Update (override)
     virtual void Render(Camera *view);             // GroundMine_Render (override)
@@ -5558,24 +4448,12 @@ public:
 
 struct GroundQuery {
 public:
-#ifdef SDW_MEMBERS_GroundQuery
-    SDW_MEMBERS_GroundQuery
-#endif
-#ifdef SDW_EXTRA_GroundQuery
-    SDW_EXTRA_GroundQuery
-#endif
     Vec3s pos;                                     // query point; y is overwritten with the surface height (msg 0xd argument)
     Vec3s normal;                                  // surface normal out, 4.12 (up = (0,-0x1000,0))
 };
 
 class HairDryer : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_HairDryer
-    SDW_MEMBERS_HairDryer
-#endif
-#ifdef SDW_EXTRA_HairDryer
-    SDW_EXTRA_HairDryer
-#endif
     virtual void PostLoadInit();                   // HairDryer_Init (override)
     virtual void Update();                         // HairDryer_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // HairDryer_HandleMessage (override)
@@ -5592,9 +4470,6 @@ class Heap {
 public:
 #ifdef SDW_MEMBERS_Heap
     SDW_MEMBERS_Heap
-#endif
-#ifdef SDW_EXTRA_Heap
-    SDW_EXTRA_Heap
 #endif
     HeapBlock *FindPrevBlock(HeapBlock *block);
     void *AllocAligned(u32 size, u32 align);
@@ -5637,12 +4512,6 @@ public:
 
 struct HeapBlock {
 public:
-#ifdef SDW_MEMBERS_HeapBlock
-    SDW_MEMBERS_HeapBlock
-#endif
-#ifdef SDW_EXTRA_HeapBlock
-    SDW_EXTRA_HeapBlock
-#endif
     u32 sizeFlags;                                 // Block size in bytes including this 8-byte header (bits 2..27, mask 0x0ffffffc) | 2 = this block is f
     HeapBlock *next;                               // Free block: next on the free list (the sentinel's points to itself). Allocated block: the magic 0x98
     HeapBlock *prev;                               // Free block: previous on the free list (the head's points to itself). Allocated block: first word of
@@ -5650,12 +4519,6 @@ public:
 
 class HeapOfLeaf : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_HeapOfLeaf
-    SDW_MEMBERS_HeapOfLeaf
-#endif
-#ifdef SDW_EXTRA_HeapOfLeaf
-    SDW_EXTRA_HeapOfLeaf
-#endif
     virtual void PostLoadInit();                   // HeapOfLeaf_Init (override)
     virtual void Update();                         // HeapOfLeaf_Update (override)
     virtual void Render(Camera *view);             // HeapOfLeaf_Render (override)
@@ -5678,12 +4541,6 @@ public:
 
 class HiddenRocks : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_HiddenRocks
-    SDW_MEMBERS_HiddenRocks
-#endif
-#ifdef SDW_EXTRA_HiddenRocks
-    SDW_EXTRA_HiddenRocks
-#endif
     virtual void PostLoadInit();                   // HiddenRocks_Init (override)
     virtual void Update();                         // HiddenRocks_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // HiddenRocks_HandleMessage (override)
@@ -5691,12 +4548,6 @@ public:
 
 class HitSwitch : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_HitSwitch
-    SDW_MEMBERS_HitSwitch
-#endif
-#ifdef SDW_EXTRA_HitSwitch
-    SDW_EXTRA_HitSwitch
-#endif
     virtual void PostLoadInit();                   // HitSwitch_PostLoadInit (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // HitSwitch_HandleMessage (override)
     virtual void Reset();                          // HitSwitch_Reset (override)
@@ -5705,12 +4556,6 @@ public:
 
 class Hive : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Hive
-    SDW_MEMBERS_Hive
-#endif
-#ifdef SDW_EXTRA_Hive
-    SDW_EXTRA_Hive
-#endif
     virtual void PostLoadInit();                   // Hive_PostLoadInit (override)
     virtual void Update();                         // Hive_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Hive_HandleMessage (override)
@@ -5739,9 +4584,6 @@ public:
 #ifdef SDW_MEMBERS_RenderPoly
     SDW_MEMBERS_RenderPoly
 #endif
-#ifdef SDW_EXTRA_RenderPoly
-    SDW_EXTRA_RenderPoly
-#endif
     virtual ~RenderPoly();                            // RenderPoly_VectorDeletingDtor
     void Assign(const RenderPoly *src);                          /* RenderPoly_Assign */
     void InitFromBsFlat(const BsPolyFlat *src);
@@ -5760,9 +4602,6 @@ class HoleFX {
 public:
 #ifdef SDW_MEMBERS_HoleFX
     SDW_MEMBERS_HoleFX
-#endif
-#ifdef SDW_EXTRA_HoleFX
-    SDW_EXTRA_HoleFX
 #endif
     virtual ~HoleFX();                                // HoleFX_ScalarDeletingDtor
     void Init(D3DApp *app, void *viewport, float radius, u8 useCubicBezier);
@@ -5798,12 +4637,6 @@ public:
 
 class HoneyPot : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_HoneyPot
-    SDW_MEMBERS_HoneyPot
-#endif
-#ifdef SDW_EXTRA_HoneyPot
-    SDW_EXTRA_HoneyPot
-#endif
     virtual void PostLoadInit();                   // HoneyPot_Init (override)
     virtual void Update();                         // HoneyPot_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // HoneyPot_HandleMessage (override)
@@ -5823,12 +4656,6 @@ public:
 
 class Hoover : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Hoover
-    SDW_MEMBERS_Hoover
-#endif
-#ifdef SDW_EXTRA_Hoover
-    SDW_EXTRA_Hoover
-#endif
     virtual void PostLoadInit();                   // Hoover_Init (override)
     virtual void Update();                         // Hoover_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Hoover_HandleMessage (override)
@@ -5848,12 +4675,6 @@ public:
 
 class IceCube : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_IceCube
-    SDW_MEMBERS_IceCube
-#endif
-#ifdef SDW_EXTRA_IceCube
-    SDW_EXTRA_IceCube
-#endif
     virtual void PostLoadInit();                   // IceCube_PostLoadInit (override)
     virtual void Update();                         // IceCube_Update (override)
     virtual s32 CustomCollide(ScnObject *querier, CollBox *mover, Vec3s *disp, s32 *outFrac, s32 *outY, CollContact *contacts, s32 *nContacts, u32 mode); // IceCube_CustomCollide (override)
@@ -5871,12 +4692,6 @@ public:
 
 class IceGround : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_IceGround
-    SDW_MEMBERS_IceGround
-#endif
-#ifdef SDW_EXTRA_IceGround
-    SDW_EXTRA_IceGround
-#endif
     virtual void PostLoadInit();                   // IceGround_PostLoadInit (override)
     virtual void Update();                         // IceGround_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // IceGround_HandleMessage (override)
@@ -5888,12 +4703,6 @@ public:
 
 struct IdleAnimEntry {
 public:
-#ifdef SDW_MEMBERS_IdleAnimEntry
-    SDW_MEMBERS_IdleAnimEntry
-#endif
-#ifdef SDW_EXTRA_IdleAnimEntry
-    SDW_EXTRA_IdleAnimEntry
-#endif
     u16 animId;
     u8 loopsMin;                                   // lower bound of the loop count rolled with Rand_Range
     u8 loopsMax;                                   // upper bound
@@ -5901,12 +4710,6 @@ public:
 
 struct InflatableFlagBits {
 public:
-#ifdef SDW_MEMBERS_InflatableFlagBits
-    SDW_MEMBERS_InflatableFlagBits
-#endif
-#ifdef SDW_EXTRA_InflatableFlagBits
-    SDW_EXTRA_InflatableFlagBits
-#endif
     u8 inflated : 1;                               // (bits) bit 0 (1-byte unsigned unit): inflated
     u8 burnt : 1;                                  // (bits) bit 1 (1-byte unsigned unit): burnt (black tint; deflated by Reset)
     u8 rest : 6;                                   // (bits) bits 2..7 (1-byte unsigned unit)
@@ -5914,12 +4717,6 @@ public:
 
 class InflatableSheep : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_InflatableSheep
-    SDW_MEMBERS_InflatableSheep
-#endif
-#ifdef SDW_EXTRA_InflatableSheep
-    SDW_EXTRA_InflatableSheep
-#endif
     virtual void PostLoadInit();                   // InflatableSheep_Init (override)
     virtual void Update();                         // InflatableSheep_Update (override)
     virtual void Render(Camera *view);             // InflatableSheep_Render (override)
@@ -5951,9 +4748,6 @@ public:
 #ifdef SDW_MEMBERS_InlineEmitter10
     SDW_MEMBERS_InlineEmitter10
 #endif
-#ifdef SDW_EXTRA_InlineEmitter10
-    SDW_EXTRA_InlineEmitter10
-#endif
     ParticleEmitter base;                          // the ParticleEmitter this inline-storage emitter is: its inline constructor points slotPool at slotBu
     Vec3f slotBuf[10];                             // 10 x 0xC position records
     Particle particleBuf[10];                      // 10 x 8-byte particle records
@@ -5963,9 +4757,6 @@ class InlineEmitter32 {
 public:
 #ifdef SDW_MEMBERS_InlineEmitter32
     SDW_MEMBERS_InlineEmitter32
-#endif
-#ifdef SDW_EXTRA_InlineEmitter32
-    SDW_EXTRA_InlineEmitter32
 #endif
     ParticleEmitter base;                          // the ParticleEmitter this inline-storage emitter is: its inline constructor points slotPool at slotBu
     Vec3f slotBuf[32];                             // 32 x 0xC position records
@@ -5977,9 +4768,6 @@ public:
 #ifdef SDW_MEMBERS_InlineEmitter6
     SDW_MEMBERS_InlineEmitter6
 #endif
-#ifdef SDW_EXTRA_InlineEmitter6
-    SDW_EXTRA_InlineEmitter6
-#endif
     ParticleEmitter base;                          // the ParticleEmitter this inline-storage emitter is: its inline constructor points slotPool at slotBu
     Vec3f slotBuf[6];                              // 6 x 0xC position records
     Particle particleBuf[6];                       // 6 x 8-byte particle records
@@ -5990,9 +4778,6 @@ public:
 #ifdef SDW_MEMBERS_InlineEmitter8
     SDW_MEMBERS_InlineEmitter8
 #endif
-#ifdef SDW_EXTRA_InlineEmitter8
-    SDW_EXTRA_InlineEmitter8
-#endif
     void RenderFlat(Camera *view, s32 fwd);
     ParticleEmitter base;                          // the ParticleEmitter this inline-storage emitter is: its inline constructor points slotPool at slotBu
     Vec3f slotBuf[8];                              // 8 x 0xC position records
@@ -6001,24 +4786,12 @@ public:
 
 struct InputBinding {
 public:
-#ifdef SDW_MEMBERS_InputBinding
-    SDW_MEMBERS_InputBinding
-#endif
-#ifdef SDW_EXTRA_InputBinding
-    SDW_EXTRA_InputBinding
-#endif
     InputDevice *dev;                              // the device the action is bound to: InputMgr_BindAction stores it at table+8*slot
     u16 code;                                      // button / DIK scan code on that device: stored at table+8*slot+4; InputMgr_Poll reads dev-
 };
 
 struct InputBindingIdx {
 public:
-#ifdef SDW_MEMBERS_InputBindingIdx
-    SDW_MEMBERS_InputBindingIdx
-#endif
-#ifdef SDW_EXTRA_InputBindingIdx
-    SDW_EXTRA_InputBindingIdx
-#endif
     u8 devIdx;                                     // device index of a binding (1 keyboard, 2 joystick, 4 mouse; enum MenuBindingDevice): out[0] of Input
     u16 code;
 };
@@ -6027,9 +4800,6 @@ class InputDevice {
 public:
 #ifdef SDW_MEMBERS_InputDevice
     SDW_MEMBERS_InputDevice
-#endif
-#ifdef SDW_EXTRA_InputDevice
-    SDW_EXTRA_InputDevice
 #endif
     virtual ~InputDevice();                           // InputDevice_ScalarDeletingDtor
     virtual long SetAcquired(u8 acquire);          // InputDevice_SetAcquired
@@ -6072,9 +4842,6 @@ class InputMgr {
 public:
 #ifdef SDW_MEMBERS_InputMgr
     SDW_MEMBERS_InputMgr
-#endif
-#ifdef SDW_EXTRA_InputMgr
-    SDW_EXTRA_InputMgr
 #endif
     virtual ~InputMgr();                              // InputMgr_ScalarDeletingDtor
     u8 SaveBindingTable(u8 toRegistry, const char *dir, const char *name, InputBinding *table, InputDevice *master);
@@ -6136,12 +4903,6 @@ public:
 
 class InstantHoover : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_InstantHoover
-    SDW_MEMBERS_InstantHoover
-#endif
-#ifdef SDW_EXTRA_InstantHoover
-    SDW_EXTRA_InstantHoover
-#endif
     virtual void PostLoadInit();                   // InstantHoover_Init (override)
     virtual void Update();                         // InstantHoover_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // InstantHoover_HandleMessage (override)
@@ -6186,9 +4947,6 @@ public:
 #ifdef SDW_MEMBERS_InstantMartian
     SDW_MEMBERS_InstantMartian
 #endif
-#ifdef SDW_EXTRA_InstantMartian
-    SDW_EXTRA_InstantMartian
-#endif
     virtual void PostLoadInit();                   // InstantMartian_PostLoadInit (override)
     virtual void Update();                         // InstantMartian_Update (override)
     virtual void Render(Camera *view);             // InstantMartian_Render (override)
@@ -6229,12 +4987,6 @@ public:
 
 class InstantSocket : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_InstantSocket
-    SDW_MEMBERS_InstantSocket
-#endif
-#ifdef SDW_EXTRA_InstantSocket
-    SDW_EXTRA_InstantSocket
-#endif
     virtual void PostLoadInit();                   // InstantSocket_Init (override)
     virtual void Update();                         // InstantSocket_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // InstantSocket_HandleMessage (override)
@@ -6243,12 +4995,6 @@ public:
 
 struct InteractScan {
 public:
-#ifdef SDW_MEMBERS_InteractScan
-    SDW_MEMBERS_InteractScan
-#endif
-#ifdef SDW_EXTRA_InteractScan
-    SDW_EXTRA_InteractScan
-#endif
     CollBox selfBox;                               // scanner's first model box translated to its position
     CollBox candBox;                               // candidate box translated to the candidate's position
     s32 primaryBoxGap;                             // box-gap threshold, starts at boxDist, lowered by an accepted primary box; gates both outp
@@ -6261,12 +5007,6 @@ public:
 
 class Jail : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Jail
-    SDW_MEMBERS_Jail
-#endif
-#ifdef SDW_EXTRA_Jail
-    SDW_EXTRA_Jail
-#endif
     virtual void PostLoadInit();                   // Jail_PostLoadInit (override)
     virtual void Update();                         // Jail_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Jail_HandleMessage (override)
@@ -6296,9 +5036,6 @@ public:
 #ifdef SDW_MEMBERS_Joystick
     SDW_MEMBERS_Joystick
 #endif
-#ifdef SDW_EXTRA_Joystick
-    SDW_EXTRA_Joystick
-#endif
     virtual ~Joystick();                              // Joystick_ScalarDeletingDtor
     virtual long SetAcquired(u8 acquire);          // Joystick_SetAcquired (override)
     virtual long Update();                         // Joystick_Update (override)
@@ -6307,12 +5044,6 @@ public:
 
 class Key : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Key
-    SDW_MEMBERS_Key
-#endif
-#ifdef SDW_EXTRA_Key
-    SDW_EXTRA_Key
-#endif
     virtual void PostLoadInit();                   // Key_Init (override)
     virtual void Update();                         // Key_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Key_HandleMessage (override)
@@ -6329,9 +5060,6 @@ public:
 #ifdef SDW_MEMBERS_Keyboard
     SDW_MEMBERS_Keyboard
 #endif
-#ifdef SDW_EXTRA_Keyboard
-    SDW_EXTRA_Keyboard
-#endif
     virtual ~Keyboard();                              // Keyboard_ScalarDeletingDtor
     virtual long SetAcquired(u8 acquire);          // Keyboard_SetAcquired (override)
     virtual long Update();                         // Keyboard_Update (override)
@@ -6341,12 +5069,6 @@ public:
 
 class Laser : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Laser
-    SDW_MEMBERS_Laser
-#endif
-#ifdef SDW_EXTRA_Laser
-    SDW_EXTRA_Laser
-#endif
     virtual void PostLoadInit();                   // Laser_PostLoadInit (override)
     virtual void Update();                         // Laser_Update (override)
     virtual void Render(Camera *view);             // Laser_Render (override)
@@ -6369,12 +5091,6 @@ public:
 
 class Lava : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Lava
-    SDW_MEMBERS_Lava
-#endif
-#ifdef SDW_EXTRA_Lava
-    SDW_EXTRA_Lava
-#endif
     virtual void PostLoadInit();                   // Lava_PostLoadInit (override)
     virtual void Update();                         // Lava_Update (override)
     s16 range;                                     // PROPERTY_LAVA_RANGE (prop 0, PROPSIZE_LAVA 4): half-width of the square XZ area around homePos in wh
@@ -6385,9 +5101,6 @@ class LazerRobot : public ScnBody {
 public:
 #ifdef SDW_MEMBERS_LazerRobot
     SDW_MEMBERS_LazerRobot
-#endif
-#ifdef SDW_EXTRA_LazerRobot
-    SDW_EXTRA_LazerRobot
 #endif
     virtual void PostLoadInit();                   // LazerRobot_PostLoadInit (override)
     virtual void Update();                         // LazerRobot_Update (override)
@@ -6413,12 +5126,6 @@ public:
 
 class Leaf : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Leaf
-    SDW_MEMBERS_Leaf
-#endif
-#ifdef SDW_EXTRA_Leaf
-    SDW_EXTRA_Leaf
-#endif
     virtual void PostLoadInit();                   // Leaf_Init (override)
     virtual void Update();                         // Leaf_Update (override)
     s32 respawnTimerMs;                            // Wait after the fall animation ends: Rand_Range(750,2250) ms, decremented by g_dtMs.
@@ -6429,12 +5136,6 @@ public:
 
 class LightSpot : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_LightSpot
-    SDW_MEMBERS_LightSpot
-#endif
-#ifdef SDW_EXTRA_LightSpot
-    SDW_EXTRA_LightSpot
-#endif
     virtual void PostLoadInit();                   // LightSpot_PostLoadInit (override)
     virtual void Update();                         // LightSpot_Update (override)
     virtual void Render(Camera *view);             // LightSpot_Render (override)
@@ -6463,12 +5164,6 @@ public:
 
 struct ListNode {
 public:
-#ifdef SDW_MEMBERS_ListNode
-    SDW_MEMBERS_ListNode
-#endif
-#ifdef SDW_EXTRA_ListNode
-    SDW_EXTRA_ListNode
-#endif
     void *data;                                    // the node's payload: the ScnObject of an object-grid cell list (ObjGrid_QueryGroundY), the o
     ListNode *prev;                                // previous node (List_Remove; List_PushFront zeroes it)
     ListNode *next;                                // next node (List_Remove; ObjGrid_QueryGroundY)
@@ -6476,12 +5171,6 @@ public:
 
 class MCardManager : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_MCardManager
-    SDW_MEMBERS_MCardManager
-#endif
-#ifdef SDW_EXTRA_MCardManager
-    SDW_EXTRA_MCardManager
-#endif
     virtual void PostLoadInit();                   // MCardManager_PostLoadInit (override)
     virtual void Update();                         // MCardManager_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // MCardManager_HandleMessage (override)
@@ -6494,12 +5183,6 @@ public:
 
 struct MMCKINFO {
 public:
-#ifdef SDW_MEMBERS_MMCKINFO
-    SDW_MEMBERS_MMCKINFO
-#endif
-#ifdef SDW_EXTRA_MMCKINFO
-    SDW_EXTRA_MMCKINFO
-#endif
     u32 ckid;                                      // Win32 SDK MMCKINFO (mmsystem.h). Chunk id (FOURCC): WaveFile_Open / ResetFile store 'data' 0x6174616
     u32 cksize;                                    // Win32 SDK MMCKINFO (mmsystem.h).
     u32 fccType;                                   // Win32 SDK MMCKINFO (mmsystem.h). Form type (FOURCC) of a RIFF/LIST chunk: 'WAVE' 0x45564157 checked
@@ -6509,12 +5192,6 @@ public:
 
 class Magnet : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Magnet
-    SDW_MEMBERS_Magnet
-#endif
-#ifdef SDW_EXTRA_Magnet
-    SDW_EXTRA_Magnet
-#endif
     virtual void PostLoadInit();                   // Magnet_Init (override)
     virtual void Update();                         // Magnet_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Magnet_HandleMessage (override)
@@ -6534,23 +5211,11 @@ public:
 
 class MagnetRod : public CompositeRod {
 public:
-#ifdef SDW_MEMBERS_MagnetRod
-    SDW_MEMBERS_MagnetRod
-#endif
-#ifdef SDW_EXTRA_MagnetRod
-    SDW_EXTRA_MagnetRod
-#endif
     virtual void PostLoadInit();                   // MagnetRod_Init (override)
 };
 
 struct MailboxFlagBits {
 public:
-#ifdef SDW_MEMBERS_MailboxFlagBits
-    SDW_MEMBERS_MailboxFlagBits
-#endif
-#ifdef SDW_EXTRA_MailboxFlagBits
-    SDW_EXTRA_MailboxFlagBits
-#endif
     u8 generated : 1;                              // (bits) bit 0 (1-byte unsigned unit) | 4d3aba..4d3ac4 and 4d3c17..4d3c20 establish byte bitfields at +0x71.
     u8 opened : 1;                                 // (bits) bit 1 (1-byte unsigned unit)
     u8 committed : 1;                              // (bits) bit 2 (1-byte unsigned unit)
@@ -6558,12 +5223,6 @@ public:
 
 class Mailbox : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Mailbox
-    SDW_MEMBERS_Mailbox
-#endif
-#ifdef SDW_EXTRA_Mailbox
-    SDW_EXTRA_Mailbox
-#endif
     virtual void PostLoadInit();                   // Mailbox_Init (override)
     virtual void Update();                         // Mailbox_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Mailbox_HandleMessage (override)
@@ -6590,12 +5249,6 @@ public:
 
 struct MapMarker {
 public:
-#ifdef SDW_MEMBERS_MapMarker
-    SDW_MEMBERS_MapMarker
-#endif
-#ifdef SDW_EXTRA_MapMarker
-    SDW_EXTRA_MapMarker
-#endif
     UiQuad sprite;                                 // the IGLCERC_ marker quad; its colour field at +0x00 is the pulse tint and its flags at +0x08 take th
     s16 mapX;                                      // Mailbox property MAPPOSX (offset 28) multiplied by 2
     s16 mapY;                                      // Mailbox property MAPPOSY (offset 32)
@@ -6606,9 +5259,6 @@ class UiIcon {
 public:
 #ifdef SDW_MEMBERS_UiIcon
     SDW_MEMBERS_UiIcon
-#endif
-#ifdef SDW_EXTRA_UiIcon
-    SDW_EXTRA_UiIcon
 #endif
     void SetColor(u32 rgb);
     void SetEnabled(s32 on);
@@ -6630,9 +5280,6 @@ class Map {
 public:
 #ifdef SDW_MEMBERS_Map
     SDW_MEMBERS_Map
-#endif
-#ifdef SDW_EXTRA_Map
-    SDW_EXTRA_Map
 #endif
     ScnObject *FindCombineTarget(u16 classA, u16 classB);
     ScnObject *GetSelectedObject();
@@ -6707,12 +5354,6 @@ public:
 
 struct MapLocSlot {
 public:
-#ifdef SDW_MEMBERS_MapLocSlot
-    SDW_MEMBERS_MapLocSlot
-#endif
-#ifdef SDW_EXTRA_MapLocSlot
-    SDW_EXTRA_MapLocSlot
-#endif
     ZoneList zones;                                // zone list {boxes, count}: Scn_FindIdList(BOXnn): zone boxes tested XZ-only against the Wolf | count
     s16 mapX;                                      // BOXnnPOSX << 1: marker x in the 512-wide virtual HUD space
     s16 mapY;                                      // BOXnnPOSY (not scaled)
@@ -6720,12 +5361,6 @@ public:
 
 class MapLocation : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_MapLocation
-    SDW_MEMBERS_MapLocation
-#endif
-#ifdef SDW_EXTRA_MapLocation
-    SDW_EXTRA_MapLocation
-#endif
     virtual void PostLoadInit();                   // MapLocation_Init (override)
     s32 DrawWolfMarker(u8 fade, u32 color);
     void AddSlot(s32 boxOffset, s32 xOffset, s32 yOffset);
@@ -6738,12 +5373,6 @@ public:
 
 struct MarvinFlagBits {
 public:
-#ifdef SDW_MEMBERS_MarvinFlagBits
-    SDW_MEMBERS_MarvinFlagBits
-#endif
-#ifdef SDW_EXTRA_MarvinFlagBits
-    SDW_EXTRA_MarvinFlagBits
-#endif
     u8 solved : 1;                                 // (bits) bit view of Marvin.dialogueFlags (+0x7d): bit 0 (and cl,1 reads; and 0xfe clears)
     u8 wolfFrozen : 1;                             // (bits) bit 1 (shr 1; or 2 / and 0xfd)
     u8 interrupted : 1;                            // (bits) bit 2 (shr 2; or 4 / and 0xfb)
@@ -6753,12 +5382,6 @@ public:
 
 class Marvin : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Marvin
-    SDW_MEMBERS_Marvin
-#endif
-#ifdef SDW_EXTRA_Marvin
-    SDW_EXTRA_Marvin
-#endif
     virtual void PostLoadInit();                   // Marvin_PostLoadInit (override)
     virtual void Update();                         // Marvin_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Marvin_HandleMessage (override)
@@ -6777,12 +5400,6 @@ public:
 
 struct MenuState {
 public:
-#ifdef SDW_MEMBERS_MenuState
-    SDW_MEMBERS_MenuState
-#endif
-#ifdef SDW_EXTRA_MenuState
-    SDW_EXTRA_MenuState
-#endif
     Menu *current;                                 // the open menu (g_curMenu)
     s16 itemCount;                                 // item count of the open menu (g_menuItemCount)
     s16 capacity;                                  // g_menuCapacity
@@ -6805,9 +5422,6 @@ public:
 #ifdef SDW_MEMBERS_MeshAnimFrame
     SDW_MEMBERS_MeshAnimFrame
 #endif
-#ifdef SDW_EXTRA_MeshAnimFrame
-    SDW_EXTRA_MeshAnimFrame
-#endif
     virtual ~MeshAnimFrame();                         // MeshAnimFrame_VectorDeletingDtor
     u16 halfDurationMs;                            // first u16 of the frame's track record (BsFile_ReadTrack12); AnimMesh doubles it for the fra
     MeshPartPose *poses;                           // array of the sequence's part poses, new[]'d by BsFile_ReadAnimNames, filled by BsFile_Rea
@@ -6817,9 +5431,6 @@ class MeshAnimSeq {
 public:
 #ifdef SDW_MEMBERS_MeshAnimSeq
     SDW_MEMBERS_MeshAnimSeq
-#endif
-#ifdef SDW_EXTRA_MeshAnimSeq
-    SDW_EXTRA_MeshAnimSeq
 #endif
     virtual ~MeshAnimSeq();                           // MeshAnimSeq_VectorDeletingDtor
     char name[8];                                  // 8-char animation name, or "No anim" for an empty slot (BsFile_ReadAnimNames)
@@ -6831,9 +5442,6 @@ class MeshPart {
 public:
 #ifdef SDW_MEMBERS_MeshPart
     SDW_MEMBERS_MeshPart
-#endif
-#ifdef SDW_EXTRA_MeshPart
-    SDW_EXTRA_MeshPart
 #endif
     virtual ~MeshPart();                              // MeshPart_VectorDeletingDtor
     void BlendThenSetTarget(MeshPartPose *pose, float t);
@@ -6862,9 +5470,6 @@ public:
 #ifdef SDW_MEMBERS_MeshPartPose
     SDW_MEMBERS_MeshPartPose
 #endif
-#ifdef SDW_EXTRA_MeshPartPose
-    SDW_EXTRA_MeshPartPose
-#endif
     virtual ~MeshPartPose();                          // MeshPartPose_VectorDeletingDtor
     float rot[3];                                  // Euler angles in radians, read by BsFile_ReadJointTable; cleared to 0 fi
     float pos[3];                                  // translation, read by BsFile_ReadJointTable; cleared to 0 first
@@ -6873,12 +5478,6 @@ public:
 
 class MineDetector : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_MineDetector
-    SDW_MEMBERS_MineDetector
-#endif
-#ifdef SDW_EXTRA_MineDetector
-    SDW_EXTRA_MineDetector
-#endif
     virtual void PostLoadInit();                   // MineDetector_Init (override)
     virtual void Update();                         // MineDetector_Update (override)
     virtual void Render(Camera *view);             // MineDetector_Render (override)
@@ -6901,12 +5500,6 @@ public:
 
 class MirrorManager : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_MirrorManager
-    SDW_MEMBERS_MirrorManager
-#endif
-#ifdef SDW_EXTRA_MirrorManager
-    SDW_EXTRA_MirrorManager
-#endif
     virtual void PostLoadInit();                   // MirrorManager_Init (override)
     virtual void Update();                         // MirrorManager_Update (override)
     virtual void Render(Camera *view);             // MirrorManager_Render (override)
@@ -6922,12 +5515,6 @@ public:
 
 struct MltHeader {
 public:
-#ifdef SDW_MEMBERS_MltHeader
-    SDW_MEMBERS_MltHeader
-#endif
-#ifdef SDW_EXTRA_MltHeader
-    SDW_EXTRA_MltHeader
-#endif
     char version[4];                               // 'v1.2' in the shipped Levels/*/*.MLT files; never checked by Load_MLT
     u16 blockCount;                                // number of language blocks (7 in the shipped files); Load_MLT warns when the UNMAPPED config language
     u16 listCount;                                 // string lists per language block (0xa9 in Lvl-14.MLT); copied to StringBank.listCount
@@ -6935,12 +5522,6 @@ public:
 
 struct Model {
 public:
-#ifdef SDW_MEMBERS_Model
-    SDW_MEMBERS_Model
-#endif
-#ifdef SDW_EXTRA_Model
-    SDW_EXTRA_Model
-#endif
     u8 _pad000[0xc];
     SDW_WARPTR(ModelBoxList) boxes;  // counted box list {u32 count; CollBox[count]}, or NULL (read; ScnObject_GetFirs
     SDW_WARPTR(void) animTable;                               // {u32 directCount; ptr direct[directCount]; u32 mappedCount; ptr mapped[mappedCount]}: Anim_Start use
@@ -6950,24 +5531,12 @@ public:
 
 struct ModelBoxList {
 public:
-#ifdef SDW_MEMBERS_ModelBoxList
-    SDW_MEMBERS_ModelBoxList
-#endif
-#ifdef SDW_EXTRA_ModelBoxList
-    SDW_EXTRA_ModelBoxList
-#endif
     u32 count;                                     // number of boxes (compared unsigned: jbe and)
     CollBox boxes[1];                              // CollBox[count], object-local; 16-byte stride (add 0x10)
 };
 
 struct ModelJoint {
 public:
-#ifdef SDW_MEMBERS_ModelJoint
-    SDW_MEMBERS_ModelJoint
-#endif
-#ifdef SDW_EXTRA_ModelJoint
-    SDW_EXTRA_ModelJoint
-#endif
     u16 parent;                                    // parent joint index; its matrix and pose scale are used for this joint
     Vec3s offset;                                  // rest offset from the parent in model units (multiplied by the parent's pose scale)
     u16 vertexCount;                               // vertices of this part; parts are drawn as consecutive ranges starting at part 1 with vertex 0; part
@@ -6975,12 +5544,6 @@ public:
 
 struct MonolitheRider {
 public:
-#ifdef SDW_MEMBERS_MonolitheRider
-    SDW_MEMBERS_MonolitheRider
-#endif
-#ifdef SDW_EXTRA_MonolitheRider
-    SDW_EXTRA_MonolitheRider
-#endif
     Vec3s offset;                                  // rider offset from the Monolithe, read as signed shorts and written
     u16 pad;                                       // padding to align the pointer; never accessed
     ScnObject *object;                             // the riding object, stored at +0xc of the record
@@ -6990,9 +5553,6 @@ class Monolithe : public ScnBody {
 public:
 #ifdef SDW_MEMBERS_Monolithe
     SDW_MEMBERS_Monolithe
-#endif
-#ifdef SDW_EXTRA_Monolithe
-    SDW_EXTRA_Monolithe
 #endif
     virtual void PostLoadInit();                   // Monolithe_PostLoadInit (override)
     virtual void Update();                         // Monolithe_Update (override)
@@ -7022,9 +5582,6 @@ public:
 #ifdef SDW_MEMBERS_Mouse
     SDW_MEMBERS_Mouse
 #endif
-#ifdef SDW_EXTRA_Mouse
-    SDW_EXTRA_Mouse
-#endif
     virtual ~Mouse();                                 // Mouse_ScalarDeletingDtor
     virtual long SetAcquired(u8 acquire);          // Mouse_SetAcquired (override)
     virtual long Update();                         // Mouse_Update (override)
@@ -7032,12 +5589,6 @@ public:
 
 struct MoveModifyArg {
 public:
-#ifdef SDW_MEMBERS_MoveModifyArg
-    SDW_MEMBERS_MoveModifyArg
-#endif
-#ifdef SDW_EXTRA_MoveModifyArg
-    SDW_EXTRA_MoveModifyArg
-#endif
     Vec3s delta;                                   // the mover's displacement for this step, which a registered rider may change (BlackHole_ApplyPull rea
     u16 flag0 : 1;                                 // (bits) bit 0 of the flags word; no reader identified
     u16 noPull : 1;
@@ -7048,12 +5599,6 @@ public:
 
 struct MoveRecord {
 public:
-#ifdef SDW_MEMBERS_MoveRecord
-    SDW_MEMBERS_MoveRecord
-#endif
-#ifdef SDW_EXTRA_MoveRecord
-    SDW_EXTRA_MoveRecord
-#endif
     s16 maxSpeed;                                  // target speed at full stick deflection, u/s (Mobile_Steer: maxSpeed * stickMag >> 8)
     s16 acceleration;                              // Math_ApproachLinear rate when speeding up
     s16 deceleration;                              // Math_ApproachLinear rate when slowing; Mobile_Steer brakes at (acceleration+deceleration)/2 when the
@@ -7067,24 +5612,12 @@ public:
 
 struct SamEdgeNormal {
 public:
-#ifdef SDW_MEMBERS_SamEdgeNormal
-    SDW_MEMBERS_SamEdgeNormal
-#endif
-#ifdef SDW_EXTRA_SamEdgeNormal
-    SDW_EXTRA_SamEdgeNormal
-#endif
     s16 x;                                         // x of an edge's 4.12 unit normal (NavNode.edgeNormal, Sam.followEdgeNormal); SamNav_DistToEdge reads
     s16 z;                                         // z of the normal
 };
 
 struct NavNode {
 public:
-#ifdef SDW_MEMBERS_NavNode
-    SDW_MEMBERS_NavNode
-#endif
-#ifdef SDW_EXTRA_NavNode
-    SDW_EXTRA_NavNode
-#endif
     s16 x;                                         // node x; +2 z; +4 y
     s16 z;                                         // node Z
     s16 groundY;                                   // ground query (Coll_BoxGroundQuery) at build time, NOT the trajectory third value: a new nod
@@ -7106,12 +5639,6 @@ public:
 
 struct NavSearch {
 public:
-#ifdef SDW_MEMBERS_NavSearch
-    SDW_MEMBERS_NavSearch
-#endif
-#ifdef SDW_EXTRA_NavSearch
-    SDW_EXTRA_NavSearch
-#endif
     NavNode *head;                                 // Sorted list of open and closed nodes
     u32 active;                                    // One after BeginSearch and zero after ClearSearch
     s16 goalX;                                     // Search goal X
@@ -7120,12 +5647,6 @@ public:
 
 struct ObjGridHeader {
 public:
-#ifdef SDW_MEMBERS_ObjGridHeader
-    SDW_MEMBERS_ObjGridHeader
-#endif
-#ifdef SDW_EXTRA_ObjGridHeader
-    SDW_EXTRA_ObjGridHeader
-#endif
     u16 dimX;                                      // cells along X
     u16 dimZ;                                      // cells along Z
     s16 originX;                                   // grid origin X
@@ -7135,12 +5656,6 @@ public:
 
 struct ObjMgrEntry {
 public:
-#ifdef SDW_MEMBERS_ObjMgrEntry
-    SDW_MEMBERS_ObjMgrEntry
-#endif
-#ifdef SDW_EXTRA_ObjMgrEntry
-    SDW_EXTRA_ObjMgrEntry
-#endif
     ScnObject *obj;                                // managed object (Scenaric_FindByRecord)
     u16 savedUpdateBits;                           // obj.flags & 0x6000 saved when the camera left; restored on re-entry when keepUpdating == 0. Uninitia
     u16 pad6;                                      // padding (stride 8)
@@ -7148,12 +5663,6 @@ public:
 
 class ObjectManager : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_ObjectManager
-    SDW_MEMBERS_ObjectManager
-#endif
-#ifdef SDW_EXTRA_ObjectManager
-    SDW_EXTRA_ObjectManager
-#endif
     virtual void PostLoadInit();                   // ObjectManager_Init (override)
     virtual void Update();                         // ObjectManager_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // ObjectManager_HandleMessage (override)
@@ -7170,9 +5679,6 @@ class PackJpeg {
 public:
 #ifdef SDW_MEMBERS_PackJpeg
     SDW_MEMBERS_PackJpeg
-#endif
-#ifdef SDW_EXTRA_PackJpeg
-    SDW_EXTRA_PackJpeg
 #endif
     s32 Next();
     s32 Open(const char *);
@@ -7197,12 +5703,6 @@ public:
 
 struct PackJpegEntry {
 public:
-#ifdef SDW_MEMBERS_PackJpegEntry
-    SDW_MEMBERS_PackJpegEntry
-#endif
-#ifdef SDW_EXTRA_PackJpegEntry
-    SDW_EXTRA_PackJpegEntry
-#endif
     u32 fileOffset;                                // offset of the image in the pack file
     u8 unknown04[5];                               // not established
     char name[15];                                 // image name, scanned by SelectByName; entry stride 24
@@ -7210,12 +5710,6 @@ public:
 
 struct PackJpegImage {
 public:
-#ifdef SDW_MEMBERS_PackJpegImage
-    SDW_MEMBERS_PackJpegImage
-#endif
-#ifdef SDW_EXTRA_PackJpegImage
-    SDW_EXTRA_PackJpegImage
-#endif
     u8 unknown00[24];                              // not established
     s16 width;                                     // image width
     s16 height;                                    // image height
@@ -7225,24 +5719,12 @@ public:
 
 struct PadTypeLen {
 public:
-#ifdef SDW_MEMBERS_PadTypeLen
-    SDW_MEMBERS_PadTypeLen
-#endif
-#ifdef SDW_EXTRA_PadTypeLen
-    SDW_EXTRA_PadTypeLen
-#endif
     u8 len : 4;                                    // (bits) PadFrame.typeLen low nibble: data length in halfwords (PS1 libpad)
     u8 type : 4;                                   // (bits) high nibble: controller type (7 = analog)
 };
 
 struct PadFrame {
 public:
-#ifdef SDW_MEMBERS_PadFrame
-    SDW_MEMBERS_PadFrame
-#endif
-#ifdef SDW_EXTRA_PadFrame
-    SDW_EXTRA_PadFrame
-#endif
     s8 status;                                     // PS1 receive-buffer byte 0: 0 = read OK, 1 = InputMgr_Poll failed.
     PadTypeLen typeLen;                            // PS1 byte 1 as a bitfield {len:4, type:4} (PadTypeLen): type = controller id (4 digital, 7 analog), r
     u16 buttons;                                   // active-low PS1-layout button word
@@ -7254,12 +5736,6 @@ public:
 
 struct PadRepeat {
 public:
-#ifdef SDW_MEMBERS_PadRepeat
-    SDW_MEMBERS_PadRepeat
-#endif
-#ifdef SDW_EXTRA_PadRepeat
-    SDW_EXTRA_PadRepeat
-#endif
     s16 timerMs;                                   // ms the value has been held; signed
     u16 lastValue;                                 // value seen last call
     u16 output;                                    // the value on the first frame and on each repeat, 0xffff (nothing) in between; repeats OR in 0xff06
@@ -7269,9 +5745,6 @@ class Pad {
 public:
 #ifdef SDW_MEMBERS_Pad
     SDW_MEMBERS_Pad
-#endif
-#ifdef SDW_EXTRA_Pad
-    SDW_EXTRA_Pad
 #endif
     s32 JustConnected();
     s32 TypeChanged();
@@ -7315,12 +5788,6 @@ public:
 
 struct PadRecHeader {
 public:
-#ifdef SDW_MEMBERS_PadRecHeader
-    SDW_MEMBERS_PadRecHeader
-#endif
-#ifdef SDW_EXTRA_PadRecHeader
-    SDW_EXTRA_PadRecHeader
-#endif
     u8 version;                                    // set 3 by PadRec_Save
     u8 padType;                                    // set 7 by PadRec_Save
     u16 remap[6];                                  // button map snapshot, slots 0xe 0xf 0xc 0xd 0xb 0xa (Input_SetMode)
@@ -7331,12 +5798,6 @@ public:
 
 class PathFollower {
 public:
-#ifdef SDW_MEMBERS_PathFollower
-    SDW_MEMBERS_PathFollower
-#endif
-#ifdef SDW_EXTRA_PathFollower
-    SDW_EXTRA_PathFollower
-#endif
     s32 GetSegmentLength();
     void BeginSegment();
     void Start(s32 speed);
@@ -7357,36 +5818,18 @@ public:
 
 struct PerfumeFlagBits {
 public:
-#ifdef SDW_MEMBERS_PerfumeFlagBits
-    SDW_MEMBERS_PerfumeFlagBits
-#endif
-#ifdef SDW_EXTRA_PerfumeFlagBits
-    SDW_EXTRA_PerfumeFlagBits
-#endif
     u8 blown : 1;                                  // (bits) bit 0 (1-byte unsigned unit) | 4da418..4da439 prove two byte bitfields in the generated +32d storage
     u8 registered : 1;                             // (bits) bit 1 (1-byte unsigned unit)
 };
 
 struct PerfumeScentReport {
 public:
-#ifdef SDW_MEMBERS_PerfumeScentReport
-    SDW_MEMBERS_PerfumeScentReport
-#endif
-#ifdef SDW_EXTRA_PerfumeScentReport
-    SDW_EXTRA_PerfumeScentReport
-#endif
     u16 classId;                                   // class id of the reporting object
     u16 proximity;                                 // its proximity value
 };
 
 class Perfume : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Perfume
-    SDW_MEMBERS_Perfume
-#endif
-#ifdef SDW_EXTRA_Perfume
-    SDW_EXTRA_Perfume
-#endif
     virtual void PostLoadInit();                   // Perfume_Init (override)
     virtual void Update();                         // Perfume_Update (override)
     virtual void Render(Camera *view);             // Perfume_Render (override)
@@ -7407,12 +5850,6 @@ public:
 
 class Pipe : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Pipe
-    SDW_MEMBERS_Pipe
-#endif
-#ifdef SDW_EXTRA_Pipe
-    SDW_EXTRA_Pipe
-#endif
     virtual void PostLoadInit();                   // Pipe_PostLoadInit (override)
     virtual void Update();                         // Pipe_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Pipe_HandleMessage (override)
@@ -7445,12 +5882,6 @@ public:
 
 class Pipe2 : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Pipe2
-    SDW_MEMBERS_Pipe2
-#endif
-#ifdef SDW_EXTRA_Pipe2
-    SDW_EXTRA_Pipe2
-#endif
     virtual void PostLoadInit();                   // Pipe2_PostLoadInit (override)
     virtual void Update();                         // Pipe2_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Pipe2_HandleMessage (override)
@@ -7491,24 +5922,12 @@ public:
 
 struct Trajectory {
 public:
-#ifdef SDW_MEMBERS_Trajectory
-    SDW_MEMBERS_Trajectory
-#endif
-#ifdef SDW_EXTRA_Trajectory
-    SDW_EXTRA_Trajectory
-#endif
     u16 count;                                     // number of points
     Vec3s pts[1];                                  // the points, 6 bytes each (Scn_GetPropTrajectory resources: FrozenRiver); indexed
 };
 
 class Piranhas : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Piranhas
-    SDW_MEMBERS_Piranhas
-#endif
-#ifdef SDW_EXTRA_Piranhas
-    SDW_EXTRA_Piranhas
-#endif
     virtual void PostLoadInit();                   // Piranhas_Init (override)
     virtual void Update();                         // Piranhas_Update (override)
     virtual void Render(Camera *view);             // Piranhas_Render (override)
@@ -7534,9 +5953,6 @@ class PolyBatcher {
 public:
 #ifdef SDW_MEMBERS_PolyBatcher
     SDW_MEMBERS_PolyBatcher
-#endif
-#ifdef SDW_EXTRA_PolyBatcher
-    SDW_EXTRA_PolyBatcher
 #endif
     virtual ~PolyBatcher();                           // PolyBatcher_ScalarDeletingDtor
     u32 GetTypeStateFlags(s32 polyType);
@@ -7584,12 +6000,6 @@ public:
 
 class PorkyLevel01 : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_PorkyLevel01
-    SDW_MEMBERS_PorkyLevel01
-#endif
-#ifdef SDW_EXTRA_PorkyLevel01
-    SDW_EXTRA_PorkyLevel01
-#endif
     virtual void PostLoadInit();                   // PorkyLevel01_PostLoadInit (override)
     virtual void Update();                         // PorkyLevel01_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // PorkyLevel01_HandleMessage (override)
@@ -7633,12 +6043,6 @@ public:
 
 class PrayingGhost : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_PrayingGhost
-    SDW_MEMBERS_PrayingGhost
-#endif
-#ifdef SDW_EXTRA_PrayingGhost
-    SDW_EXTRA_PrayingGhost
-#endif
     virtual void PostLoadInit();                   // PrayingGhost_PostLoadInit (override)
     virtual void Update();                         // PrayingGhost_Update (override)
     virtual void Render(Camera *view);             // PrayingGhost_Render (override)
@@ -7717,12 +6121,6 @@ public:
 
 struct ProgressOptionBits {
 public:
-#ifdef SDW_MEMBERS_ProgressOptionBits
-    SDW_MEMBERS_ProgressOptionBits
-#endif
-#ifdef SDW_EXTRA_ProgressOptionBits
-    SDW_EXTRA_ProgressOptionBits
-#endif
     u8 setting : 2;                                // (bits) Progress.optionFlags bits 0-1 -> g_optLanguageOrDifficulty
     u8 gate : 1;                                   // (bits) bit 2 ->
     u8 soundMode : 2;                              // (bits) bits 3-4 ->, the sound option (cycled % 3 by the options menu); Sound_Play plays only in mo
@@ -7730,12 +6128,6 @@ public:
 
 struct ProgressRuntimeFlagBits {
 public:
-#ifdef SDW_MEMBERS_ProgressRuntimeFlagBits
-    SDW_MEMBERS_ProgressRuntimeFlagBits
-#endif
-#ifdef SDW_EXTRA_ProgressRuntimeFlagBits
-    SDW_EXTRA_ProgressRuntimeFlagBits
-#endif
     u8 fieldAcFlag : 1;                            // (bits) Progress.runtimeFlags (+0xb4) bit 0, a bitfield VIEW of that u8 (runtimeFlags stays u8; the union me
     u8 secondDemoNext : 1;                         // (bits) bit 1. Level_FinishScene sets it when attract demo scene -6 ends and clears it when -7 en
     u8 timeKeeperUnsaved : 1;                      // (bits) bit 2. Set only by TimeKeeper_HandleMessage msg 1 right after Progress_AwardTimeKeeper. R
@@ -7749,9 +6141,6 @@ class Progress {
 public:
 #ifdef SDW_MEMBERS_Progress
     SDW_MEMBERS_Progress
-#endif
-#ifdef SDW_EXTRA_Progress
-    SDW_EXTRA_Progress
 #endif
     s32 FieldAcFlagClear();
     s8 CurrentLevel();
@@ -7807,12 +6196,6 @@ public:
 
 struct RCarpetFlagBits {
 public:
-#ifdef SDW_MEMBERS_RCarpetFlagBits
-    SDW_MEMBERS_RCarpetFlagBits
-#endif
-#ifdef SDW_EXTRA_RCarpetFlagBits
-    SDW_EXTRA_RCarpetFlagBits
-#endif
     u8 collide : 1;                                // (bits) bit 0 (1-byte unsigned unit): collide with the world | RCarpetMobile +0xa8, read and written as r8
     u8 reversed : 1;                               // (bits) bit 1 (1-byte unsigned unit): travelling the waypoints in reverse
     u8 clampEnds : 1;                              // (bits) bit 2 (1-byte unsigned unit): clamp at the ends (one-way)
@@ -7823,12 +6206,6 @@ public:
 
 class RCarpetMobile : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_RCarpetMobile
-    SDW_MEMBERS_RCarpetMobile
-#endif
-#ifdef SDW_EXTRA_RCarpetMobile
-    SDW_EXTRA_RCarpetMobile
-#endif
     virtual void PostLoadInit();                   // RCarpetMobile_Init (override)
     virtual void Update();                         // RCarpetMobile_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // RCarpetMobile_HandleMessage (override)
@@ -7853,12 +6230,6 @@ public:
 
 class RabbitCostume : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_RabbitCostume
-    SDW_MEMBERS_RabbitCostume
-#endif
-#ifdef SDW_EXTRA_RabbitCostume
-    SDW_EXTRA_RabbitCostume
-#endif
     virtual void PostLoadInit();                   // RabbitCostume_Init (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // RabbitCostume_HandleMessage (override)
     Vec3s homePos;                                 // Same as SheepCostume.homePos (identical code).
@@ -7866,12 +6237,6 @@ public:
 
 struct RaftFlagBits {
 public:
-#ifdef SDW_MEMBERS_RaftFlagBits
-    SDW_MEMBERS_RaftFlagBits
-#endif
-#ifdef SDW_EXTRA_RaftFlagBits
-    SDW_EXTRA_RaftFlagBits
-#endif
     u8 fan : 1;                                    // (bits) bit 0 (1-byte unsigned unit): blown by a Fan this frame | Raft +0x13e, accessed as r8
     u8 reset : 1;                                  // (bits) bit 1 (1-byte unsigned unit): the RESET property
     u8 afloat : 1;                                 // (bits) bit 2 (1-byte unsigned unit): afloat
@@ -7880,12 +6245,6 @@ public:
 
 class Raft : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Raft
-    SDW_MEMBERS_Raft
-#endif
-#ifdef SDW_EXTRA_Raft
-    SDW_EXTRA_Raft
-#endif
     virtual void PostLoadInit();                   // Raft_Init (override)
     virtual void Update();                         // Raft_Update (override)
     virtual void Render(Camera *view);             // Raft_Render (override)
@@ -7903,12 +6262,6 @@ public:
 
 class RemoteControl : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_RemoteControl
-    SDW_MEMBERS_RemoteControl
-#endif
-#ifdef SDW_EXTRA_RemoteControl
-    SDW_EXTRA_RemoteControl
-#endif
     virtual void PostLoadInit();                   // RemoteControl_Init (override)
     virtual void Update();                         // RemoteControl_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // RemoteControl_HandleMessage (override)
@@ -7921,12 +6274,6 @@ public:
 
 class Resizer : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Resizer
-    SDW_MEMBERS_Resizer
-#endif
-#ifdef SDW_EXTRA_Resizer
-    SDW_EXTRA_Resizer
-#endif
     virtual void PostLoadInit();                   // Resizer_PostLoadInit (override)
     virtual void Update();                         // Resizer_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Resizer_HandleMessage (override)
@@ -7953,12 +6300,6 @@ public:
 
 struct Vec3i {
 public:
-#ifdef SDW_MEMBERS_Vec3i
-    SDW_MEMBERS_Vec3i
-#endif
-#ifdef SDW_EXTRA_Vec3i
-    SDW_EXTRA_Vec3i
-#endif
     s32 x;
     s32 y;                                         // vertical points down
     s32 z;
@@ -7966,12 +6307,6 @@ public:
 
 struct ResolveScratch {
 public:
-#ifdef SDW_MEMBERS_ResolveScratch
-    SDW_MEMBERS_ResolveScratch
-#endif
-#ifdef SDW_EXTRA_ResolveScratch
-    SDW_EXTRA_ResolveScratch
-#endif
     Vec3i projected;                               // Collide_ResolveMove: the remaining displacement << 10 while it is projected off the contact planes (
     Vec3i normalSum;                               // sum of the normals projected off in one pass; 3/8 of their mean is added back (dword zeroing at 0x50
     Vec3s step;                                    // the part of the displacement travelled up to the first contact (word store); reused as b
@@ -7980,12 +6315,6 @@ public:
 
 class ScnControllable : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_ScnControllable
-    SDW_MEMBERS_ScnControllable
-#endif
-#ifdef SDW_EXTRA_ScnControllable
-    SDW_EXTRA_ScnControllable
-#endif
     virtual s16 GetStickHeading(s16 fallback);     // ScnControllable_GetStickHeading
     s32 IsStickTowardSide(ScnObject *);
     void NextIdleAnim(const IdleAnimEntry *, const IdleAnimEntry *, u32);
@@ -8027,9 +6356,6 @@ class Robot : public ScnControllable {
 public:
 #ifdef SDW_MEMBERS_Robot
     SDW_MEMBERS_Robot
-#endif
-#ifdef SDW_EXTRA_Robot
-    SDW_EXTRA_Robot
 #endif
     virtual void PostLoadInit();                   // Robot_Init (override)
     virtual void Update();                         // Robot_Update (override)
@@ -8093,24 +6419,12 @@ public:
 
 struct RobotStateDesc {
 public:
-#ifdef SDW_MEMBERS_RobotStateDesc
-    SDW_MEMBERS_RobotStateDesc
-#endif
-#ifdef SDW_EXTRA_RobotStateDesc
-    SDW_EXTRA_RobotStateDesc
-#endif
     u16 animId;
     u16 flags;
 };
 
 struct RockFlagBits {
 public:
-#ifdef SDW_MEMBERS_RockFlagBits
-    SDW_MEMBERS_RockFlagBits
-#endif
-#ifdef SDW_EXTRA_RockFlagBits
-    SDW_EXTRA_RockFlagBits
-#endif
     u8 pushed : 1;                                 // (bits) bit 0 (1-byte unsigned unit) | Rock +0x185: seven unsigned one-bit fields, accessed through r8
     u8 moving : 1;                                 // (bits) bit 1 (1-byte unsigned unit)
     u8 allowZ : 1;                                 // (bits) bit 2 (1-byte unsigned unit)
@@ -8122,12 +6436,6 @@ public:
 
 class ScnLogicShadowed : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_ScnLogicShadowed
-    SDW_MEMBERS_ScnLogicShadowed
-#endif
-#ifdef SDW_EXTRA_ScnLogicShadowed
-    SDW_EXTRA_ScnLogicShadowed
-#endif
     virtual void Render(Camera *view);             // ScnLogicShadowed_Render (override)
     virtual void RenderScaled(Camera *view, Vec3s *scale); // ScnLogicShadowed_RenderScaled (override)
     virtual void SetPosition(Vec3s *pos);          // ScnLogicShadowed_SetPosition (override)
@@ -8139,9 +6447,6 @@ class Rock : public ScnLogicShadowed {
 public:
 #ifdef SDW_MEMBERS_Rock
     SDW_MEMBERS_Rock
-#endif
-#ifdef SDW_EXTRA_Rock
-    SDW_EXTRA_Rock
 #endif
     virtual void PostLoadInit();                   // Rock_Init (override)
     virtual void Update();                         // Rock_Update (override)
@@ -8186,12 +6491,6 @@ public:
 
 class Rocket : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Rocket
-    SDW_MEMBERS_Rocket
-#endif
-#ifdef SDW_EXTRA_Rocket
-    SDW_EXTRA_Rocket
-#endif
     virtual void PostLoadInit();                   // Rocket_Init (override)
     virtual void Update();                         // Rocket_Update (override)
     virtual void Render(Camera *view);             // Rocket_Render (override)
@@ -8215,12 +6514,6 @@ public:
 
 class Rocks : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Rocks
-    SDW_MEMBERS_Rocks
-#endif
-#ifdef SDW_EXTRA_Rocks
-    SDW_EXTRA_Rocks
-#endif
     virtual void PostLoadInit();                   // Rocks_Init (override)
     virtual void Update();                         // Rocks_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Rocks_HandleMessage (override)
@@ -8229,24 +6522,12 @@ public:
 
 struct RollingCarpetFlagBits {
 public:
-#ifdef SDW_MEMBERS_RollingCarpetFlagBits
-    SDW_MEMBERS_RollingCarpetFlagBits
-#endif
-#ifdef SDW_EXTRA_RollingCarpetFlagBits
-    SDW_EXTRA_RollingCarpetFlagBits
-#endif
     u8 camera : 1;                                 // (bits) bit 0 (1-byte unsigned unit): scripted camera active | RollingCarpet +0xb6, accessed as r8
     u8 registered : 1;                             // (bits) bit 1 (1-byte unsigned unit): rider registered (MSG_RIDER_ADD sent)
 };
 
 class RollingCarpet : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_RollingCarpet
-    SDW_MEMBERS_RollingCarpet
-#endif
-#ifdef SDW_EXTRA_RollingCarpet
-    SDW_EXTRA_RollingCarpet
-#endif
     virtual void PostLoadInit();                   // RollingCarpet_Init (override)
     virtual void Update();                         // RollingCarpet_Update (override)
     virtual s32 CustomCollide(ScnObject *querier, CollBox *mover, Vec3s *disp, s32 *outFrac, s32 *outY, CollContact *contacts, s32 *nContacts, u32 mode); // RollingCarpet_CustomCollide (override)
@@ -8277,12 +6558,6 @@ public:
 
 class Rook : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Rook
-    SDW_MEMBERS_Rook
-#endif
-#ifdef SDW_EXTRA_Rook
-    SDW_EXTRA_Rook
-#endif
     virtual void PostLoadInit();                   // Rook_Init (override)
     virtual void Update();                         // Rook_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Rook_HandleMessage (override)
@@ -8308,12 +6583,6 @@ public:
 
 class Sail : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Sail
-    SDW_MEMBERS_Sail
-#endif
-#ifdef SDW_EXTRA_Sail
-    SDW_EXTRA_Sail
-#endif
     virtual void PostLoadInit();                   // Sail_Init (override)
     virtual void Update();                         // Sail_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Sail_HandleMessage (override)
@@ -8321,12 +6590,6 @@ public:
 
 class Salad : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Salad
-    SDW_MEMBERS_Salad
-#endif
-#ifdef SDW_EXTRA_Salad
-    SDW_EXTRA_Salad
-#endif
     virtual void PostLoadInit();                   // Salad_Init (override)
     virtual void Update();                         // Salad_Update (override)
     virtual void Render(Camera *view);             // Salad_Render (override)
@@ -8347,34 +6610,16 @@ public:
 
 class SaladRod : public CompositeRod {
 public:
-#ifdef SDW_MEMBERS_SaladRod
-    SDW_MEMBERS_SaladRod
-#endif
-#ifdef SDW_EXTRA_SaladRod
-    SDW_EXTRA_SaladRod
-#endif
     virtual void PostLoadInit();                   // SaladRod_Init (override)
 };
 
 struct SamBeachBits {
 public:
-#ifdef SDW_MEMBERS_SamBeachBits
-    SDW_MEMBERS_SamBeachBits
-#endif
-#ifdef SDW_EXTRA_SamBeachBits
-    SDW_EXTRA_SamBeachBits
-#endif
     u8 onSide2 : 1;                                // (bits) Sam.beachFlags bit 0: the beach variant's second ('2') resource set is current (see Sam.csv beachFla
 };
 
 struct SamCarryGoal {
 public:
-#ifdef SDW_MEMBERS_SamCarryGoal
-    SDW_MEMBERS_SamCarryGoal
-#endif
-#ifdef SDW_EXTRA_SamCarryGoal
-    SDW_EXTRA_SamCarryGoal
-#endif
     ScnObject *object1;                            // first object to carry
     ScnObject *object2;                            // second object to carry
     Vec3s destination;                             // where to take them
@@ -8382,47 +6627,23 @@ public:
 
 struct SamChaseBits {
 public:
-#ifdef SDW_MEMBERS_SamChaseBits
-    SDW_MEMBERS_SamChaseBits
-#endif
-#ifdef SDW_EXTRA_SamChaseBits
-    SDW_EXTRA_SamChaseBits
-#endif
     s32 chaseAfterDrop : 1;                        // (bits) Sam.chaseFlags bit 0: drop what you carry, then chase the Wolf (see Sam.csv chaseFlags)
 };
 
 struct SamChaseSoundBits {
 public:
-#ifdef SDW_MEMBERS_SamChaseSoundBits
-    SDW_MEMBERS_SamChaseSoundBits
-#endif
-#ifdef SDW_EXTRA_SamChaseSoundBits
-    SDW_EXTRA_SamChaseSoundBits
-#endif
     u16 volume : 15;                               // (bits) fade-in volume of the run sound 0x137, 1..0xff
     u16 unused : 1;                                // (bits) bit 15: never read or set; every store keeps it only because it is the rest of the bitfield
 };
 
 struct SamFetchBits {
 public:
-#ifdef SDW_MEMBERS_SamFetchBits
-    SDW_MEMBERS_SamFetchBits
-#endif
-#ifdef SDW_EXTRA_SamFetchBits
-    SDW_EXTRA_SamFetchBits
-#endif
     s32 picked1 : 1;                               // (bits) Preserved matched Sam bitfield access
     s32 picked2 : 1;                               // (bits) Preserved matched Sam bitfield access
 };
 
 struct SamFetchFlags {
 public:
-#ifdef SDW_MEMBERS_SamFetchFlags
-    SDW_MEMBERS_SamFetchFlags
-#endif
-#ifdef SDW_EXTRA_SamFetchFlags
-    SDW_EXTRA_SamFetchFlags
-#endif
     union {
         u32 all;                                       // Sam.fetchGoal.flags as the plain word: set and cleared with | 1 / & ~1 ( family)
         SamFetchBits bits;                         // the same word as the SamFetchBits view: picked1 / picked2 read as signed 1-bit fields
@@ -8431,12 +6652,6 @@ public:
 
 struct SamFetchGoal {
 public:
-#ifdef SDW_MEMBERS_SamFetchGoal
-    SDW_MEMBERS_SamFetchGoal
-#endif
-#ifdef SDW_EXTRA_SamFetchGoal
-    SDW_EXTRA_SamFetchGoal
-#endif
     ScnObject *object1;                            // first object to fetch
     ScnObject *object2;                            // second object to fetch (0 = only one)
     SamFetchFlags flags;                           // bit 0 object1 picked up, bit 1 object2 picked up
@@ -8444,12 +6659,6 @@ public:
 
 struct SamFollowBits {
 public:
-#ifdef SDW_MEMBERS_SamFollowBits
-    SDW_MEMBERS_SamFollowBits
-#endif
-#ifdef SDW_EXTRA_SamFollowBits
-    SDW_EXTRA_SamFollowBits
-#endif
     s32 midRoute : 1;                              // (bits) Sam.followFlags bit 0: after reaching a waypoint Sam sets it to waypointCount > 1, i.e. the new targ
     s32 dropping : 1;                              // (bits) bit 1: set while midRoute when the ground under the next step is more than 100 lower, or
     s32 dropToNode : 1;                            // (bits) bit 2: set while midRoute and not dropping when the current waypoint is more than 40 belo
@@ -8457,12 +6666,6 @@ public:
 
 struct SamPathHist {
 public:
-#ifdef SDW_MEMBERS_SamPathHist
-    SDW_MEMBERS_SamPathHist
-#endif
-#ifdef SDW_EXTRA_SamPathHist
-    SDW_EXTRA_SamPathHist
-#endif
     u8 type;                                       // the entry kind, SAM_HIST_* (0 = empty; Sam_AddPathHistory stores its kind argument)
     u8 pad;                                        // padding
     s16 x;                                         // Sam's x when the entry was added
@@ -8473,23 +6676,11 @@ public:
 
 struct SamSheepBits {
 public:
-#ifdef SDW_MEMBERS_SamSheepBits
-    SDW_MEMBERS_SamSheepBits
-#endif
-#ifdef SDW_EXTRA_SamSheepBits
-    SDW_EXTRA_SamSheepBits
-#endif
     s32 heardCall : 1;                             // (bits) Sam.sheepFlags bit 0: Sam heard the sheep-costume bleat (msg 0x69) inside his orange zone (see Sam.c
 };
 
 struct SamTracked {
 public:
-#ifdef SDW_MEMBERS_SamTracked
-    SDW_MEMBERS_SamTracked
-#endif
-#ifdef SDW_EXTRA_SamTracked
-    SDW_EXTRA_SamTracked
-#endif
     ScnObject *object;                             // the tracked object (entry 0 = the Wolf, the rest sheep; filled by Sam_SnapshotSheepPositions 0x464cc
     s16 x;                                         // the object's x when last checked
     s16 z;                                         // the object's z when last checked
@@ -8499,9 +6690,6 @@ class Sam : public ScnMobile {
 public:
 #ifdef SDW_MEMBERS_Sam
     SDW_MEMBERS_Sam
-#endif
-#ifdef SDW_EXTRA_Sam
-    SDW_EXTRA_Sam
 #endif
     virtual void PostLoadInit();                   // Sam_Init (override)
     virtual void Update();                         // Sam_Update (override)
@@ -8701,12 +6889,6 @@ public:
 
 struct SamContactInfo {
 public:
-#ifdef SDW_MEMBERS_SamContactInfo
-    SDW_MEMBERS_SamContactInfo
-#endif
-#ifdef SDW_EXTRA_SamContactInfo
-    SDW_EXTRA_SamContactInfo
-#endif
     ScnObject *floorObj;                           // object of a floor-class contact (Sam_ResolveMove's private contact layout; zeroed at start)
     ScnObject *wallObj;                            // object of a wall-class contact
     ScnObject *carrierObj;                         // contact object whose class flags have 4 (SCN_CF_CARRIER)
@@ -8719,9 +6901,6 @@ public:
 
 class Sam_Pirate : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Sam_Pirate
-    SDW_MEMBERS_Sam_Pirate
-#endif
 #ifdef SDW_EXTRA_Sam_Pirate
     SDW_EXTRA_Sam_Pirate
 #endif
@@ -8790,12 +6969,6 @@ public:
 
 class SceneSheepPanel : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_SceneSheepPanel
-    SDW_MEMBERS_SceneSheepPanel
-#endif
-#ifdef SDW_EXTRA_SceneSheepPanel
-    SDW_EXTRA_SceneSheepPanel
-#endif
     virtual void PostLoadInit();                   // SceneSheepPanel_PostLoadInit (override)
     virtual void Update();                         // SceneSheepPanel_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // SceneSheepPanel_HandleMessage (override)
@@ -8812,12 +6985,6 @@ public:
 
 class Scene_Wheel : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Scene_Wheel
-    SDW_MEMBERS_Scene_Wheel
-#endif
-#ifdef SDW_EXTRA_Scene_Wheel
-    SDW_EXTRA_Scene_Wheel
-#endif
     virtual void PostLoadInit();                   // Scene_Wheel_PostLoadInit (override)
     virtual void Update();                         // Scene_Wheel_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Scene_Wheel_HandleMessage (override)
@@ -8838,12 +7005,6 @@ public:
 
 struct ScnClassRegEntry {
 public:
-#ifdef SDW_MEMBERS_ScnClassRegEntry
-    SDW_MEMBERS_ScnClassRegEntry
-#endif
-#ifdef SDW_EXTRA_ScnClassRegEntry
-    SDW_EXTRA_ScnClassRegEntry
-#endif
     ScnFactoryFn factory;                          // class factory
     void *iconA;                                   // inventory icon image resource (first u16 = image index)
     void *iconB;                                   // alternate icon
@@ -8854,9 +7015,6 @@ class Screen {
 public:
 #ifdef SDW_MEMBERS_Screen
     SDW_MEMBERS_Screen
-#endif
-#ifdef SDW_EXTRA_Screen
-    SDW_EXTRA_Screen
 #endif
     virtual ~Screen();                                // Screen_ScalarDeletingDtor
     u32 *Layers4(u16 index);
@@ -8885,12 +7043,6 @@ public:
 
 struct ScrollTextFlagBits {
 public:
-#ifdef SDW_MEMBERS_ScrollTextFlagBits
-    SDW_MEMBERS_ScrollTextFlagBits
-#endif
-#ifdef SDW_EXTRA_ScrollTextFlagBits
-    SDW_EXTRA_ScrollTextFlagBits
-#endif
     s32 open : 1;                                  // (bits) g_scrollTextFlags bit 0: the player took over the paging with the action button (ScrollText
     s32 closed : 1;                                // (bits) bit 1: the player closed the text (or 2); cleared with and -3
     s32 hasPrev : 1;                               // (bits) bit 2: a previous page exists (Text_PageStep, and -5 / shl 2); read shl 0x1d / sar 0x1f
@@ -8900,12 +7052,6 @@ public:
 
 class Seaweed : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Seaweed
-    SDW_MEMBERS_Seaweed
-#endif
-#ifdef SDW_EXTRA_Seaweed
-    SDW_EXTRA_Seaweed
-#endif
     virtual void PostLoadInit();                   // Seaweed_PostLoadInit (override)
     virtual void Update();                         // Seaweed_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Seaweed_HandleMessage (override)
@@ -8914,12 +7060,6 @@ public:
 
 class SecretDoor : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_SecretDoor
-    SDW_MEMBERS_SecretDoor
-#endif
-#ifdef SDW_EXTRA_SecretDoor
-    SDW_EXTRA_SecretDoor
-#endif
     virtual void PostLoadInit();                   // SecretDoor_PostLoadInit (override)
     virtual void Update();                         // SecretDoor_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // SecretDoor_HandleMessage (override)
@@ -8927,12 +7067,6 @@ public:
 
 class Seed : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Seed
-    SDW_MEMBERS_Seed
-#endif
-#ifdef SDW_EXTRA_Seed
-    SDW_EXTRA_Seed
-#endif
     virtual void PostLoadInit();                   // Seed_Init (override)
     virtual void Update();                         // Seed_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Seed_HandleMessage (override)
@@ -8952,12 +7086,6 @@ public:
 
 struct SeesawBodyEntry {
 public:
-#ifdef SDW_MEMBERS_SeesawBodyEntry
-    SDW_MEMBERS_SeesawBodyEntry
-#endif
-#ifdef SDW_EXTRA_SeesawBodyEntry
-    SDW_EXTRA_SeesawBodyEntry
-#endif
     s32 landingSpeed;                              // the rider's landing speed as seesaw_AddBody records it (0 when resting, at least 512 when landing, 4
     s32 canLaunch;                                 // 0 when the rider stood in an ejection box's side (the landing arms that box instead); a later, faste
     ScnObject *obj;                                // the rider ( reads it at +8)
@@ -8965,12 +7093,6 @@ public:
 
 struct SeesawPendingBits {
 public:
-#ifdef SDW_MEMBERS_SeesawPendingBits
-    SDW_MEMBERS_SeesawPendingBits
-#endif
-#ifdef SDW_EXTRA_SeesawPendingBits
-    SDW_EXTRA_SeesawPendingBits
-#endif
     s32 negative : 1;                              // (bits) bit 0 (4-byte signed unit): launch pending on the negative side | seesaw +0xa3c: signed one-bit read
     s32 positive : 1;                              // (bits) bit 1 (4-byte signed unit): launch pending on the positive side
     s32 rock : 1;                                  // (bits) bit 2 (4-byte signed unit): set by a falling/rolling Rock landing (msg 0x5C == 1)
@@ -8978,24 +7100,12 @@ public:
 
 struct SensibleButtonFlagBits {
 public:
-#ifdef SDW_MEMBERS_SensibleButtonFlagBits
-    SDW_MEMBERS_SensibleButtonFlagBits
-#endif
-#ifdef SDW_EXTRA_SensibleButtonFlagBits
-    SDW_EXTRA_SensibleButtonFlagBits
-#endif
     u8 pressed : 1;                                // (bits) bit 0 (1-byte unsigned unit) | SensibleButton +0x72: and access bits 1/0
     u8 enabled : 1;                                // (bits) bit 1 (1-byte unsigned unit)
 };
 
 class SensibleButton : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_SensibleButton
-    SDW_MEMBERS_SensibleButton
-#endif
-#ifdef SDW_EXTRA_SensibleButton
-    SDW_EXTRA_SensibleButton
-#endif
     virtual void PostLoadInit();                   // SensibleButton_Init (override)
     virtual void Update();                         // SensibleButton_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // SensibleButton_HandleMessage (override)
@@ -9015,12 +7125,6 @@ public:
 
 class SfxCineManager : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_SfxCineManager
-    SDW_MEMBERS_SfxCineManager
-#endif
-#ifdef SDW_EXTRA_SfxCineManager
-    SDW_EXTRA_SfxCineManager
-#endif
     virtual void PostLoadInit();                   // SfxCineManager_PostLoadInit (override)
     virtual void Update();                         // SfxCineManager_Update (override)
     virtual void Render(Camera *view);             // SfxCineManager_Render (override)
@@ -9039,12 +7143,6 @@ public:
 
 struct ShadowScratch {
 public:
-#ifdef SDW_MEMBERS_ShadowScratch
-    SDW_MEMBERS_ShadowScratch
-#endif
-#ifdef SDW_EXTRA_ShadowScratch
-    SDW_EXTRA_ShadowScratch
-#endif
     Vec3i tangent;                                 // (n.y, -n.x, 0) scaled to the shadow radius by Vec3i_SetLength (Shadow_Update)
     u8 _pad00c[0x4];
     Vec3i bitangent;                               // normal x tangent (Vec3i_Cross out at +0x10:)
@@ -9054,12 +7152,6 @@ public:
 
 class Shark : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Shark
-    SDW_MEMBERS_Shark
-#endif
-#ifdef SDW_EXTRA_Shark
-    SDW_EXTRA_Shark
-#endif
     virtual void PostLoadInit();                   // Shark_PostLoadInit (override)
     virtual void Update();                         // Shark_Update (override)
     virtual void Render(Camera *view);             // Shark_Render (override)
@@ -9120,12 +7212,6 @@ public:
 
 struct Vec4s {
 public:
-#ifdef SDW_MEMBERS_Vec4s
-    SDW_MEMBERS_Vec4s
-#endif
-#ifdef SDW_EXTRA_Vec4s
-    SDW_EXTRA_Vec4s
-#endif
     s16 x;
     s16 y;                                         // vertical points down
     s16 z;
@@ -9134,12 +7220,6 @@ public:
 
 struct SharkFxScratch {
 public:
-#ifdef SDW_MEMBERS_SharkFxScratch
-    SDW_MEMBERS_SharkFxScratch
-#endif
-#ifdef SDW_EXTRA_SharkFxScratch
-    SDW_EXTRA_SharkFxScratch
-#endif
     Mat34s m;                                      // Shark_UpdateBreathFx's view of g_collScratchA: Mat34s_FromEulerScaled(&rot, &m, 0) (0x4766a
     Vec4s out;                                     // Mat34s_TransformVec3s output ( pushes scratch+0x20 as the out argument)
     Vec3s offset;                                  // the local-space spawn offset written just before the transform: (0,0,-90) for the breath bubbles (0x
@@ -9147,12 +7227,6 @@ public:
 
 struct WallAvoidFlagBits {
 public:
-#ifdef SDW_MEMBERS_WallAvoidFlagBits
-    SDW_MEMBERS_WallAvoidFlagBits
-#endif
-#ifdef SDW_EXTRA_WallAvoidFlagBits
-    SDW_EXTRA_WallAvoidFlagBits
-#endif
     u16 active : 1;                                // (bits) bit view of WallAvoid.flags (+6): the last move hit a wall. Word-wide one-bit reads (mov ax,[+6]; an
     u16 turnSide : 1;                              // (bits) turn side: +0x300 instead of -0x300 (shr dx; and dx,1; cleared with and 0xfffd
     u16 reserved : 14;                             // (bits) remaining bits
@@ -9162,9 +7236,6 @@ class WallAvoid {
 public:
 #ifdef SDW_MEMBERS_WallAvoid
     SDW_MEMBERS_WallAvoid
-#endif
-#ifdef SDW_EXTRA_WallAvoid
-    SDW_EXTRA_WallAvoid
 #endif
     void Reset();
     void ComputeSteer(const Vec3s *from, u16 fallbackHeading, const Vec3s *target, s16 keepDist, u16 *outSteerHeading, u16 *outTargetHeading, s16 *outDistError);
@@ -9251,12 +7322,6 @@ public:
 
 class SheepCostume : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_SheepCostume
-    SDW_MEMBERS_SheepCostume
-#endif
-#ifdef SDW_EXTRA_SheepCostume
-    SDW_EXTRA_SheepCostume
-#endif
     virtual void PostLoadInit();                   // SheepCostume_Init (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // SheepCostume_HandleMessage (override)
     Vec3s homePos;                                 // Position saved by Init (after the ground snap) and by msg 9 arg 1; restored by msg 0x55.
@@ -9264,12 +7329,6 @@ public:
 
 class SignPost : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_SignPost
-    SDW_MEMBERS_SignPost
-#endif
-#ifdef SDW_EXTRA_SignPost
-    SDW_EXTRA_SignPost
-#endif
     virtual void PostLoadInit();                   // SignPost_Init (override)
     virtual void Update();                         // SignPost_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // SignPost_HandleMessage (override)
@@ -9288,12 +7347,6 @@ public:
 
 class SignPostAnimated : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_SignPostAnimated
-    SDW_MEMBERS_SignPostAnimated
-#endif
-#ifdef SDW_EXTRA_SignPostAnimated
-    SDW_EXTRA_SignPostAnimated
-#endif
     virtual void PostLoadInit();                   // SignPostAnimated_Init (override)
     virtual void Update();                         // SignPostAnimated_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // SignPostAnimated_HandleMessage (override)
@@ -9307,12 +7360,6 @@ public:
 
 class SignPostSimple : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_SignPostSimple
-    SDW_MEMBERS_SignPostSimple
-#endif
-#ifdef SDW_EXTRA_SignPostSimple
-    SDW_EXTRA_SignPostSimple
-#endif
     virtual void PostLoadInit();                   // SignPostSimple_Init (override)
     virtual void Update();                         // SignPostSimple_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // SignPostSimple_HandleMessage (override)
@@ -9327,12 +7374,6 @@ public:
 
 class SignTips : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_SignTips
-    SDW_MEMBERS_SignTips
-#endif
-#ifdef SDW_EXTRA_SignTips
-    SDW_EXTRA_SignTips
-#endif
     virtual void PostLoadInit();                   // SignTips_PostLoadInit (override)
     virtual void Update();                         // SignTips_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // SignTips_HandleMessage (override)
@@ -9353,12 +7394,6 @@ public:
 
 struct SlidingIceCubeFlagBits {
 public:
-#ifdef SDW_MEMBERS_SlidingIceCubeFlagBits
-    SDW_MEMBERS_SlidingIceCubeFlagBits
-#endif
-#ifdef SDW_EXTRA_SlidingIceCubeFlagBits
-    SDW_EXTRA_SlidingIceCubeFlagBits
-#endif
     u8 allowX : 1;                                 // (bits) bit 0 (1-byte unsigned unit): ALLOWPUSHONXAXIS. +0x83 is byte bit storage: /0x4f356
     u8 allowY : 1;                                 // (bits) bit 1 (1-byte unsigned unit): ALLOWPUSHONYAXIS (z)
     u8 bounced : 1;                                // (bits) bit 2 (1-byte unsigned unit): already bounced
@@ -9366,12 +7401,6 @@ public:
 
 class SlidingIceCube : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_SlidingIceCube
-    SDW_MEMBERS_SlidingIceCube
-#endif
-#ifdef SDW_EXTRA_SlidingIceCube
-    SDW_EXTRA_SlidingIceCube
-#endif
     virtual void PostLoadInit();                   // SlidingIceCube_Init (override)
     virtual void Update();                         // SlidingIceCube_Update (override)
     virtual void Render(Camera *view);             // SlidingIceCube_Render (override)
@@ -9400,12 +7429,6 @@ public:
 
 struct SmallRockFlagBits {
 public:
-#ifdef SDW_MEMBERS_SmallRockFlagBits
-    SDW_MEMBERS_SmallRockFlagBits
-#endif
-#ifdef SDW_EXTRA_SmallRockFlagBits
-    SDW_EXTRA_SmallRockFlagBits
-#endif
     s32 thrown : 1;                                // (bits) bit 0 (4-byte signed unit) | SmallRock +0x174: signed one-bit extraction
     s32 floating : 1;                              // (bits) bit 1 (4-byte signed unit)
     s32 hasIce : 1;                                // (bits) bit 2 (4-byte signed unit)
@@ -9415,24 +7438,12 @@ public:
 
 struct SmallRockMoveBits {
 public:
-#ifdef SDW_MEMBERS_SmallRockMoveBits
-    SDW_MEMBERS_SmallRockMoveBits
-#endif
-#ifdef SDW_EXTRA_SmallRockMoveBits
-    SDW_EXTRA_SmallRockMoveBits
-#endif
     u8 pushed : 1;                                 // (bits) bit 0 (1-byte unsigned unit) | SmallRock +0x171: unsigned byte extraction
     u8 movableContact : 1;                         // (bits) bit 1 (1-byte unsigned unit)
 };
 
 class SmallRock : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_SmallRock
-    SDW_MEMBERS_SmallRock
-#endif
-#ifdef SDW_EXTRA_SmallRock
-    SDW_EXTRA_SmallRock
-#endif
     virtual void PostLoadInit();                   // SmallRock_Init (override)
     virtual void Update();                         // SmallRock_Update (override)
     virtual void Render(Camera *view);             // SmallRock_Render (override)
@@ -9463,12 +7474,6 @@ public:
 
 struct SndBankEntry {
 public:
-#ifdef SDW_MEMBERS_SndBankEntry
-    SDW_MEMBERS_SndBankEntry
-#endif
-#ifdef SDW_EXTRA_SndBankEntry
-    SDW_EXTRA_SndBankEntry
-#endif
     u32 soundId;                                   // Sample id from the .SND entry header, compared (as u32) against Sound_Play's soundId. Array g_sndBan
     u32 dataSize;
     u32 loop;                                      // == 1 forces StaticSound.looping on in Sound_Play, even without playFlags bit 1.
@@ -9476,12 +7481,6 @@ public:
 
 class Snowball : public ScnLogicShadowed {
 public:
-#ifdef SDW_MEMBERS_Snowball
-    SDW_MEMBERS_Snowball
-#endif
-#ifdef SDW_EXTRA_Snowball
-    SDW_EXTRA_Snowball
-#endif
     virtual void PostLoadInit();                   // Snowball_PostLoadInit (override)
     virtual void Update();                         // Snowball_Update (override)
     virtual void Render(Camera *view);             // Snowball_Render (override)
@@ -9504,12 +7503,6 @@ public:
 
 class SnowyGround : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_SnowyGround
-    SDW_MEMBERS_SnowyGround
-#endif
-#ifdef SDW_EXTRA_SnowyGround
-    SDW_EXTRA_SnowyGround
-#endif
     virtual void PostLoadInit();                   // SnowyGround_PostLoadInit (override)
     virtual void Update();                         // SnowyGround_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // SnowyGround_HandleMessage (override)
@@ -9521,9 +7514,6 @@ class Sound {
 public:
 #ifdef SDW_MEMBERS_Sound
     SDW_MEMBERS_Sound
-#endif
-#ifdef SDW_EXTRA_Sound
-    SDW_EXTRA_Sound
 #endif
     virtual ~Sound();                                 // Sound_ScalarDeletingDtor
     virtual s32 CreateFromWave(SoundDevice *device, WaveFile *wave) SDW_PURE; // _purecall
@@ -9555,9 +7545,6 @@ public:
 #ifdef SDW_MEMBERS_StaticSound
     SDW_MEMBERS_StaticSound
 #endif
-#ifdef SDW_EXTRA_StaticSound
-    SDW_EXTRA_StaticSound
-#endif
     virtual ~StaticSound();                           // StaticSound_ScalarDeletingDtor
     virtual s32 CreateFromWave(SoundDevice *device, WaveFile *wave); // StaticSound_CreateFromWave (override)
     virtual s32 CreateFromFile(SoundDevice *device, char *path); // StaticSound_CreateFromFile (override)
@@ -9577,12 +7564,6 @@ public:
 
 struct SoundChannel {
 public:
-#ifdef SDW_MEMBERS_SoundChannel
-    SDW_MEMBERS_SoundChannel
-#endif
-#ifdef SDW_EXTRA_SoundChannel
-    SDW_EXTRA_SoundChannel
-#endif
     u8 paused;                                     // not flag0. Set to 1 by Sound_PauseAll for active channels (with StaticSound_SetPaused(1));
     u8 active;                                     // 1 while the channel is playing. Sound_IsPlaying (41 callers) is exactly a read of this byte
     u8 owned;                                      // set to 1 on allocation; Sound_Stop returns early unless this is non-zero, then clears it. Acts as th
@@ -9600,12 +7581,6 @@ public:
 
 struct SoundDeviceEntry {
 public:
-#ifdef SDW_MEMBERS_SoundDeviceEntry
-    SDW_MEMBERS_SoundDeviceEntry
-#endif
-#ifdef SDW_EXTRA_SoundDeviceEntry
-    SDW_EXTRA_SoundDeviceEntry
-#endif
     char description[40];                          // the DirectSound device description DS_EnumCallback strcpy's here (unbounded); SoundDevice_G
     GUID guid;                                     // the device GUID DS_EnumCallback copies here (left zero for the primary device, whose GUID pointer is
 };
@@ -9614,9 +7589,6 @@ class SoundDevice {
 public:
 #ifdef SDW_MEMBERS_SoundDevice
     SDW_MEMBERS_SoundDevice
-#endif
-#ifdef SDW_EXTRA_SoundDevice
-    SDW_EXTRA_SoundDevice
 #endif
     virtual ~SoundDevice();                           // SoundDevice_ScalarDeletingDtor
     u8 StepDevice(u8);                                           /* (launcher) */
@@ -9650,9 +7622,6 @@ class StreamSound : public Sound {
 public:
 #ifdef SDW_MEMBERS_StreamSound
     SDW_MEMBERS_StreamSound
-#endif
-#ifdef SDW_EXTRA_StreamSound
-    SDW_EXTRA_StreamSound
 #endif
     virtual ~StreamSound();                           // StreamSound_ScalarDeletingDtor
     virtual s32 CreateFromWave(SoundDevice *device, WaveFile *wave); // StreamSound_CreateFromWave (override)
@@ -9696,9 +7665,6 @@ public:
 #ifdef SDW_MEMBERS_StreamPlayer
     SDW_MEMBERS_StreamPlayer
 #endif
-#ifdef SDW_EXTRA_StreamPlayer
-    SDW_EXTRA_StreamPlayer
-#endif
     virtual ~StreamPlayer();                          // StreamPlayer_ScalarDeletingDtor
     void Load_MusicVoiceBank();
     void StopAndFree();
@@ -9730,24 +7696,12 @@ public:
 
 struct SuperButtonInput {
 public:
-#ifdef SDW_MEMBERS_SuperButtonInput
-    SDW_MEMBERS_SuperButtonInput
-#endif
-#ifdef SDW_EXTRA_SuperButtonInput
-    SDW_EXTRA_SuperButtonInput
-#endif
     ScnObject *sender;                             // The button that owns this slot; claimed the first time that sender sends MSG_SWITCH_ON/OFF (insert a
     s32 value;                                     // Last value that sender reported: 1 from MSG_SWITCH_ON 0x1f, 0 from MSG_SWITCH_OFF 0x20 (stored at 0x
 };
 
 class SuperButton : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_SuperButton
-    SDW_MEMBERS_SuperButton
-#endif
-#ifdef SDW_EXTRA_SuperButton
-    SDW_EXTRA_SuperButton
-#endif
     virtual void PostLoadInit();                   // SuperButton_PostLoadInit (override)
     virtual void Update();                         // SuperButton_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // SuperButton_HandleMessage (override)
@@ -9767,12 +7721,6 @@ public:
 
 class SwirlSign : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_SwirlSign
-    SDW_MEMBERS_SwirlSign
-#endif
-#ifdef SDW_EXTRA_SwirlSign
-    SDW_EXTRA_SwirlSign
-#endif
     virtual void PostLoadInit();                   // SwirlSign_Init (override)
     virtual void Update();                         // SwirlSign_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // SwirlSign_HandleMessage (override)
@@ -9783,12 +7731,6 @@ public:
 
 class Telescope : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_Telescope
-    SDW_MEMBERS_Telescope
-#endif
-#ifdef SDW_EXTRA_Telescope
-    SDW_EXTRA_Telescope
-#endif
     virtual void PostLoadInit();                   // Telescope_Init (override)
     virtual void Update();                         // Telescope_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Telescope_HandleMessage (override)
@@ -9817,12 +7759,6 @@ public:
 
 struct TexScroll {
 public:
-#ifdef SDW_MEMBERS_TexScroll
-    SDW_MEMBERS_TexScroll
-#endif
-#ifdef SDW_EXTRA_TexScroll
-    SDW_EXTRA_TexScroll
-#endif
     s32 scale;                                     // the page's size over the disc's: 1, or 2, 4... for a texture override
     s16 x;                                         // rect left in the texture page
     s16 y;                                         // rect top
@@ -9842,9 +7778,6 @@ public:
 #ifdef SDW_MEMBERS_TextResBank
     SDW_MEMBERS_TextResBank
 #endif
-#ifdef SDW_EXTRA_TextResBank
-    SDW_EXTRA_TextResBank
-#endif
     virtual ~TextResBank();                           // TextResBank_DeletingDtor
     u16 Load(const char *path);
     char *LoadString(u16 group, u16 langMask, u16 index);
@@ -9855,12 +7788,6 @@ public:
 
 struct TextResEntry {
 public:
-#ifdef SDW_MEMBERS_TextResEntry
-    SDW_MEMBERS_TextResEntry
-#endif
-#ifdef SDW_EXTRA_TextResEntry
-    SDW_EXTRA_TextResEntry
-#endif
     u32 key;                                       // group<<24 | index<<8 | languageMask (single AppLanguageMask bit)
     u32 len;
     char *text;                                    // operator-new copy of the string made by TextResBank_Load (NULL when len == 0)
@@ -9870,9 +7797,6 @@ class Texture {
 public:
 #ifdef SDW_MEMBERS_Texture
     SDW_MEMBERS_Texture
-#endif
-#ifdef SDW_EXTRA_Texture
-    SDW_EXTRA_Texture
 #endif
     virtual ~Texture();                               // Texture_ScalarDeletingDtor
     void Surface_Unlock();
@@ -9889,12 +7813,6 @@ public:
 
 class TimeKeeper : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_TimeKeeper
-    SDW_MEMBERS_TimeKeeper
-#endif
-#ifdef SDW_EXTRA_TimeKeeper
-    SDW_EXTRA_TimeKeeper
-#endif
     virtual void PostLoadInit();                   // TimeKeeper_Init (override)
     virtual void Update();                         // TimeKeeper_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // TimeKeeper_HandleMessage (override)
@@ -9907,12 +7825,6 @@ public:
 
 class TimeMachineChrono : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_TimeMachineChrono
-    SDW_MEMBERS_TimeMachineChrono
-#endif
-#ifdef SDW_EXTRA_TimeMachineChrono
-    SDW_EXTRA_TimeMachineChrono
-#endif
     virtual void PostLoadInit();                   // TimeMachineChrono_Init (override)
     virtual void Update();                         // TimeMachineChrono_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // TimeMachineChrono_HandleMessage (override)
@@ -9926,24 +7838,12 @@ public:
 
 struct TimeMachinePair {
 public:
-#ifdef SDW_MEMBERS_TimeMachinePair
-    SDW_MEMBERS_TimeMachinePair
-#endif
-#ifdef SDW_EXTRA_TimeMachinePair
-    SDW_EXTRA_TimeMachinePair
-#endif
     ScnObject *past;                               // past-era copy (OBJECTnnPAST); uninitialised when the present slot is empty
     ScnObject *present;                            // present-era copy (OBJECTnnPRESENT)
 };
 
 struct TimeTravelArg {
 public:
-#ifdef SDW_MEMBERS_TimeTravelArg
-    SDW_MEMBERS_TimeTravelArg
-#endif
-#ifdef SDW_EXTRA_TimeTravelArg
-    SDW_EXTRA_TimeTravelArg
-#endif
     ScnObject *obj;                                // partner (msgs 0x3B/0x3C) or the queried object (msg 0x3281)
     Vec3s pos;                                     // position mapped into the receiver's era (0x3B/0x3C) or the arrival position written by a Seed (0x328
     u16 padA;                                      // padding (stride 0xC)
@@ -9951,12 +7851,6 @@ public:
 
 class TimeMachineSphere : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_TimeMachineSphere
-    SDW_MEMBERS_TimeMachineSphere
-#endif
-#ifdef SDW_EXTRA_TimeMachineSphere
-    SDW_EXTRA_TimeMachineSphere
-#endif
     virtual void PostLoadInit();                   // TimeMachineSphere_Init (override)
     virtual void Update();                         // TimeMachineSphere_Update (override)
     virtual void Render(Camera *view);             // TimeMachineSphere_Render (override)
@@ -9996,9 +7890,6 @@ public:
 #ifdef SDW_MEMBERS_Timer
     SDW_MEMBERS_Timer
 #endif
-#ifdef SDW_EXTRA_Timer
-    SDW_EXTRA_Timer
-#endif
     virtual ~Timer();                                 // Timer_ScalarDeletingDtor
     void Start();
     void Stop();
@@ -10022,12 +7913,6 @@ public:
 
 class Torch : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Torch
-    SDW_MEMBERS_Torch
-#endif
-#ifdef SDW_EXTRA_Torch
-    SDW_EXTRA_Torch
-#endif
     virtual void PostLoadInit();                   // Torch_PostLoadInit (override)
     virtual void Update();                         // Torch_Update (override)
     virtual void Render(Camera *view);             // Torch_Render (override)
@@ -10037,12 +7922,6 @@ public:
 
 class TrafficJams : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_TrafficJams
-    SDW_MEMBERS_TrafficJams
-#endif
-#ifdef SDW_EXTRA_TrafficJams
-    SDW_EXTRA_TrafficJams
-#endif
     virtual void PostLoadInit();                   // TrafficJams_Init (override)
     virtual void Update();                         // TrafficJams_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // TrafficJams_HandleMessage (override)
@@ -10071,23 +7950,11 @@ public:
 
 class TrainCarBody : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_TrainCarBody
-    SDW_MEMBERS_TrainCarBody
-#endif
-#ifdef SDW_EXTRA_TrainCarBody
-    SDW_EXTRA_TrainCarBody
-#endif
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // TrainCarBody_HandleMessage (override)
 };
 
 struct TrainCar {
 public:
-#ifdef SDW_MEMBERS_TrainCar
-    SDW_MEMBERS_TrainCar
-#endif
-#ifdef SDW_EXTRA_TrainCar
-    SDW_EXTRA_TrainCar
-#endif
     u16 exportId;                                  // WAR export the car is built from: 0xa8 ALOCOM1B, 0xb4 AWAGON2A, 0xb5 AWAGON2B, 0xb3 AWAGON1B, 0xb2 A
     u32 flags;                                     // 1 = the export existed and the body was built and added to the world; 4 = loads from DOCKA, 8 = from
     TrainCarBody body;                             // the car's own scenaric body, vtable: a ScnBody with only HandleMessage (+0x10) overridden,
@@ -10096,12 +7963,6 @@ public:
 
 struct TrainWaypoint {
 public:
-#ifdef SDW_MEMBERS_TrainWaypoint
-    SDW_MEMBERS_TrainWaypoint
-#endif
-#ifdef SDW_EXTRA_TrainWaypoint
-    SDW_EXTRA_TrainWaypoint
-#endif
     Vec3s pos;                                     // the point to drive to
     s16 heading;                                   // facing there (4096 per turn)
 };
@@ -10110,9 +7971,6 @@ class Train : public ScnBody {
 public:
 #ifdef SDW_MEMBERS_Train
     SDW_MEMBERS_Train
-#endif
-#ifdef SDW_EXTRA_Train
-    SDW_EXTRA_Train
 #endif
     virtual void PostLoadInit();                   // Train_PostLoadInit (override)
     virtual void Update();                         // Train_Update (override)
@@ -10153,12 +8011,6 @@ public:
 
 class TrainStation : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_TrainStation
-    SDW_MEMBERS_TrainStation
-#endif
-#ifdef SDW_EXTRA_TrainStation
-    SDW_EXTRA_TrainStation
-#endif
     virtual void PostLoadInit();                   // TrainStation_Init (override)
     virtual void Update();                         // TrainStation_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // TrainStation_HandleMessage (override)
@@ -10189,24 +8041,12 @@ public:
 
 struct Trajectory3 {
 public:
-#ifdef SDW_MEMBERS_Trajectory3
-    SDW_MEMBERS_Trajectory3
-#endif
-#ifdef SDW_EXTRA_Trajectory3
-    SDW_EXTRA_Trajectory3
-#endif
     u16 count;                                     // number of points: 3 (the seesaw keeps only TRAJ exports whose count is 3, and writes 3 into its hop
     Vec3s pts[3];                                  // start, middle and end point; seesaw_LaunchObject fits its arc through the object's position, pts[1]
 };
 
 class Tree : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_Tree
-    SDW_MEMBERS_Tree
-#endif
-#ifdef SDW_EXTRA_Tree
-    SDW_EXTRA_Tree
-#endif
     virtual void PostLoadInit();                   // Tree_Init (override)
     virtual void Update();                         // Tree_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Tree_HandleMessage (override)
@@ -10219,12 +8059,6 @@ public:
 
 class TreeSection : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_TreeSection
-    SDW_MEMBERS_TreeSection
-#endif
-#ifdef SDW_EXTRA_TreeSection
-    SDW_EXTRA_TreeSection
-#endif
     virtual void PostLoadInit();                   // TreeSection_PostLoadInit (override)
     virtual void Update();                         // TreeSection_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // TreeSection_HandleMessage (override)
@@ -10236,12 +8070,6 @@ public:
 
 class TriggedStone : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_TriggedStone
-    SDW_MEMBERS_TriggedStone
-#endif
-#ifdef SDW_EXTRA_TriggedStone
-    SDW_EXTRA_TriggedStone
-#endif
     virtual void PostLoadInit();                   // TriggedStone_PostLoadInit (override)
     virtual void Update();                         // TriggedStone_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // TriggedStone_HandleMessage (override)
@@ -10259,12 +8087,6 @@ public:
 
 class Twig : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Twig
-    SDW_MEMBERS_Twig
-#endif
-#ifdef SDW_EXTRA_Twig
-    SDW_EXTRA_Twig
-#endif
     virtual void PostLoadInit();                   // Twig_PostLoadInit (override)
     virtual void Update();                         // Twig_Update (override)
     virtual void Render(Camera *view);             // Twig_Render (override)
@@ -10280,12 +8102,6 @@ public:
 
 struct UiCursorFrame {
 public:
-#ifdef SDW_MEMBERS_UiCursorFrame
-    SDW_MEMBERS_UiCursorFrame
-#endif
-#ifdef SDW_EXTRA_UiCursorFrame
-    SDW_EXTRA_UiCursorFrame
-#endif
     u8 u;                                          // U origin of the frame bitmap in its texture page (UiFrame_LoadSkin writes [this+8*i+0x18];
     u8 v;                                          // V origin of the frame bitmap ( write, read)
     u8 wMinus1;
@@ -10296,12 +8112,6 @@ public:
 
 class UiCursor {
 public:
-#ifdef SDW_MEMBERS_UiCursor
-    SDW_MEMBERS_UiCursor
-#endif
-#ifdef SDW_EXTRA_UiCursor
-    SDW_EXTRA_UiCursor
-#endif
     void SetPos(s16 x, s16 y);
     void SetSlide(u8 t256);
     void Animate();
@@ -10326,12 +8136,6 @@ public:
 
 struct UiFrame {
 public:
-#ifdef SDW_MEMBERS_UiFrame
-    SDW_MEMBERS_UiFrame
-#endif
-#ifdef SDW_EXTRA_UiFrame
-    SDW_EXTRA_UiFrame
-#endif
     s16 quads[4][8];                               // four border strips of four corners (x, y); written as packed dwords by Ui_BuildFrameQuads
     float uvs[4][8];                               // four strips x four (u, v) pairs, strip stride 0x20 (Ui_DrawFrameQuads)
     u16 cellSize;                                  // (bitmap width - 1) << 8 | (height - 1): written as one word, read as one word at 0x53d0b
@@ -10340,24 +8144,12 @@ public:
 
 struct UmbrellaFlagBits {
 public:
-#ifdef SDW_MEMBERS_UmbrellaFlagBits
-    SDW_MEMBERS_UmbrellaFlagBits
-#endif
-#ifdef SDW_EXTRA_UmbrellaFlagBits
-    SDW_EXTRA_UmbrellaFlagBits
-#endif
     u8 open : 1;                                   // (bits) bit view of Umbrella.umbrellaFlags (+0x83): read as a one-bit field (mov cl,[+0x83]; and cl,1; xor e
     u8 unused : 7;                                 // (bits) remaining bits
 };
 
 class Umbrella : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_Umbrella
-    SDW_MEMBERS_Umbrella
-#endif
-#ifdef SDW_EXTRA_Umbrella
-    SDW_EXTRA_Umbrella
-#endif
     virtual void PostLoadInit();                   // Umbrella_Init (override)
     virtual void Update();                         // Umbrella_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Umbrella_HandleMessage (override)
@@ -10372,9 +8164,6 @@ public:
 #ifdef SDW_MEMBERS_Vdx7
     SDW_MEMBERS_Vdx7
 #endif
-#ifdef SDW_EXTRA_Vdx7
-    SDW_EXTRA_Vdx7
-#endif
     virtual ~Vdx7();                                  // Vdx7_ScalarDeletingDtor
     u8 ok;                                         // 1 once the VDX7 magic matched and both tables were read (Vdx7_Open)
     u32 *entries;                                  // malloc'd array of u16 values widened to u32 (Vdx7_Open); free'd by Vdx7_Dtor. The
@@ -10383,12 +8172,6 @@ public:
 
 struct Vdx7Record {
 public:
-#ifdef SDW_MEMBERS_Vdx7Record
-    SDW_MEMBERS_Vdx7Record
-#endif
-#ifdef SDW_EXTRA_Vdx7Record
-    SDW_EXTRA_Vdx7Record
-#endif
     s16 x;                                         // U origin in texels of a texture rectangle: Bs_TexelToUV's origin argument for every U coordinate (Bs
     s16 w;
     s16 y;                                         // V origin in texels
@@ -10398,24 +8181,12 @@ public:
 
 struct Vec2s {
 public:
-#ifdef SDW_MEMBERS_Vec2s
-    SDW_MEMBERS_Vec2s
-#endif
-#ifdef SDW_EXTRA_Vec2s
-    SDW_EXTRA_Vec2s
-#endif
     s16 x;
     s16 y;
 };
 
 struct Vec4i {
 public:
-#ifdef SDW_MEMBERS_Vec4i
-    SDW_MEMBERS_Vec4i
-#endif
-#ifdef SDW_EXTRA_Vec4i
-    SDW_EXTRA_Vec4i
-#endif
     s32 x;
     s32 y;                                         // vertical points down
     s32 z;
@@ -10426,9 +8197,6 @@ class Video {
 public:
 #ifdef SDW_MEMBERS_Video
     SDW_MEMBERS_Video
-#endif
-#ifdef SDW_EXTRA_Video
-    SDW_EXTRA_Video
 #endif
     virtual ~Video();                                 // Video_ScalarDeletingDtor
     s32 CloseFile();
@@ -10453,9 +8221,6 @@ public:
 #ifdef SDW_MEMBERS_VideoPlayer
     SDW_MEMBERS_VideoPlayer
 #endif
-#ifdef SDW_EXTRA_VideoPlayer
-    SDW_EXTRA_VideoPlayer
-#endif
     virtual ~VideoPlayer();                           // VideoPlayer_ScalarDeletingDtor
     u8 Init(D3DApp *);
     u8 PlayFile(const char *, u8);
@@ -10467,12 +8232,6 @@ public:
 
 class VisibilityManager : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_VisibilityManager
-    SDW_MEMBERS_VisibilityManager
-#endif
-#ifdef SDW_EXTRA_VisibilityManager
-    SDW_EXTRA_VisibilityManager
-#endif
     virtual void PostLoadInit();                   // VisibilityManager_Init (override)
     virtual void Update();                         // VisibilityManager_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // VisibilityManager_HandleMessage (override)
@@ -10490,12 +8249,6 @@ public:
 
 class Volcano : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Volcano
-    SDW_MEMBERS_Volcano
-#endif
-#ifdef SDW_EXTRA_Volcano
-    SDW_EXTRA_Volcano
-#endif
     virtual void PostLoadInit();                   // Volcano_Init (override)
     virtual void Update();                         // Volcano_Update (override)
     virtual void Render(Camera *view);             // Volcano_Render (override)
@@ -10534,12 +8287,6 @@ public:
 
 struct WarHeader {
 public:
-#ifdef SDW_MEMBERS_WarHeader
-    SDW_MEMBERS_WarHeader
-#endif
-#ifdef SDW_EXTRA_WarHeader
-    SDW_EXTRA_WarHeader
-#endif
     u8 _pad000[0x4];
     char version[4];                               // 'V2.6'. Load_WAR prefix-compares it with sprintf('V%u.%u', 2, 6), temporarily NUL-ing +8. The same m
     u8 clearR;                                     // red of the level clear/fog colour. Load_DAVnWAR builds (r>>1)<<16 | (g>>1)<<8 | (b>>1) and passes it
@@ -10550,12 +8297,6 @@ public:
 
 struct WarLevelHeader {
 public:
-#ifdef SDW_MEMBERS_WarLevelHeader
-    SDW_MEMBERS_WarLevelHeader
-#endif
-#ifdef SDW_EXTRA_WarLevelHeader
-    SDW_EXTRA_WarLevelHeader
-#endif
     u16 texScrollListIds[4];                       // = g_texScrollListIds: four id-list ids of scrolling-texture rects (TexScroll_Init)
     u16 texScrollReverseMask;                      // = g_texScrollReverseMask: bit i reverses list i (read as bitfields by TexScroll_Init)
     u16 weatherType;                               // = g_weatherType: 1 rain, 2 snow (Load_DAVnWAR)
@@ -10563,12 +8304,6 @@ public:
 
 class Watch : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_Watch
-    SDW_MEMBERS_Watch
-#endif
-#ifdef SDW_EXTRA_Watch
-    SDW_EXTRA_Watch
-#endif
     virtual void PostLoadInit();                   // Watch_PostLoadInit (override)
     virtual void Update();                         // Watch_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Watch_HandleMessage (override)
@@ -10587,12 +8322,6 @@ public:
 
 class WaterGeyser : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_WaterGeyser
-    SDW_MEMBERS_WaterGeyser
-#endif
-#ifdef SDW_EXTRA_WaterGeyser
-    SDW_EXTRA_WaterGeyser
-#endif
     virtual void PostLoadInit();                   // WaterGeyser_PostLoadInit (override)
     virtual void Update();                         // WaterGeyser_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // WaterGeyser_HandleMessage (override)
@@ -10613,24 +8342,12 @@ public:
 
 struct WaterMineFlagBits {
 public:
-#ifdef SDW_MEMBERS_WaterMineFlagBits
-    SDW_MEMBERS_WaterMineFlagBits
-#endif
-#ifdef SDW_EXTRA_WaterMineFlagBits
-    SDW_EXTRA_WaterMineFlagBits
-#endif
     u8 detonated : 1;                              // (bits) bit view of WaterMine.flags (+0xe7): read, s
     u8 unused : 7;                                 // (bits) remaining bits
 };
 
 class WaterMine : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_WaterMine
-    SDW_MEMBERS_WaterMine
-#endif
-#ifdef SDW_EXTRA_WaterMine
-    SDW_EXTRA_WaterMine
-#endif
     virtual void PostLoadInit();                   // WaterMine_PostLoadInit (override)
     virtual void Update();                         // WaterMine_Update (override)
     virtual void Reset();                          // WaterMine_Reset (override)
@@ -10650,9 +8367,6 @@ public:
 #ifdef SDW_MEMBERS_WaveFile
     SDW_MEMBERS_WaveFile
 #endif
-#ifdef SDW_EXTRA_WaveFile
-    SDW_EXTRA_WaveFile
-#endif
     virtual ~WaveFile();                              // WaveFile_ScalarDeletingDtor
     s32 Open(char *name, u8 fromMemory, u32 size);               /* WaveFile_Open: fromMemory=1 opens `size` bytes at name */
     s32 ResetFile();
@@ -10669,12 +8383,6 @@ public:
 
 struct WeatherParticle {
 public:
-#ifdef SDW_MEMBERS_WeatherParticle
-    SDW_MEMBERS_WeatherParticle
-#endif
-#ifdef SDW_EXTRA_WeatherParticle
-    SDW_EXTRA_WeatherParticle
-#endif
     Vec3f pos;                                     // world position, advanced by vel * g_dtMs / 1000 (Weather_Advance)
     Vec3f viewPos;                                 // last camera-space position (Weather_WrapToVolume); a particle that leaves the volume is mir
     Vec3f vel;                                     // velocity in units per second (SfxParticles_InitRandom)
@@ -10685,12 +8393,7 @@ public:
 
 struct WeatherTex {
 public:
-#ifdef SDW_MEMBERS_WeatherTex
-    SDW_MEMBERS_WeatherTex
-#endif
-#ifdef SDW_EXTRA_WeatherTex
-    SDW_EXTRA_WeatherTex
-#endif
+
     u32 page;                                      // texture page of the bitmap record (DavBitmapRec.page); DrawRain/DrawSnow write page + 4 as
     union {
         u32 color;                                     // RGB of the drops, argument & 0xffffff
@@ -10705,9 +8408,6 @@ class Weather {
 public:
 #ifdef SDW_MEMBERS_Weather
     SDW_MEMBERS_Weather
-#endif
-#ifdef SDW_EXTRA_Weather
-    SDW_EXTRA_Weather
 #endif
     virtual ~Weather();                               // Weather_ScalarDeletingDtor
     void SetVolume(float halfWidth, float radius, u32 count);
@@ -10734,12 +8434,6 @@ public:
 
 class Wheel : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_Wheel
-    SDW_MEMBERS_Wheel
-#endif
-#ifdef SDW_EXTRA_Wheel
-    SDW_EXTRA_Wheel
-#endif
     virtual void PostLoadInit();                   // Wheel_PostLoadInit (override)
     virtual void Update();                         // Wheel_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // Wheel_HandleMessage (override)
@@ -10783,12 +8477,6 @@ public:
 
 class WheelDummy : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_WheelDummy
-    SDW_MEMBERS_WheelDummy
-#endif
-#ifdef SDW_EXTRA_WheelDummy
-    SDW_EXTRA_WheelDummy
-#endif
     virtual void PostLoadInit();                   // WheelDummy_PostLoadInit (override)
     virtual void Update();                         // WheelDummy_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // WheelDummy_HandleMessage (override)
@@ -10800,12 +8488,6 @@ public:
 
 struct WolfLaunchAxis {
 public:
-#ifdef SDW_MEMBERS_WolfLaunchAxis
-    SDW_MEMBERS_WolfLaunchAxis
-#endif
-#ifdef SDW_EXTRA_WolfLaunchAxis
-    SDW_EXTRA_WolfLaunchAxis
-#endif
     s32 p0;                                        // start coordinate
     s32 v;                                         // initial speed, times t >> 8
     s32 a;                                         // acceleration term, times t*t >> 15
@@ -10815,9 +8497,6 @@ class WolfLaunchPath {
 public:
 #ifdef SDW_MEMBERS_WolfLaunchPath
     SDW_MEMBERS_WolfLaunchPath
-#endif
-#ifdef SDW_EXTRA_WolfLaunchPath
-    SDW_EXTRA_WolfLaunchPath
 #endif
     WolfLaunchAxis x;                              // x axis of the launch parabola (Wolf+0x66c, set by msg 0xC)
     WolfLaunchAxis y;                              // vertical axis
@@ -11044,12 +8723,6 @@ public:
 
 struct WolfArcScratch {
 public:
-#ifdef SDW_MEMBERS_WolfArcScratch
-    SDW_MEMBERS_WolfArcScratch
-#endif
-#ifdef SDW_EXTRA_WolfArcScratch
-    SDW_EXTRA_WolfArcScratch
-#endif
     Vec3s rot;                                     // rotation passed to Wolf_ApplyMove; Wolf_LaunchArcStep's view of g_collScratchA
     u8 _pad006[0x2];
     Vec3s target;                                  // this frame's point on the launch parabola
@@ -11061,12 +8734,6 @@ public:
 
 struct WolfClimbScratch {
 public:
-#ifdef SDW_MEMBERS_WolfClimbScratch
-    SDW_MEMBERS_WolfClimbScratch
-#endif
-#ifdef SDW_EXTRA_WolfClimbScratch
-    SDW_EXTRA_WolfClimbScratch
-#endif
     Vec3s vel;                                     // velocity being built (u/s); Wolf_ClimbStep's view of g_collScratchA
     u8 _pad006[0x2];
     Vec3s rot;                                     // copy of the Wolf's rot
@@ -11078,24 +8745,12 @@ public:
 
 struct WolfDanceMove {
 public:
-#ifdef SDW_MEMBERS_WolfDanceMove
-    SDW_MEMBERS_WolfDanceMove
-#endif
-#ifdef SDW_EXTRA_WolfDanceMove
-    SDW_EXTRA_WolfDanceMove
-#endif
     u16 padMask;
     u16 animId;                                    // animation of the dance move
 };
 
 struct WolfFloatScratch {
 public:
-#ifdef SDW_MEMBERS_WolfFloatScratch
-    SDW_MEMBERS_WolfFloatScratch
-#endif
-#ifdef SDW_EXTRA_WolfFloatScratch
-    SDW_EXTRA_WolfFloatScratch
-#endif
     s32 sq[3];                                     // squares of vel's components; x and z give the speed by sqrt
     Vec3s vel;                                     // velocity (0,-200,0) plus the water current; Wolf_WaterFloatUpStep's view of g_collScratchA
     u8 _pad012[0x2];
@@ -11108,12 +8763,6 @@ public:
 
 struct WolfHoldScratch {
 public:
-#ifdef SDW_MEMBERS_WolfHoldScratch
-    SDW_MEMBERS_WolfHoldScratch
-#endif
-#ifdef SDW_EXTRA_WolfHoldScratch
-    SDW_EXTRA_WolfHoldScratch
-#endif
     Mat34s m;                                      // the Wolf's rotation matrix, Mat34s_FromEulerScaled(&rot, m, 0) (Wolf_CalcHeldObjWorldPos);
     Vec4s out;                                     // rotated offset, output of Mat34s_TransformVec3s
     Vec3s in;                                      // local offset + held object's attach-link offset
@@ -11121,12 +8770,6 @@ public:
 
 struct WolfLineArg {
 public:
-#ifdef SDW_MEMBERS_WolfLineArg
-    SDW_MEMBERS_WolfLineArg
-#endif
-#ifdef SDW_EXTRA_WolfLineArg
-    SDW_EXTRA_WolfLineArg
-#endif
     s32 reverse;                                   // msg 0x2d argument: nonzero turns the result by half a turn
     Vec3s *from;                                   // first point of the segment; also the origin of the side test
     Vec3s *to;                                     // second point of the segment
@@ -11134,12 +8777,6 @@ public:
 
 struct WolfMoveBank {
 public:
-#ifdef SDW_MEMBERS_WolfMoveBank
-    SDW_MEMBERS_WolfMoveBank
-#endif
-#ifdef SDW_EXTRA_WolfMoveBank
-    SDW_EXTRA_WolfMoveBank
-#endif
     union {
         s16 surfaceTuning[2][9];                       // per-surface tuning, index Wolf.surface (0 normal, 1 ice), 0x12 bytes each; [4..8] read by Wolf_Surfa
         u16 surfaceTuningU[2][9];
@@ -11153,12 +8790,6 @@ public:
 
 struct WolfMoveScratch {
 public:
-#ifdef SDW_MEMBERS_WolfMoveScratch
-    SDW_MEMBERS_WolfMoveScratch
-#endif
-#ifdef SDW_EXTRA_WolfMoveScratch
-    SDW_EXTRA_WolfMoveScratch
-#endif
     Vec3s vel;                                     // velocity being built this step (the Wolf move steps point a local at g_collScratchA: 0x488e
     u8 _pad006[0x2];
     Vec3s rot;                                     // rotation being built (g_wolfTmpRot)
@@ -11168,36 +8799,18 @@ public:
 
 struct WolfRespawnArg {
 public:
-#ifdef SDW_MEMBERS_WolfRespawnArg
-    SDW_MEMBERS_WolfRespawnArg
-#endif
-#ifdef SDW_EXTRA_WolfRespawnArg
-    SDW_EXTRA_WolfRespawnArg
-#endif
     Vec3s pos;                                     // msg 0x402 argument (sent by the CheckpointManager, built on its stack): the respawn positio
     s16 facing;                                    // the respawn facing, copied to Wolf.savedRespawnFacing
 };
 
 struct WolfSpotArg {
 public:
-#ifdef SDW_MEMBERS_WolfSpotArg
-    SDW_MEMBERS_WolfSpotArg
-#endif
-#ifdef SDW_EXTRA_WolfSpotArg
-    SDW_EXTRA_WolfSpotArg
-#endif
     Vec3s pos;                                     // msg 0x2e argument: the spot, copied to Wolf.interactPos; also the first argument of Vec3s
     s16 radius;
 };
 
 struct WolfStateDesc {
 public:
-#ifdef SDW_MEMBERS_WolfStateDesc
-    SDW_MEMBERS_WolfStateDesc
-#endif
-#ifdef SDW_EXTRA_WolfStateDesc
-    SDW_EXTRA_WolfStateDesc
-#endif
     u8 anim;
     u8 profile;                                    // index into the bank's MoveRecord table
     u8 heldMsgArg : 4;                             // (bits) low nibble: the argument of the held-object messages 0x10 / 0x15 / 0x16 (Wolf_EnterState mo
@@ -11208,12 +8821,6 @@ public:
 
 struct WolfSwimScratch {
 public:
-#ifdef SDW_MEMBERS_WolfSwimScratch
-    SDW_MEMBERS_WolfSwimScratch
-#endif
-#ifdef SDW_EXTRA_WolfSwimScratch
-    SDW_EXTRA_WolfSwimScratch
-#endif
     Vec3s vel;                                     // velocity being built (Mobile_Steer output); the swim/sink steps' view of g_collScratchA (0x
     u8 _pad006[0x2];
     Vec3s rot;                                     // copy of the Wolf's rot
@@ -11225,12 +8832,6 @@ public:
 
 class WolfTrap : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_WolfTrap
-    SDW_MEMBERS_WolfTrap
-#endif
-#ifdef SDW_EXTRA_WolfTrap
-    SDW_EXTRA_WolfTrap
-#endif
     virtual void PostLoadInit();                   // WolfTrap_PostLoadInit (override)
     virtual void Update();                         // WolfTrap_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // WolfTrap_HandleMessage (override)
@@ -11250,12 +8851,6 @@ public:
 
 struct WolfWalkToArg {
 public:
-#ifdef SDW_MEMBERS_WolfWalkToArg
-    SDW_MEMBERS_WolfWalkToArg
-#endif
-#ifdef SDW_EXTRA_WolfWalkToArg
-    SDW_EXTRA_WolfWalkToArg
-#endif
     Vec3s *target;                                 // msg 0x12 (scripted walk) argument: the destination, copied to Wolf.scriptWalkTarget ( mov ec
     Vec3s *rot;                                    // optional: the final rotation; its y (facing) goes to Wolf.scriptWalkHeading, 0 when null ( c
     Box *dropZone;
@@ -11263,12 +8858,6 @@ public:
 
 class WoodenLift : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_WoodenLift
-    SDW_MEMBERS_WoodenLift
-#endif
-#ifdef SDW_EXTRA_WoodenLift
-    SDW_EXTRA_WoodenLift
-#endif
     virtual void PostLoadInit();                   // WoodenLift_PostLoadInit (override)
     virtual void Update();                         // WoodenLift_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // WoodenLift_HandleMessage (override)
@@ -11301,12 +8890,6 @@ public:
 
 class WoodenPlatForm : public ScnLogic {
 public:
-#ifdef SDW_MEMBERS_WoodenPlatForm
-    SDW_MEMBERS_WoodenPlatForm
-#endif
-#ifdef SDW_EXTRA_WoodenPlatForm
-    SDW_EXTRA_WoodenPlatForm
-#endif
     virtual void PostLoadInit();                   // WoodenPlatForm_PostLoadInit (override)
     virtual void Update();                         // WoodenPlatForm_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // WoodenPlatForm_HandleMessage (override)
@@ -11324,23 +8907,11 @@ public:
 
 class WorldObj : public InstanceBase {
 public:
-#ifdef SDW_MEMBERS_WorldObj
-    SDW_MEMBERS_WorldObj
-#endif
-#ifdef SDW_EXTRA_WorldObj
-    SDW_EXTRA_WorldObj
-#endif
     Aabb aabb;                                     // min = World-space minimum of the mesh vertices ((s16)__ftol), from WorldObj_CalcMeshAabb. Passed to
 };
 
 class balance : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_balance
-    SDW_MEMBERS_balance
-#endif
-#ifdef SDW_EXTRA_balance
-    SDW_EXTRA_balance
-#endif
     virtual void PostLoadInit();                   // balance_Init (override)
     virtual void Update();                         // balance_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // balance_HandleMessage (override)
@@ -11351,12 +8922,6 @@ public:
 
 class bipbip : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_bipbip
-    SDW_MEMBERS_bipbip
-#endif
-#ifdef SDW_EXTRA_bipbip
-    SDW_EXTRA_bipbip
-#endif
     virtual void PostLoadInit();                   // bipbip_PostLoadInit (override)
     virtual void Update();                         // bipbip_Update (override)
     virtual void Render(Camera *view);             // bipbip_Render (override)
@@ -11376,12 +8941,6 @@ public:
 
 class box : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_box
-    SDW_MEMBERS_box
-#endif
-#ifdef SDW_EXTRA_box
-    SDW_EXTRA_box
-#endif
     virtual void PostLoadInit();                   // box_Init (override)
     virtual void Update();                         // box_Update (override)
     virtual sptr HandleMessage(ScnObject *sender, u32 msgId, void *arg); // box_HandleMessage (override)
@@ -11396,9 +8955,6 @@ class bridge : public ScnBody {
 public:
 #ifdef SDW_MEMBERS_bridge
     SDW_MEMBERS_bridge
-#endif
-#ifdef SDW_EXTRA_bridge
-    SDW_EXTRA_bridge
 #endif
     virtual void PostLoadInit();                   // bridge_Init (override)
     virtual void Update();                         // bridge_Update (override)
@@ -11426,12 +8982,6 @@ public:
 
 class bull : public ScnMobile {
 public:
-#ifdef SDW_MEMBERS_bull
-    SDW_MEMBERS_bull
-#endif
-#ifdef SDW_EXTRA_bull
-    SDW_EXTRA_bull
-#endif
     virtual void PostLoadInit();                   // bull_Init (override)
     virtual void Update();                         // bull_Update (override)
     virtual void Render(Camera *view);             // bull_Render (override)
@@ -11473,12 +9023,6 @@ public:
 
 class elastic : public ScnBody {
 public:
-#ifdef SDW_MEMBERS_elastic
-    SDW_MEMBERS_elastic
-#endif
-#ifdef SDW_EXTRA_elastic
-    SDW_EXTRA_elastic
-#endif
     virtual void PostLoadInit();                   // elastic_Init (override)
     virtual void Update();                         // elastic_Update (override)
     virtual void Render(Camera *view);             // elastic_Render (override)
@@ -11560,9 +9104,6 @@ class seesaw : public ScnBody {
 public:
 #ifdef SDW_MEMBERS_seesaw
     SDW_MEMBERS_seesaw
-#endif
-#ifdef SDW_EXTRA_seesaw
-    SDW_EXTRA_seesaw
 #endif
     virtual void PostLoadInit();                   // seesaw_Init (override)
     virtual void Update();                         // seesaw_Update (override)

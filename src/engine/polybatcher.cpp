@@ -394,8 +394,15 @@ s32 PolyBatcher::LoadTexturePages(const char *path)
 
     total = 0;
     iPage = 0;
+    /* the constructor leaves these to this function: cleared, so that a file that is missing or not VDX7 (the
+     * PlayStation's .DAV) leaves an empty batcher that the destructor can free */
+    texturePageCount = 0;
+    immediateTexCount = 0;
+    textures = 0;
+    texStateFlags = 0;
+    texBatchVerts = 0;
+    texBatchCounts = 0;
     BsStream stream(path);
-    Platform_Log("LoadTexturePages: %s (%u pages)", path, (unsigned)texturePageCount);
 
     if (stream.ok) {
         sig[0] = stream.ReadU8(1);
@@ -493,6 +500,7 @@ s32 PolyBatcher::LoadTexturePages(const char *path)
             }
         }
     }
+    Platform_Log("LoadTexturePages: %s (%u pages)", path, (unsigned)texturePageCount);
     return total;
 }
 
