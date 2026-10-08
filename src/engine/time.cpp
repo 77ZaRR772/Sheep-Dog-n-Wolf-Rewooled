@@ -16,6 +16,10 @@ s32 g_renderWorldFlag =
     0; /* only ever written (1 here; 0/1 and, beside GF_RENDER_WORLD), never read by address */
 u8 g_framesThisSecond = 0;
 s32 g_dt = 0;
+/* the port's: a fraction of a 4096th that changes every frame (by about 0.618 of the range, so it covers 0..4095
+ * evenly), added before a per-frame step is truncated, so that a step under one unit still adds up over the frames
+ * (Math_ApproachLinear) */
+s32 g_dtDither = 0;
 s32 g_rawTimeMs = 0;       /* the level time                                          */
 s32 g_frameCount2 = 0;     /* only read by two HUD blink functions                   */
 
@@ -86,6 +90,7 @@ void Time_Update(void)
             g_dt = 0xAA;
     }
 
+    g_dtDither = (g_dtDither + 2531) & 4095;
     g_animDt = (g_dt * 1000) >> 2;
     g_dtRawMs = (g_dtRaw * 1000) >> 12; /* truncated a second time */
     g_dtMs = (g_dt * 1000) >> 12;

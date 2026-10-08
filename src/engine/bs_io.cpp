@@ -1,5 +1,6 @@
 #include "sdw_types.h"
 #include "../sdk/crt.h"
+#include "psx_dav.h"
 
 /* ------------------------------------------------------------------------------------------------ file helpers */
 
@@ -16,7 +17,8 @@ u32 Bs_FileSize(FILE *f)
     return n;
 }
 
-/* reads a whole file into a new[]'d buffer; NULL with *sizeOut = 0 when it cannot be opened. */
+/* reads a whole file into a new[]'d buffer; NULL with *sizeOut = 0 when it cannot be opened. A PlayStation .DAV is
+ * returned converted into the PC's VDX7 layout (psx_dav.h), for every reader of the level's textures. */
 void *Bs_LoadFile(const char *path, u32 *sizeOut)
 {
     void *buf;
@@ -31,6 +33,11 @@ void *Bs_LoadFile(const char *path, u32 *sizeOut)
     buf = new char[*sizeOut];
     fread(buf, 1, *sizeOut, f);
     fclose(f);
+    if (PsxDav_Is(buf, *sizeOut)) {
+        char *pc = PsxDav_ToVdx7(buf, *sizeOut, sizeOut);
+        delete[] (char *)buf;
+        buf = pc;
+    }
     return buf;
 }
 

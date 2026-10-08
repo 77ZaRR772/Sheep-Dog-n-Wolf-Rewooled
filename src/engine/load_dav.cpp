@@ -20,6 +20,8 @@ struct DavDirectory {
 /* ---- globals ---- */
 #include "id_list.h"
 #include "file.h"
+#include "bs_io.h"
+#include "psx_dav.h"
 
 /* ---- functions ---- */
 void Debug_Printf(const char *fmt, ...); /* a no-op stub */
@@ -55,6 +57,21 @@ s32 Load_DAV(const char *path, Dav *dav)
         Debug_Printf("Load_DAV: Read Error\n");
         goto fail;
     }
+    if (PsxDav_Is(probe, headerSize)) {
+        /* the PlayStation's .DAV: its VDX7 conversion, of which the part before the pages, as below */
+        u32 size;
+        u8 *image = (u8 *)Bs_LoadFile(path, &size);
+        free(probe);
+        probe = 0;
+        File_Close(&file);
+        if (!image)
+            goto fail;
+        davSize = ((DavDirectory *)(image + ((DavHeader *)image)->dir.off))->fileSize;
+        dav->blob = (u8 *)malloc(davSize);
+        memcpy(dav->blob, image, davSize);
+        delete[] image;
+        goto loaded;
+    }
     /* the game keeps file offsets (sdw_fileptr.h): the probe's directory is at that offset from the probe */
     davSize = ((DavDirectory *)((u8 *)probe + probe->dir.off))->fileSize;
     if (probe != 0) {
@@ -68,6 +85,7 @@ s32 Load_DAV(const char *path, Dav *dav)
         goto fail;
     }
     File_Close(&file);
+loaded:
     dav->header = (DavHeader *)dav->blob;
     sprintf(ver, "VDX7");
     if (strncmp(dav->header->magic, ver, 4) == 0)

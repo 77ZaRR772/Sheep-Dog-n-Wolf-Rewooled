@@ -91,6 +91,7 @@ int PolyBatcher_CompareSortZ(RenderPoly **a, RenderPoly **b);
 #undef SDW_INLINE_D3DAPP_SETSTATEFLAGSINLINE_U32
 #define SDW_INLINE_D3DAPP_CLEARSTATEFLAGSINLINE_U32 1
 #include "../app/d3dapp_inlines.h"
+#include "psx_dav.h"
 #undef SDW_INLINE_D3DAPP_CLEARSTATEFLAGSINLINE_U32
 /* the constructor without a texture file: pageCount pages, each an immediate page with its own batch
  * (0xc000 state flags). No caller; the loading constructor below is the one Load_DAVnWAR uses. */
@@ -296,11 +297,13 @@ s32 PolyBatcher::CreateTexture(const char *fileName, u32 index, u32 width, u32 h
 }
 
 /* The texture override of page `index` of the page file davPath, made by tools/retexture.py:
- * <data folder>/retexture/<level folder>/page_NN.png, for <data folder>/Levels/<level folder>/<name>.DAV, RGBA with the
- * usual alpha (opacity). Used when it
+ * <data folder>/<folder>/<level folder>/page_NN.png, for <data folder>/Levels/<level folder>/<name>.DAV, RGBA with the
+ * usual alpha (opacity); folder is "retexture", or "retexture-psx" for a PlayStation .DAV (converted on load, its pages
+ * are not the PC's). Used when it
  * is the page's shape at a whole multiple of its size (2x, 4x...): the page's UVs are fractions of it, so the models
  * draw the same images, sharper. 0 when there is none, or it does not fit (said in the log). */
-static Texture *PolyBatcher_LoadPageOverride(D3DApp *renderer, const char *davPath, u32 index, u32 width, u32 height)
+static Texture *PolyBatcher_LoadPageOverride(D3DApp *renderer, const char *davPath, const char *folder, u32 index,
+                                            u32 width, u32 height)
 {
     char path[SDW_PATH_MAX];
     s32 seps[3] = {-1, -1, -1}; /* the last three separators: before the file, the level folder, "Levels" */
@@ -314,11 +317,11 @@ static Texture *PolyBatcher_LoadPageOverride(D3DApp *renderer, const char *davPa
     if (found < 2)
         return 0;
     if (seps[2] >= 0)
-        snprintf(path, sizeof(path), "%.*s/retexture/%.*s/page_%02u.png", (int)seps[2], davPath,
+        snprintf(path, sizeof(path), "%.*s/%s/%.*s/page_%02u.png", (int)seps[2], davPath, folder,
                  (int)(seps[0] - seps[1] - 1), davPath + seps[1] + 1, (unsigned)index);
     else
-        snprintf(path, sizeof(path), "retexture/%.*s/page_%02u.png", (int)(seps[0] - seps[1] - 1), davPath + seps[1] + 1,
-                 (unsigned)index);
+        snprintf(path, sizeof(path), "%s/%.*s/page_%02u.png", folder, (int)(seps[0] - seps[1] - 1),
+                 davPath + seps[1] + 1, (unsigned)index);
     if (!(rgba = Platform_LoadImageRGBA(path, &w, &h)))
         return 0;
     if (!width || !height || w % (s32)width || h % (s32)height || w / (s32)width != h / (s32)height) {
@@ -356,9 +359,9 @@ static Texture *PolyBatcher_LoadPageOverride(D3DApp *renderer, const char *davPa
 /* page `index` of the page file at stream (its header read: wid x h texels of `format`): its override, or the disc's
  * 16-bit texels. 0 when the texture cannot be made. */
 static Texture *PolyBatcher_ReadPage(D3DApp *renderer, BsStream &stream, const char *davPath, u32 index, u32 wid, u32 h,
-                                     u32 format)
+                                     u32 format, const char *overrideFolder)
 {
-    Texture *page = PolyBatcher_LoadPageOverride(renderer, davPath, index, wid, h);
+    Texture *page = PolyBatcher_LoadPageOverride(renderer, davPath, overrideFolder, index, wid, h);
     DDSURFACEDESC2 desc;
     u16 *pix;
     u32 n;
@@ -410,7 +413,8 @@ s32 PolyBatcher::LoadTexturePages(const char *path)
         sig[2] = stream.ReadU8(1);
         sig[3] = stream.ReadU8(1);
         if (strncmp(sig, g_vdx7Magic, 4) == 0) {
-            stream.ReadU32(1);
+            /* a PlayStation .DAV converted on load (psx_dav.h) has its own page overrides: retexture/ is the PC's */
+            const char *overrideFolder = stream.ReadU32(1) == PSXDAV_TAG ? "retexture-psx" : "retexture";
             stream.ReadU32(1);
             stream.ReadU32(1);
             stream.ReadU32(1);
@@ -437,7 +441,7 @@ s32 PolyBatcher::LoadTexturePages(const char *path)
                 immediate = (format & TEXFMT_KIND_MASK) == TEXFMT_KIND_IMMEDIATE;
                 if (immediate == 1) {
                     Platform_Log("W: %u, H: %u,", wid, h);
-                    if (!(textures[iPage] = PolyBatcher_ReadPage(renderer, stream, path, iPage, wid, h, format)))
+                    if (!(textures[iPage] = PolyBatcher_ReadPage(renderer, stream, path, iPage, wid, h, format, overrideFolder)))
                         return 0;
                     texStateFlags[iPage] = RSF_DITHER | RSF_TEXTURED | RSF_FILTER_LINEAR;
                     iPage++;
@@ -460,7 +464,7 @@ s32 PolyBatcher::LoadTexturePages(const char *path)
                 wid = abs(stream.ReadU16(1) - stream.ReadU16(1));
                 h = abs(stream.ReadU16(1) - stream.ReadU16(1));
                 format = stream.ReadU16(1);
-                if (!(textures[iPage] = PolyBatcher_ReadPage(renderer, stream, path, iPage, wid, h, format)))
+                if (!(textures[iPage] = PolyBatcher_ReadPage(renderer, stream, path, iPage, wid, h, format, overrideFolder)))
                     return 0;
                 switch (format & TEXFMT_KIND_MASK) {
                     case TEXFMT_KIND_BLEND:

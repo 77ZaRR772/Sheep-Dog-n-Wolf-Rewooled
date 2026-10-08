@@ -10,3 +10,4 @@ __pycache__/
 # The tools' Python environment (tools/requirements.txt)
 /tools/.venv/
 TODO.txt
+/tools/work/
