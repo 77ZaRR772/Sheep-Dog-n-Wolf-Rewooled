@@ -13,6 +13,10 @@
 #include "../platform/save_store.h"
 
 #include <stdio.h>
+
+#ifndef SDW_VERSION
+#define SDW_VERSION "dev" /* set by CMakeLists.txt: the release's tag in the release builds */
+#endif
 #include <string.h>
 #include <algorithm>
 #include <string>
@@ -214,8 +218,8 @@ int main(int argc, char **argv)
     SDL_Window *window;
     SDL_Renderer *renderer;
     s_folderPickedEvent = SDL_RegisterEvents(1);
-    if (!SDL_CreateWindowAndRenderer("Sheep, Dog 'n' Wolf: Rewooled", 460, 372, SDL_WINDOW_HIGH_PIXEL_DENSITY, &window,
-                                     &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Sheep, Dog 'n' Wolf: Rewooled " SDW_VERSION, 460, 372,
+                                     SDL_WINDOW_HIGH_PIXEL_DENSITY, &window, &renderer)) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Sheep, Dog 'n' Wolf: Rewooled", SDL_GetError(), 0);
         SDL_Quit();
         return 1;

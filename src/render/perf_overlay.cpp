@@ -100,20 +100,25 @@ void PerfOverlay_PresentEnd()
     s_window.start = now;
 }
 
+#ifndef SDW_VERSION
+#define SDW_VERSION "dev" /* set by CMakeLists.txt */
+#endif
+
 int PerfOverlay_Lines(char lines[PERF_OVERLAY_MAX_LINES][PERF_OVERLAY_LINE_SIZE])
 {
     if (!s_enabled)
         return 0;
+    SDL_snprintf(lines[0], PERF_OVERLAY_LINE_SIZE, "Rewooled %s", SDW_VERSION);
     if (!s_shown) {
-        SDL_snprintf(lines[0], PERF_OVERLAY_LINE_SIZE, "FPS ...");
-        return 1;
+        SDL_snprintf(lines[1], PERF_OVERLAY_LINE_SIZE, "FPS ...");
+        return 2;
     }
-    SDL_snprintf(lines[0], PERF_OVERLAY_LINE_SIZE, "FPS %5.1f  FRAME %5.2f MS  WORST %5.2f", s_fps, s_frameMs,
+    SDL_snprintf(lines[1], PERF_OVERLAY_LINE_SIZE, "FPS %5.1f  FRAME %5.2f MS  WORST %5.2f", s_fps, s_frameMs,
                  s_frameWorstMs);
-    SDL_snprintf(lines[1], PERF_OVERLAY_LINE_SIZE, "GAME %5.2f MS  WORST %5.2f", s_workMs, s_workWorstMs);
-    SDL_snprintf(lines[2], PERF_OVERLAY_LINE_SIZE, "PRESENT %5.2f MS  LIMITER %5.2f MS", s_presentMs, s_limiterMs);
-    SDL_snprintf(lines[3], PERF_OVERLAY_LINE_SIZE, "DRAWS %u  VERTICES %u", (unsigned)s_draws, (unsigned)s_vertices);
-    return 4;
+    SDL_snprintf(lines[2], PERF_OVERLAY_LINE_SIZE, "GAME %5.2f MS  WORST %5.2f", s_workMs, s_workWorstMs);
+    SDL_snprintf(lines[3], PERF_OVERLAY_LINE_SIZE, "PRESENT %5.2f MS  LIMITER %5.2f MS", s_presentMs, s_limiterMs);
+    SDL_snprintf(lines[4], PERF_OVERLAY_LINE_SIZE, "DRAWS %u  VERTICES %u", (unsigned)s_draws, (unsigned)s_vertices);
+    return 5;
 }
 
 /* ---- the font ---- */

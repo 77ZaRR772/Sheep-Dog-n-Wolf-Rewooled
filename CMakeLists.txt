@@ -422,6 +422,11 @@ target_compile_definitions(SheepD3D PRIVATE
         SDW_HAVE_SDL3
         )
 
+# the version the game shows (the performance overlay's first line): the build workflow passes the release's tag, a
+# pull request's or a commit's name (.github/workflows/build.yml); a local build is "dev"
+set(SDW_VERSION "dev" CACHE STRING "the version the game shows")
+target_compile_definitions(SheepD3D PRIVATE SDW_VERSION="${SDW_VERSION}")
+
 target_link_libraries(SheepD3D PRIVATE
         SDL3::SDL3-static
         )
@@ -454,6 +459,9 @@ add_executable(SheepLauncher ${SDW_LAUNCHER_KIND}
         ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
         ${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer3.cpp
         )
+
+# the launcher's title shows the version too (SDW_VERSION, set above)
+target_compile_definitions(SheepLauncher PRIVATE SDW_VERSION="${SDW_VERSION}")
 
 target_include_directories(SheepLauncher PRIVATE
         ${imgui_SOURCE_DIR}
