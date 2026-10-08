@@ -2695,7 +2695,7 @@ void Wolf::Update()
     if (!grabber || !grabber->HandleMessage(this, MSG_DRAW_PROMPT, 0)) {
         inControl = (!(flags & WOLF_FB_FROZEN) || (flags & WOLF_FB_FROZEN_BUT_PROMPT)) &&
                     !(flags & (WOLF_FB_DEAD | WOLF_FB_WON));
-        DrawActionPrompt(&ctxAction, &coverAction,
+        DrawActionPrompt(&ctxAction, heldActionType, ctx4PromptIndex, &coverAction,
                          inControl && !(g_gameFlags & GF_ITEM_WHEEL_OPEN) && !(flags & WOLF_FB_PROMPT_DISABLED));
         Hud_DrawItemPrompt(&itemPromptClassId, inControl && itemPromptClassId);
     }

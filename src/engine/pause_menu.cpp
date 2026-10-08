@@ -1250,7 +1250,7 @@ long Menu_CreateNoiseTexture()
                 u16 column;
                 for (row = 0; row < 0x100; row++) {
                     for (column = 0; column < 0x100; column++) {
-                        s32 grey = rand() * 4 / 0x7fff + 6;
+                        s32 grey = Crt_Rand15() * 4 / 0x7fff + 6;
                         dst[(row << 8) + column] = ((u16)grey << 12) + 0xf;
                     }
                 }

@@ -699,9 +699,11 @@ void ScnControllable::StopMotion()
     bounceNormal.z = 0;
 }
 
-/* action-prompt text, icon and panel animation. */
+/* action-prompt text, icon and panel animation. The original read the held action and the view prompt as the 3rd
+ * and 4th words of the context block, after the 8-byte ActionHit; on 64-bit the ActionHit is 16 bytes and those words
+ * are its target pointer, so the caller passes the two fields. */
 
-void Wolf::DrawActionPrompt(ActionHit *primary, ActionHit *secondary, s32 show)
+void Wolf::DrawActionPrompt(ActionHit *primary, s32 heldAction, s32 viewPrompt, ActionHit *secondary, s32 show)
 {
     struct Work {
         char text[64];
@@ -715,10 +717,10 @@ void Wolf::DrawActionPrompt(ActionHit *primary, ActionHit *secondary, s32 show)
     if (show) {
         if (primary->action)
             w.label = g_wolfCtxPromptText[primary->action];
-        else if (((s32 *)primary)[2])
-            w.label = g_wolfHeldPromptText[((s32 *)primary)[2]];
-        else if (((s32 *)primary)[3]) {
-            w.label = g_wolfCtx4PromptText[((s32 *)primary)[3]];
+        else if (heldAction)
+            w.label = g_wolfHeldPromptText[heldAction];
+        else if (viewPrompt) {
+            w.label = g_wolfCtx4PromptText[viewPrompt];
             w.view = 1;
         } else if (secondary && secondary->action) {
             w.label = g_wolfSneakPromptText[secondary->action];

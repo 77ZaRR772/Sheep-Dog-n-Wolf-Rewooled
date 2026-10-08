@@ -11,3 +11,4 @@ __pycache__/
 /tools/.venv/
 TODO.txt
 /tools/work/
+*zip
