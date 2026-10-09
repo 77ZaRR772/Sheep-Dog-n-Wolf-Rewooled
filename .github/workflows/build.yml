@@ -136,15 +136,19 @@ jobs:
         if: runner.os == 'Linux'
         run: >-
           cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
-          -DSDW_VERSION="${{ needs.version.outputs.display }}"
+          -DSDW_VERSION="${{ needs.version.outputs.display }}" -DSDW_REPOSITORY="${{ github.repository }}"
 
       - name: Configure (macOS)
         if: runner.os == 'macOS'
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DSDW_VERSION="${{ needs.version.outputs.display }}"
+        run: >-
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          -DSDW_VERSION="${{ needs.version.outputs.display }}" -DSDW_REPOSITORY="${{ github.repository }}"
 
       - name: Configure (Windows)
         if: runner.os == 'Windows'
-        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DSDW_VERSION="${{ needs.version.outputs.display }}"
+        run: >-
+          cmake -S . -B build -G "Visual Studio 17 2022" -A x64
+          -DSDW_VERSION="${{ needs.version.outputs.display }}" -DSDW_REPOSITORY="${{ github.repository }}"
 
       - name: Build
         run: cmake --build build --config Release --parallel

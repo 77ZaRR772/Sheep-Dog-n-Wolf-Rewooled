@@ -104,11 +104,20 @@ void PerfOverlay_PresentEnd()
 #define SDW_VERSION "dev" /* set by CMakeLists.txt */
 #endif
 
+/* the CPU the game was built for, after the platform on the first line (the release zips' names: macOS-arm64) */
+#if defined(__aarch64__) || defined(_M_ARM64)
+#define SDW_ARCH "arm64"
+#elif defined(__x86_64__) || defined(_M_X64)
+#define SDW_ARCH "x64"
+#else
+#define SDW_ARCH ""
+#endif
+
 int PerfOverlay_Lines(char lines[PERF_OVERLAY_MAX_LINES][PERF_OVERLAY_LINE_SIZE])
 {
     if (!s_enabled)
         return 0;
-    SDL_snprintf(lines[0], PERF_OVERLAY_LINE_SIZE, "Rewooled %s", SDW_VERSION);
+    SDL_snprintf(lines[0], PERF_OVERLAY_LINE_SIZE, "Rewooled %s %s %s", SDW_VERSION, SDL_GetPlatform(), SDW_ARCH);
     if (!s_shown) {
         SDL_snprintf(lines[1], PERF_OVERLAY_LINE_SIZE, "FPS ...");
         return 2;

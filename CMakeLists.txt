@@ -9,6 +9,11 @@ cmake_minimum_required(VERSION 3.20)
 
 project(SheepD3D C CXX)
 
+# macOS: the launcher's update check uses NSURLSession, from Objective-C++ (src/launcher/http_get_mac.mm)
+if(APPLE)
+    enable_language(OBJCXX)
+endif()
+
 # explicit, so every compiler builds the same language (older Apple Clang defaults to C++98, which Dear ImGui rejects)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED OFF)
@@ -450,6 +455,7 @@ endif()
 
 add_executable(SheepLauncher ${SDW_LAUNCHER_KIND}
         src/launcher/launcher.cpp
+        src/launcher/update_check.cpp
         src/platform/options.c
         src/platform/save_store.c
         ${imgui_SOURCE_DIR}/imgui.cpp
@@ -460,8 +466,10 @@ add_executable(SheepLauncher ${SDW_LAUNCHER_KIND}
         ${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer3.cpp
         )
 
-# the launcher's title shows the version too (SDW_VERSION, set above)
-target_compile_definitions(SheepLauncher PRIVATE SDW_VERSION="${SDW_VERSION}")
+# the launcher's title shows the version too (SDW_VERSION, set above); the update check asks this GitHub repository
+# (owner/name: the build workflow passes its own) for a newer release, and does not check when it is empty
+set(SDW_REPOSITORY "" CACHE STRING "the GitHub repository (owner/name) whose releases the launcher checks")
+target_compile_definitions(SheepLauncher PRIVATE SDW_VERSION="${SDW_VERSION}" SDW_REPOSITORY="${SDW_REPOSITORY}")
 
 target_include_directories(SheepLauncher PRIVATE
         ${imgui_SOURCE_DIR}
@@ -471,6 +479,19 @@ target_include_directories(SheepLauncher PRIVATE
 target_link_libraries(SheepLauncher PRIVATE
         SDL3::SDL3-static
         )
+
+# the update check's one HTTPS request, with the system's own networking (src/launcher/http_get.h)
+if(WIN32)
+    target_sources(SheepLauncher PRIVATE src/launcher/http_get_win.cpp)
+    target_link_libraries(SheepLauncher PRIVATE winhttp)
+elseif(APPLE)
+    target_sources(SheepLauncher PRIVATE src/launcher/http_get_mac.mm) # Objective-C++: enabled after project() above
+    set_source_files_properties(src/launcher/http_get_mac.mm PROPERTIES COMPILE_OPTIONS "-fobjc-arc")
+    target_link_libraries(SheepLauncher PRIVATE "-framework Foundation")
+else()
+    target_sources(SheepLauncher PRIVATE src/launcher/http_get_posix.cpp) # the system's libcurl, if any (dlopen)
+    target_link_libraries(SheepLauncher PRIVATE ${CMAKE_DL_LIBS})
+endif()
 
 if(SDW_HAVE_APP_ICON)
     target_include_directories(SheepLauncher PRIVATE "${SDW_ICON_HEADER_DIR}")
