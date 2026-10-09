@@ -250,19 +250,44 @@ jobs:
           # the artifacts are zips uploaded as they are: without this the action unpacks them into dist
           skip-decompress: true
 
+      - name: Pick the tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUMP: ${{ needs.version.outputs.bump }}
+        run: |
+          if [ -z "$BUMP" ]; then
+            # a tag pushed by hand
+            tag="$GITHUB_REF_NAME"
+          else
+            latest=$(gh api --paginate "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/v" --jq '.[].ref' \
+              | sed 's|^refs/tags/||' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n1 || true)
+            IFS=. read -r major minor patch <<< "${latest:-v0.0.0}"
+            major=${major#v}
+            case "$BUMP" in
+              major) major=$((major + 1)); minor=0; patch=0 ;;
+              minor) minor=$((minor + 1)); patch=0 ;;
+              patch) patch=$((patch + 1)) ;;
+            esac
+            tag="v$major.$minor.$patch"
+            echo "latest: ${latest:-none}, bump: $BUMP"
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "releasing $tag"
+
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.version.outputs.tag }}
         run: |
           ls -lR dist
-          # each downloaded zip, Rewooled-<Platform>-<version>.zip (with however many .zip the download gave it), into
-          # release/
+          # each downloaded zip, Rewooled-<Platform>-<commit>.zip (with however many .zip the download gave it), into
+          # release/ as Rewooled-<Platform>-<version>.zip (the version without its "v")
           mkdir -p release
           find dist -type f -name 'Rewooled-*' | while read -r f; do
             base=$(basename "$f")
             while [ "${base%.zip}" != "$base" ]; do base=${base%.zip}; done
-            mv "$f" "release/$base.zip"
+            mv "$f" "release/${base%-*}-${TAG#v}.zip"
           done
           ls -l release
           # the three platform zips, each a zip with the files in it (not a zip around a zip, nor unpacked)
