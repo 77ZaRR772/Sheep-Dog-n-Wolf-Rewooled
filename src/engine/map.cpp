@@ -888,7 +888,10 @@ void Map::CombineItems()
         partner = Inventory_GetSelectedObject();
         result = FindCombineTarget(selectedClassId, partnerClass);
         if (result) {
-            result->HandleMessage(0, MSG_ITEM_COMBINE, &target);
+            /* the handler reads the pair as an array; the original passed &target and relied on partner being the
+             * next stack slot, which a 64-bit compiler does not keep */
+            ScnObject *pair[2] = {target, partner};
+            result->HandleMessage(0, MSG_ITEM_COMBINE, pair);
             ReleaseItem(target);
             ReleaseItem(partner);
             AcquireItem(result);

@@ -28,6 +28,7 @@ typedef struct GameOptions {
     int controller; /* OPTIONS_CONTROLLER_KEYBOARD or a controller index */
     int startLevel;
     char exeDir[512]; /* the game's data folder (--game-dir, saved as GameDir); "" : next to the executable */
+    int checkUpdates; /* the launcher asks GitHub for a newer release (saved as CheckUpdates); not a flag */
 } GameOptions;
 
 extern GameOptions g_options;
@@ -36,6 +37,7 @@ void Options_SetDefaults(GameOptions *o);
 void Options_LoadSaved(GameOptions *o);            /* over what is in o */
 void Options_ParseArgs(GameOptions *o, int argc, char **argv); /* over what is in o; argv[0] is skipped */
 void Options_Save(const GameOptions *o);           /* everything but startLevel */
+void Options_SaveCheckUpdates(int on);             /* only CheckUpdates: the launcher's checkbox, saved when changed */
 /* the command line that gives these options: at most max arguments into buf[i], each at most OPTIONS_ARG_SIZE bytes
  * (room for --game-dir= and a full path); OPTIONS_MAX_ARGS is enough for all of them */
 #define OPTIONS_ARG_SIZE 600

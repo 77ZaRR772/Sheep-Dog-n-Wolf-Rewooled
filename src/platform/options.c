@@ -19,6 +19,7 @@ void Options_SetDefaults(GameOptions *o)
     o->controller = OPTIONS_CONTROLLER_KEYBOARD;
     o->startLevel = -1;
     o->exeDir[0] = 0;
+    o->checkUpdates = 1;
 }
 
 static int Options_ReadString(SaveKey *key, const char *name, char *out, unsigned outSize)
@@ -49,6 +50,7 @@ void Options_LoadSaved(GameOptions *o)
     Options_ReadInt(key, "Controller", &o->controller);
     Options_ReadInt(key, "StartLevel", &o->startLevel);
     Options_ReadString(key, "GameDir", o->exeDir, sizeof(o->exeDir));
+    Options_ReadInt(key, "CheckUpdates", &o->checkUpdates);
     Save_CloseKey(key);
 }
 
@@ -76,6 +78,16 @@ void Options_Save(const GameOptions *o)
     Options_WriteInt(key, "Controller", o->controller);
     Options_WriteInt(key, "StartLevel", o->startLevel);
     Options_WriteString(key, "GameDir", o->exeDir);
+    Options_WriteInt(key, "CheckUpdates", o->checkUpdates);
+    Save_CloseKey(key);
+}
+
+void Options_SaveCheckUpdates(int on)
+{
+    SaveKey *key = Save_OpenKey("");
+    if (!key)
+        return;
+    Options_WriteInt(key, "CheckUpdates", on);
     Save_CloseKey(key);
 }
 

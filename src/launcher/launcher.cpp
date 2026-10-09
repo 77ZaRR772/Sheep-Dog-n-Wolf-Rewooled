@@ -11,8 +11,16 @@
 #include "../platform/app_icon.h"
 #include "../platform/options.h"
 #include "../platform/save_store.h"
+#include "update_check.h"
 
 #include <stdio.h>
+
+#ifndef SDW_VERSION
+#define SDW_VERSION "dev" /* set by CMakeLists.txt: the release's tag in the release builds */
+#endif
+#ifndef SDW_REPOSITORY
+#define SDW_REPOSITORY "" /* set by CMakeLists.txt: the GitHub repository the update check asks; "" does not check */
+#endif
 #include <string.h>
 #include <algorithm>
 #include <string>
@@ -157,6 +165,7 @@ static int Launcher_StartGame(const GameOptions &o)
 /* the dialog answers on any thread, at any time: the answer comes back to the main loop as this event, data1 the
  * chosen path (SDL_strdup'd) or 0 when the dialog was cancelled or failed */
 static Uint32 s_folderPickedEvent;
+static Uint32 s_updateEvent; /* update_check.h: a newer release, data1 an UpdateCheckResult */
 
 static void SDLCALL Launcher_OnFolderPicked(void *userdata, const char *const *filelist, int filter)
 {
@@ -214,8 +223,9 @@ int main(int argc, char **argv)
     SDL_Window *window;
     SDL_Renderer *renderer;
     s_folderPickedEvent = SDL_RegisterEvents(1);
-    if (!SDL_CreateWindowAndRenderer("Sheep, Dog 'n' Wolf: Rewooled", 460, 372, SDL_WINDOW_HIGH_PIXEL_DENSITY, &window,
-                                     &renderer)) {
+    s_updateEvent = SDL_RegisterEvents(1);
+    if (!SDL_CreateWindowAndRenderer("Sheep, Dog 'n' Wolf: Rewooled " SDW_VERSION, 460, 372,
+                                     SDL_WINDOW_HIGH_PIXEL_DENSITY, &window, &renderer)) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Sheep, Dog 'n' Wolf: Rewooled", SDL_GetError(), 0);
         SDL_Quit();
         return 1;
@@ -249,6 +259,12 @@ int main(int argc, char **argv)
     Options_SetDefaults(&options);
     Options_LoadSaved(&options);
 
+    /* the update check runs while the launcher is open; a newer release shows next to the title */
+    UpdateCheckResult update = {};
+    bool updateShown = false, checkUpdates = options.checkUpdates != 0, updateStarted = false;
+    if (checkUpdates)
+        updateStarted = UpdateCheck_Start(SDW_REPOSITORY, SDW_VERSION, s_updateEvent) != 0;
+
     std::vector<const RendererChoice *> renderers = Launcher_AvailableRenderers();
     int rendererIndex = 0;
     for (size_t i = 0; i < renderers.size(); i++)
@@ -274,6 +290,11 @@ int main(int argc, char **argv)
             ImGui_ImplSDL3_ProcessEvent(&e);
             if (e.type == SDL_EVENT_QUIT || e.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED)
                 running = false;
+            if (e.type == s_updateEvent) {
+                update = *(UpdateCheckResult *)e.user.data1;
+                UpdateCheck_Free(e.user.data1);
+                updateShown = true;
+            }
             if (e.type == s_folderPickedEvent) {
                 pickingFolder = false;
                 if (e.user.data1) {
@@ -297,6 +318,23 @@ int main(int argc, char **argv)
                      ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings);
 
         ImGui::TextUnformatted("Launch Options");
+        if (updateShown) { /* "v1.0.8 available  [Download] [x]", on the title's line, at the right */
+            char text[64];
+            snprintf(text, sizeof(text), "%s available", update.version);
+            const ImGuiStyle &style = ImGui::GetStyle();
+            float width = ImGui::CalcTextSize(text).x + ImGui::CalcTextSize("Download").x +
+                          ImGui::CalcTextSize("x").x + 4 * style.FramePadding.x + 2 * style.ItemSpacing.x;
+            ImGui::SameLine(ImGui::GetWindowWidth() - style.WindowPadding.x - width);
+            ImGui::TextColored(ImVec4(0.45f, 0.85f, 0.45f, 1), "%s", text);
+            ImGui::SameLine();
+            if (ImGui::SmallButton("Download"))
+                SDL_OpenURL(update.url);
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("%s", update.url);
+            ImGui::SameLine();
+            if (ImGui::SmallButton("x"))
+                updateShown = false;
+        }
         ImGui::Separator();
         const float labelWidth = 120.0f;
 
@@ -330,6 +368,15 @@ int main(int argc, char **argv)
 
         ImGui::SetCursorPosX(labelWidth);
         ImGui::Checkbox("Full screen", &fullscreen);
+        ImGui::SameLine();
+        if (ImGui::Checkbox("Check for updates", &checkUpdates)) {
+            options.checkUpdates = checkUpdates;
+            Options_SaveCheckUpdates(checkUpdates);
+            if (checkUpdates && !updateStarted)
+                updateStarted = UpdateCheck_Start(SDW_REPOSITORY, SDW_VERSION, s_updateEvent) != 0;
+        }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("When the launcher opens, ask GitHub whether there is a newer release");
 
         /* the game folder: the game's data, a disc drive or a copy; empty = next to the launcher */
         ImGui::AlignTextToFramePadding();
@@ -435,6 +482,8 @@ int main(int argc, char **argv)
         ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), renderer);
         SDL_RenderPresent(renderer);
     }
+
+    UpdateCheck_Stop(); /* a check still waiting for GitHub ends here, before the game starts and SDL quits */
 
     if (play && !renderers.empty()) {
         strncpy(options.renderer, renderers[rendererIndex]->name, sizeof(options.renderer) - 1);
