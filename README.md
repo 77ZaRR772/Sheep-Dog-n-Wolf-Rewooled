@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="https://github.com/SheepStealer2001/Sheep-Dog-n-Wolf-Rewooled/blob/main/res/icon.png?raw=true" style="width: 128px;" alt="OpenRCT2 logo"/>
+    <img src="https://github.com/SheepStealer2001/Sheep-Dog-n-Wolf-Rewooled/blob/main/res/icon.png?raw=true" style="width: 128px;" />
 </p>
 
 <h1 align="center">Sheep, Dog 'n' Wolf: Rewooled</h1>
