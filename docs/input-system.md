@@ -220,7 +220,7 @@ In rough order of payoff:
    3413 now, walking has 81920).
 4. **Smaller dead zones**: 56/128 in `Pad_AnalogToStick` (src/engine/input.cpp, `0xc40` = 56², and `0x38`),
    `Pad_StickToDeadzonedAxes` and `Pad::AnalogToDpadBits`. Around 16-24 suits modern sticks.
-5. **Right-stick camera**: done (§4, §7). Mouse camera: not yet.
+5. **Right-stick camera and mouse free camera**: done (§4, §7, §10).
 6. **D-pad on a gamepad**: read `rgdwPOV[0]` in `Joystick::Update` and clear the `PAD_UP/RIGHT/DOWN/LEFT` bits in
    `InputMgr::Poll`.
 7. **Walking on the keyboard**: e.g. a "walk" key that scales the ±256 of the digital path in `ReadPad`.
@@ -230,8 +230,10 @@ In rough order of payoff:
 ## 10. The SDL3 input layer
 
 Done at the device level (§2): SDL fills the same `InputDevice` fields DirectInput did, and the mouse is read through
-SDL too (relative motion and wheel), ready for a mouse camera. A deeper replacement would sit one level up, because
-everything above `InputMgr` only reads what `InputMgr::Poll` produces:
+SDL too (relative motion and wheel). The F5 free camera reads SDL relative motion directly, without emulating the PS1
+Mouse protocol: moving the mouse looks around, the left button flies forward and the right button backward; keyboard
+and controller movement still work. F5 also toggles SDL's relative mouse mode, capturing the cursor only in free camera.
+A deeper replacement would sit one level up, because everything above `InputMgr` only reads what `InputMgr::Poll` produces:
 
 - `axisX`, `axisY` (0..255, centre 0x80) and the right-stick pair once added;
 - `padBits` (the PS1 active-low word, `PAD_*` bits);

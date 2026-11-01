@@ -35,8 +35,10 @@ void PerfOverlay_Toggle()
     SDL_zero(s_window);
 }
 
-void CamDebug_Toggle() {
-    g_camDebugMode = (g_camDebugMode == 2) ? 0 : 2; //0 - game cam, 2 - freecam
+int CamDebug_Toggle()
+{
+    g_camDebugMode = (g_camDebugMode == 2) ? 0 : 2;
+    return g_camDebugMode == 2;
 }
 
 

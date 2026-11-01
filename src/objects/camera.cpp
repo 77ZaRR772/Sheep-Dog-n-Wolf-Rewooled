@@ -84,6 +84,7 @@ struct CamResetPositions { /* the positions Camera_ResetMotion / Camera_Reset se
 #include "../engine/screen.h"
 #include "../engine/scenaric.h"
 #include "../engine/input.h"
+#include "../platform/platform.h"
 #include "../engine/fixed_math.h"
 #include "../engine/collide.h"
 #include "../engine/map.h"
@@ -567,6 +568,18 @@ void Camera_UpdateDebugFreeCam(Camera *cam, Pad *pad, Pad *mouse)
         }
         cam->rot.y -= (s8)mouse->cur.rightX;
         cam->rot.x += (s8)mouse->cur.rightY;
+    }
+    {
+        s32 mouseDx, mouseDy, mouseWheel;
+        u8 mouseButtons[4];
+        Platform_ReadMouse(&mouseDx, &mouseDy, &mouseWheel, mouseButtons);
+        (void)mouseWheel;
+        cam->rot.y -= mouseDx;
+        cam->rot.x += mouseDy;
+        if (mouseButtons[0])
+            w.forward = 256;
+        else if (mouseButtons[1])
+            w.forward = -256;
     }
     if (w.enabled) {
         if (!(pad->cur.buttons & ~(u16)~PAD_L1))

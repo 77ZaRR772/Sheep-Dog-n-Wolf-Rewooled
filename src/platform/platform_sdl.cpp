@@ -139,8 +139,12 @@ unsigned Platform_PollEvents()
                 /* the performance overlay (src/render/perf_overlay.h) */
                 if (e.key.key == SDLK_F3 && !e.key.repeat)
                     PerfOverlay_Toggle();
-                if (e.key.key == SDLK_F5 && !e.key.repeat)
-                    CamDebug_Toggle();
+                if (e.key.key == SDLK_F5 && !e.key.repeat) {
+                    SDL_SetWindowRelativeMouseMode(s_window, CamDebug_Toggle() != 0);
+                    s_wheel = 0;
+                    float x, y;
+                    SDL_GetRelativeMouseState(&x, &y); /* discard motion accumulated before the mode change */
+                }
                 break;
         }
     }
