@@ -210,7 +210,8 @@ enum {
     PK_DST_SHIFT = 6, /* 4 bits */
     PK_ZTEST = 1 << 10,
     PK_ZWRITE = 1 << 11,
-    PK_COUNT = 1 << 12,
+    PK_WIREFRAME = 1 << 12,
+    PK_COUNT = 1 << 13,
 };
 
 struct Sdl3PsParams {
@@ -783,6 +784,8 @@ long Sdl3RenderDevice::DrawPrimitive(u32 primitive, u32 fvf, void *data, u32 cou
         return 0;
 
     key = (lines ? PK_LINES : 0) | (state.zEnable ? PK_ZTEST : 0) | (state.zEnable && state.zWrite ? PK_ZWRITE : 0);
+    if (!lines && wireframe)
+        key |= PK_WIREFRAME;
     if (state.blend)
         key |= PK_BLEND | ((state.srcBlend & 15) << PK_SRC_SHIFT) | ((state.dstBlend & 15) << PK_DST_SHIFT);
     texture = state.texture ? state.texture : &white;
@@ -889,7 +892,7 @@ SDL_GPUGraphicsPipeline *Sdl3RenderDevice::Pipeline(u32 key)
     info.vertex_input_state.vertex_attributes = attributes;
     info.vertex_input_state.num_vertex_attributes = 4;
     info.primitive_type = (key & PK_LINES) ? SDL_GPU_PRIMITIVETYPE_LINELIST : SDL_GPU_PRIMITIVETYPE_TRIANGLELIST;
-    info.rasterizer_state.fill_mode = SDL_GPU_FILLMODE_FILL;
+    info.rasterizer_state.fill_mode = (key & PK_WIREFRAME) ? SDL_GPU_FILLMODE_LINE : SDL_GPU_FILLMODE_FILL;
     info.rasterizer_state.cull_mode = SDL_GPU_CULLMODE_NONE; /* culled on the CPU (DrawPrimitive) */
     info.rasterizer_state.enable_depth_clip = true; /* the near plane cuts triangles reaching behind the eye */
     info.depth_stencil_state.compare_op = SDL_GPU_COMPAREOP_LESS_OR_EQUAL; /* D3DCMP_LESSEQUAL, the default */

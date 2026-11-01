@@ -119,6 +119,7 @@ public:
     virtual void SetBlendFunc(u32 src, u32 dst) = 0; /* RD_BLEND_* factors */
     virtual void SetFog(u32 color, float start, float end) = 0; /* linear per-vertex fog, as the original sets it */
     virtual void SetFogColor(u32 color) = 0;
+    void ToggleWireframe() { wireframe = !wireframe; }
 
     /* ---- transforms, textures, draws ---- */
     virtual long SetTransform(u32 which, void *matrix) = 0; /* RD_TRANSFORM_*; matrix: 16 floats, the game's Mat44 */
@@ -148,6 +149,9 @@ public:
      * drawn into dstRect of it. */
     virtual long CreateFrameCaptureTexture(u32 width, u32 height, RdTexture **out, u32 *outWidth, u32 *outHeight) = 0;
     virtual long CopyFrameToTexture(RdTexture *dst, RdRect *dstRect, int fromShown) = 0;
+
+protected:
+    int wireframe = 0;
 };
 
 /* A renderer before it draws: it sets up the display in the game's window and makes the RenderDevice.

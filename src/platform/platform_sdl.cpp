@@ -6,6 +6,7 @@
 #include "save_store.h"
 #include "app_icon.h"
 #include "../render/perf_overlay.h"
+#include "../render/render_device.h"
 
 #ifdef _WIN32
 #include <direct.h>
@@ -145,6 +146,8 @@ unsigned Platform_PollEvents()
                     float x, y;
                     SDL_GetRelativeMouseState(&x, &y); /* discard motion accumulated before the mode change */
                 }
+                if (e.key.key == SDLK_F6 && !e.key.repeat && g_renderDevice)
+                    g_renderDevice->ToggleWireframe();
                 break;
         }
     }
